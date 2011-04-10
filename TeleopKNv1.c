@@ -258,24 +258,25 @@ void moveBridgeArm()
 
 
 /* Main method of program-OBSOLETE----------------
-* 1. Create and initialize the Flags for Buttons.
-*    (Done at top of program)
-* 2. Run indefinate loop of the following:
-*    A. Get current joystick presses & movement
-*    B. Set the Flags created in step 1, based on
-*       the joysick configuration.
-*    C. Move the robot based on the flags and
-*       analog sticks.
-*         1.Move robot based on flags.
-*         2.Move robot based on analogs.
-*/
+ * 1. Create and initialize the Flags for Buttons.
+ *    (Done at top of program)
+ * 2. Run indefinate loop of the following:
+ *    A. Get current joystick presses & movement
+ *    B. Set the Flags created in step 1, based on
+ *       the joysick configuration.
+ *    C. Move the robot based on the flags and
+ *       analog sticks.
+ *         1.Move robot based on flags.
+ *         2.Move robot based on analogs.
+ */
 
 //This contains the simple form of the above method.
 task main()
 {
     initializeRobot();
+
+    // Start when the teleop phase begins.
     waitForStart();
-        //continue;  //Start when the teleop phase begins.
 
     while(true) //Loop indefinately
     {
@@ -573,10 +574,10 @@ task RGLiftTask()
         case LOADED:
             servo[sRGTeethR] = RGTEETH_RMIN;
             servo[sRGTeethL] = RGTEETH_LMIN;
-            if (abs(nMotorEncoder[mRGLiftAr]) > (RGARM_DROP_AMT - RGARM_LIFT_AMT)
+            if (abs(nMotorEncoder[mRGLiftAr]) > (RGARM_DROP_AMT - RGARM_LIFT_AMT))
             {
-                motor[mRGLiftAr] = -RGARM_LIFT_POWER;
-            } else {
+                    motor[mRGLiftAr] = -RGARM_LIFT_POWER;
+                } else {
                 motor[mRGLiftAr] = 0;
             }
             break;
