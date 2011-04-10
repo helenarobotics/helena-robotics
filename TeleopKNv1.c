@@ -163,9 +163,9 @@ void initializeRobot()
 
 void moveDispenser()
 {
-    if(joy2Btn(5))
+    if (joy2Btn(5))
         fiDisp = true;
-    else if(!joy2Btn(5) && fiDisp)
+    else if (!joy2Btn(5) && fiDisp)
     {
         toggleDispenser();
         fiDisp = false;
@@ -174,9 +174,9 @@ void moveDispenser()
 
 void moveDispMouth()
 {
-    if(joy2Btn(6))
+    if (joy2Btn(6))
         fiDispMou = true;
-    else if(!joy2Btn(6) && fiDispMou)
+    else if (!joy2Btn(6) && fiDispMou)
     {
         toggleMouth();
         fiDispMou = false;
@@ -185,9 +185,9 @@ void moveDispMouth()
 
 void moveBlockArm()
 {
-    if(joy2Btn(8))
+    if (joy2Btn(8))
         fiBlockAr = true;
-    else if(!joy2Btn(8) && fiBlockAr)
+    else if (!joy2Btn(8) && fiBlockAr)
     {
         toggleBlockArm();
         fiBlockAr = false;
@@ -196,17 +196,17 @@ void moveBlockArm()
 
 void moveRGLift()
 {
-    if(joy1Btn(6))
+    if (joy1Btn(6))
         fiRGLift = true;
-    else if(!joy1Btn(6) && fiRGLift)
+    else if (!joy1Btn(6) && fiRGLift)
     {
         toggleRGLift();
         fiRGLift = false;
     }
 
-    if(joy1Btn(5))
+    if (joy1Btn(5))
         fiRGLiftAbort = true;
-    else if(!joy1Btn(5) && fiRGLiftAbort)
+    else if (!joy1Btn(5) && fiRGLiftAbort)
     {
         abortRGLift();
         fiRGLiftAbort = false;
@@ -218,25 +218,25 @@ void moveTracks()
     int rPow, lPow;
 
     //tank drive (above values set)
-    if(MODE == 0)
+    if (MODE == 0)
     {
         rPow = (joystick.joy1_y1 * 100 / 127);
         lPow = (joystick.joy1_y2 * 100 / 127);
-    } else if(MODE == 1)
+    } else if (MODE == 1)
     {
         //arcade drive
         float ratio;
         lPow = (joystick.joy1_y1 * 100 / 127);
         rPow = lPow;
-        if(joystick.joy1_x2 < 0)
+        if (joystick.joy1_x2 < 0)
         {
-            ratio = joystick.joy1_x2 * -100 / 127;
-            lPow-=ratio;
+            ratio = joystick.joy1_x2 * - 100 / 127;
+            lPow -= ratio;
         }
-        if(joystick.joy1_x2 > 0)
+        if (joystick.joy1_x2 > 0)
         {
             ratio = joystick.joy1_x2 * 100 / 127;
-            rPow-=ratio;
+            rPow -= ratio;
         }
     }
 
@@ -278,7 +278,7 @@ task main()
     // Start when the teleop phase begins.
     waitForStart();
 
-    while(true) //Loop indefinately
+    while (true) // Loop indefinately
     {
         //Get current joystick button and analog movement
         getJoystickSettings(joystick);
@@ -312,9 +312,9 @@ void raiseDispenser()
 
 task DispenseTask()
 {
-    while(true)
+    while (true)
     {
-        if(dispDown)
+        if (dispDown)
             servo[sRoDisp] = DISPENSER_MIN;
         else
             servo[sRoDisp] = DISPENSER_MAX;
@@ -340,9 +340,9 @@ void raiseMouth()
 
 task MouthTask()
 {
-    while(true)
+    while (true)
     {
-        if(mouthDown)
+        if (mouthDown)
             servo[sMouDisp] = MOUTH_MIN;
         else
             servo[sMouDisp] = MOUTH_MAX;
@@ -364,7 +364,7 @@ blockState lastDirection = MOVE_LEFT;
 
 void toggleBlockArm()
 {
-    if(lastDirection == MOVE_LEFT)
+    if (lastDirection == MOVE_LEFT)
         bState = MOVE_RIGHT;
     else
         bState = MOVE_LEFT;
@@ -378,9 +378,9 @@ void stopBlockArm()
 task BlockTask()
 {
     //XXX Keep track of how long the movement has progressed
-    while(true)
+    while (true)
     {
-        switch(bState)
+        switch (bState)
         {
         case NOT_MOVING:
             motor[mBlockAr] = 0;
@@ -392,7 +392,7 @@ task BlockTask()
             lastDirection = MOVE_LEFT;
             break;
         case MOVING_LEFT:
-            if(time1[T1] > BA_TIME)
+            if (time1[T1] > BA_TIME)
                 bState = NOT_MOVING;
             break;
         case MOVE_RIGHT:
@@ -402,7 +402,7 @@ task BlockTask()
             lastDirection = MOVE_RIGHT;
             break;
         case MOVING_RIGHT:
-            if(time1[T1] > BA_TIME)
+            if (time1[T1] > BA_TIME)
                 bState = NOT_MOVING;
             break;
         default:
@@ -435,7 +435,7 @@ liftState lState = PARKED;
 
 void toggleRGLift()
 {
-    switch(lState)
+    switch (lState)
     {
     case PARKED:
         lState = DROP_ARM;
@@ -469,7 +469,7 @@ void toggleRGLift()
 
 void abortRGLift()
 {
-    switch(lState)
+    switch (lState)
     {
     case PARKED:
     case RAISE_ARM:
@@ -503,10 +503,10 @@ int hal = 0;
 
 task RGLiftTask()
 {
-    while(true)
+    while (true)
     {
         nxtDisplayString(0,"%d (%d) %d", lState, abs(nMotorEncoder[mRGLiftAr]), hal);
-        switch(lState)
+        switch (lState)
         {
         case PARKED:
             servo[sRGTeethL] = RGTEETH_LMAX;
@@ -519,7 +519,7 @@ task RGLiftTask()
             lState = DROPPING_ARM;
             break;
         case DROPPING_ARM:
-            if(time1[T2] > RGARM_DROP_TIME || abs(nMotorEncoder[mRGLiftAr]) >= RGARM_DROP_AMT)
+            if (time1[T2] > RGARM_DROP_TIME || abs(nMotorEncoder[mRGLiftAr]) >= RGARM_DROP_AMT)
             {
                 hal = abs(nMotorEncoder[mRGLiftAr]);
                 motor[mRGLiftAr] = 0;
@@ -532,7 +532,7 @@ task RGLiftTask()
             lState = RAISING_ARM;
             break;
         case RAISING_ARM:
-            if(time1[T2] > RGARM_DROP_TIME || abs(nMotorEncoder[mRGLiftAr]) <= 150)
+            if (time1[T2] > RGARM_DROP_TIME || abs(nMotorEncoder[mRGLiftAr]) <= 150)
             {
                 motor[mRGLiftAr] = 0;
                 lState = PARKED;
@@ -551,7 +551,7 @@ task RGLiftTask()
         case LOWERING_TEETH:
             servo[sRGTeethL] = RGTEETH_LMIN;
             servo[sRGTeethR] = RGTEETH_RMIN;
-            if(ServoValue[sRGTeethL] == RGTEETH_LMIN && ServoValue[sRGTeethR] == RGTEETH_RMIN)
+            if (ServoValue[sRGTeethL] == RGTEETH_LMIN && ServoValue[sRGTeethR] == RGTEETH_RMIN)
                 lState = LIFT_RG;
             break;
         case LIFT_RG:
@@ -564,7 +564,7 @@ task RGLiftTask()
         case LIFTING_RG:
             servo[sRGTeethR] = RGTEETH_RMIN;
             servo[sRGTeethL] = RGTEETH_LMIN;
-            if(time1[T2] > RGARM_LIFT_TIME || abs(nMotorEncoder[mRGLiftAr]) <= (RGARM_DROP_AMT - RGARM_LIFT_AMT))
+            if (time1[T2] > RGARM_LIFT_TIME || abs(nMotorEncoder[mRGLiftAr]) <= (RGARM_DROP_AMT - RGARM_LIFT_AMT))
             {
                 motor[mRGLiftAr] = 0;
                 lState = LOADED;
@@ -587,7 +587,7 @@ task RGLiftTask()
             lState = LOWERING_RG;
             break;
         case LOWERING_RG:
-            if(time1[T2] > RGARM_LIFT_TIME || abs(nMotorEncoder[mRGLiftAr]) >= RGARM_DROP_AMT)
+            if (time1[T2] > RGARM_LIFT_TIME || abs(nMotorEncoder[mRGLiftAr]) >= RGARM_DROP_AMT)
             {
                 motor[mRGLiftAr] = 0;
                 servo[sRGTeethR] = RGTEETH_RMAX;
@@ -596,7 +596,7 @@ task RGLiftTask()
             }
             break;
         case RAISING_TEETH:
-            if(ServoValue[sRGTeethR] == RGTEETH_RMAX && ServoValue[sRGTeethL] == RGTEETH_LMAX)
+            if (ServoValue[sRGTeethR] == RGTEETH_RMAX && ServoValue[sRGTeethL] == RGTEETH_LMAX)
             {
                 lState = READY;
             }
