@@ -87,7 +87,7 @@ int DRIVE_MODE = DRIVE_TANK_EXPO;
 // The arm motors overshoot a bit, so until we write useful PID
 // controllers for them, we consider 'zero' when moving back to the
 // original location anything less than 150.
-const int ARM_ZERO_SLOP = 150;
+const int ARM_POS_ZERO_SLOP = 150;
 
 //
 // Baton/Blocking Arm constants (left arm)
@@ -393,7 +393,7 @@ task BatonArmTask()
         case MOVE_RIGHT:
             motor[mBatonArm] = calculateTetrixPower(
                 -BATON_ARM_MOVE_POWER, armPos, 0);
-            if (armPos <= ARM_ZERO_SLOP)
+            if (armPos <= ARM_POS_ZERO_SLOP)
                 bState = BATON_PARKED;
             break;
 
@@ -675,7 +675,7 @@ task RGLiftTask()
         case RAISE_ARM:
             motor[mRGLiftArm] = calculateTetrixPower(
                 -RG_ARM_MOVE_POWER, armPos, 0);
-            if (armPos <= ARM_ZERO_SLOP) {
+            if (armPos <= ARM_POS_ZERO_SLOP) {
                 motor[mRGLiftArm] = 0;
                 lState = PARKED;
             }
