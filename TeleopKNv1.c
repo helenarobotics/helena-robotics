@@ -94,6 +94,8 @@ const int BLOCK_ARM_DEPLOYED_POS = 1440 * 2;
 // Power to the blocking arm
 const int BLOCK_ARM_MOVE_POWER = 30;
 
+/*
+  Unused, as the bridge arm is controlled by the joystick
 //
 // Bridge Arm constants
 //
@@ -103,6 +105,7 @@ const int BRIDGE_ARM_MOVE_AMT = 1440 * 2;
 
 // Power to the blocking arm
 const int BRIDGE_ARM_MOVE_POWER = 30;
+*/
 
 //
 // Dispenser Constants
