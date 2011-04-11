@@ -82,7 +82,7 @@ const int DRIVE_TANK_EXPO     = 1;
 const int DRIVE_ARCADE_LINEAR = 2;
 const int DRIVE_ARCADE_EXPO   = 3;
 
-int DRIVE_MODE = DRIVE_TANK_LINEAR;
+int DRIVE_MODE = DRIVE_TANK_EXPO;
 
 // The arm motors overshoot a bit, so until we write useful PID
 // controllers for them, we consider 'zero' when moving back to the
