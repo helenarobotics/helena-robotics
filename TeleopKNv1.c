@@ -141,6 +141,9 @@ const int RG_ARM_LIFT_POS = RG_ARM_DROP_POS - RG_ARM_LIFT_AMT;
 const int RG_ARM_MOVE_POWER = -30;
 const int RG_ARM_LIFT_POWER = -100;
 
+// The maximum amount of time we'll use to 'lift' the goal at full power.
+const int RG_ARM_MAX_LIFT_TIME = 5 * 1000;
+
 // The servos that control the Rolling Goal are the 'teeth' the control
 // the goal at the top
 const int RG_TEETH_LEFT_UP = 40;
@@ -187,6 +190,8 @@ void abortRGLift();
 task RGLiftTask();
 
 void moveTracks();
+
+int calculateTetrixPower(int power, long currentPos, long targetPos);
 
 void initializeRobot()
 {
@@ -378,13 +383,15 @@ task BatonArmTask()
             break;
 
         case MOVE_LEFT:
-            motor[mBatonArm] = BATON_ARM_MOVE_POWER;
+            motor[mBatonArm] = calculateTetrixPower(
+                BATON_ARM_MOVE_POWER, armPos, BATON_ARM_DEPLOYED_POS);
             if (armPos >= BATON_ARM_DEPLOYED_POS)
                 bState = BATON_DEPLOYED;
             break;
 
         case MOVE_RIGHT:
-            motor[mBatonArm] = -BATON_ARM_MOVE_POWER;
+            motor[mBatonArm] = calculateTetrixPower(
+                -BATON_ARM_MOVE_POWER, armPos, 0);
             if (armPos <= ARM_ZERO_SLOP)
                 bState = BATON_PARKED;
             break;
@@ -441,10 +448,9 @@ task BatonDropTask()
 //
 void moveBridgeArm()
 {
-    // Move Bridge Arm.  Don't let the folks move the arm if we're at
-    // the end
-//    int armPower = expoJoystick(joystick.joy2_y2);
-    int armPower = joystick.joy2_y2 * 100 / 127;
+    // Move Bridge Arm.  Don't let the arm move if we're at the endpoints
+    int armPower = expoJoystick(joystick.joy2_y2);
+//    int armPower = joystick.joy2_y2 * 100 / 127;
     if ((nMotorEncoder[mBridgeArm] <= 10 && armPower < 0) ||
         (nMotorEncoder[mBridgeArm] >= BRIDGE_ARM_DEPLOYED_POS && armPower > 0))
         motor[mBridgeArm] = 0;
@@ -459,10 +465,10 @@ void moveBridgeArm()
 // Moves the arm using the joystick controls
 void moveDispenserArm()
 {
-    // Move Dispensinge Arm.  Don't let the folks move the arm if we're at
-    // the end
-//    int armPower = expoJoystick(joystick.joy2_y1);
-    int armPower = joystick.joy2_y1 * 100 / 127;
+    // Move Dispensing Arm.  Don't let the arm move if we're at the
+    // endpoints.
+    int armPower = expoJoystick(joystick.joy2_y1);
+//    int armPower = joystick.joy2_y1 * 100 / 127;
     if ((nMotorEncoder[mDispArm] <= 10 && armPower < 0) ||
         (nMotorEncoder[mDispArm] >= DISPENSER_ARM_DEPLOYED_POS && armPower > 0))
         motor[mDispArm] = 0;
@@ -569,18 +575,15 @@ void moveRGLift()
 typedef enum {
     PARKED,
     DROP_ARM,
-    DROPPING_ARM,
     RAISE_ARM,
     RAISING_ARM,
     READY,
     START_CAPTURE,
-    LOWERING_TEETH,
-    LIFT_RG,
-    LIFTING_RG,
+    LOWER_TEETH,
+    LIFT_GOAL,
     LOADED,
-    UNLOAD,
-    LOWERING_RG,
-    RAISING_TEETH
+    UNLOAD_GOAL,
+    RAISE_TEETH
 } liftState;
 
 liftState lState = PARKED;
@@ -592,26 +595,22 @@ void toggleRGLift()
         lState = DROP_ARM;
         break;
     case DROP_ARM:
-    case DROPPING_ARM:
     case RAISE_ARM:
-    case RAISING_ARM:
         // Ignore
         break;
     case READY:
         lState = START_CAPTURE;
         break;
     case START_CAPTURE:
-    case LOWERING_TEETH:
-    case LIFT_RG:
-    case LIFTING_RG:
+    case LOWER_TEETH:
+    case LIFT_GOAL:
         // Ignore
         break;
     case LOADED:
-        lState = UNLOAD;
+        lState = UNLOAD_GOAL;
         break;
-    case UNLOAD:
-    case LOWERING_RG:
-    case RAISING_TEETH:
+    case UNLOAD_GOAL:
+    case RAISE_TEETH:
     default:
         // Ignore
         break;
@@ -623,26 +622,22 @@ void abortRGLift()
     switch (lState) {
     case PARKED:
     case RAISE_ARM:
-    case RAISING_ARM:
         // Ignore
         break;
     case DROP_ARM:
-    case DROPPING_ARM:
     case READY:
         lState = RAISE_ARM;
         break;
     case START_CAPTURE:
-    case LOWERING_TEETH:
-        lState = RAISING_TEETH;
+    case LOWER_TEETH:
+        lState = RAISE_TEETH;
         break;
-    case LIFT_RG:
-    case LIFTING_RG:
+    case LIFT_GOAL:
     case LOADED:
-        lState = UNLOAD;
+        lState = UNLOAD_GOAL;
         break;
-    case UNLOAD:
-    case LOWERING_RG:
-    case RAISING_TEETH:
+    case UNLOAD_GOAL:
+    case RAISE_TEETH:
     default:
         // Ignore
         break;
@@ -666,11 +661,10 @@ task RGLiftTask()
             break;
 
         case DROP_ARM:
-            motor[mRGLiftArm] = RG_ARM_MOVE_POWER;
-            lState = DROPPING_ARM;
-            break;
-
-        case DROPPING_ARM:
+            motor[mRGLiftArm] = calculateTetrixPower(
+                RG_ARM_MOVE_POWER, armPos, RG_ARM_DROP_POS);
+            // XXX - Give us a bit of slop when parking so we don't
+            // overshoot and jam the arm.
             if (armPos >= RG_ARM_DROP_POS) {
                 motor[mRGLiftArm] = 0;
                 lState = READY;
@@ -678,13 +672,8 @@ task RGLiftTask()
             break;
 
         case RAISE_ARM:
-            motor[mRGLiftArm] = -RG_ARM_MOVE_POWER;
-            lState = RAISING_ARM;
-            break;
-
-        case RAISING_ARM:
-            // XXX - Give us a bit of slop when parking so we don't
-            // overshoot and jam the arm.
+            motor[mRGLiftArm] = calculateTetrixPower(
+                -RG_ARM_MOVE_POWER, armPos, 0);
             if (armPos <= ARM_ZERO_SLOP) {
                 motor[mRGLiftArm] = 0;
                 lState = PARKED;
@@ -699,41 +688,41 @@ task RGLiftTask()
 
         case START_CAPTURE:
             // Move the teeth down
-            servo[sRGTeethL] = RG_TEETH_LEFT_DOWN;
-            servo[sRGTeethR] = RG_TEETH_RIGHT_DOWN;
-            lState = LOWERING_TEETH;
+            lState = LOWER_TEETH;
             break;
 
-        case LOWERING_TEETH:
+        case LOWER_TEETH:
             // Keep the teeth moving down!
             servo[sRGTeethL] = RG_TEETH_LEFT_DOWN;
             servo[sRGTeethR] = RG_TEETH_RIGHT_DOWN;
-            // Once the teeth are down get ready to lift up the arm.
             if (ServoValue[sRGTeethL] == RG_TEETH_LEFT_DOWN &&
-                ServoValue[sRGTeethR] == RG_TEETH_RIGHT_DOWN)
-                lState = LIFT_RG;
+                ServoValue[sRGTeethR] == RG_TEETH_RIGHT_DOWN) {
+                lState = LIFT_GOAL;
+                // Keep track of how long we take lifting the goal
+                time1[T1] = 0;
+            }
             break;
 
-        case LIFT_RG:
+        case LIFT_GOAL:
             // Keep the teeth down in case they want to move back up
             servo[sRGTeethL] = RG_TEETH_LEFT_DOWN;
             servo[sRGTeethR] = RG_TEETH_RIGHT_DOWN;
 
-            // Lift up the arm!
+            // Keep lifting up the arm until we get there.  Note, we go
+            // 100% full power here since we're trying to get the goal
+            // up in the air (no need to slow down when we get close).
+            // However, we'll only keep trying to lift it for
+            // RG_ARM_MAX_LIFT_TIME to avoid burning out the motors.
             motor[mRGLiftArm] = -RG_ARM_LIFT_POWER;
-            lState = LIFTING_RG;
-            break;
-
-        case LIFTING_RG:
-            // Again, keep those teeth down!
-            servo[sRGTeethL] = RG_TEETH_LEFT_DOWN;
-            servo[sRGTeethR] = RG_TEETH_RIGHT_DOWN;
-
-            // Are we done lifting?
-            if (armPos <= RG_ARM_LIFT_POS) {
+            if (armPos <= RG_ARM_LIFT_POS ||
+                time1[T1] >= RG_ARM_MAX_LIFT_TIME) {
                 // Lifted!
                 motor[mRGLiftArm] = 0;
                 lState = LOADED;
+
+                // Reset the time again if we've hit the target.
+                if (time1[T1] < RG_ARM_MAX_LIFT_TIME) {
+                    time1[T1] = 0;
             }
             break;
 
@@ -742,30 +731,37 @@ task RGLiftTask()
             servo[sRGTeethL] = RG_TEETH_LEFT_DOWN;
             servo[sRGTeethR] = RG_TEETH_RIGHT_DOWN;
 
-            // If the lifting arm sags, lift it back up!
-            if (armPos > RG_ARM_LIFT_POS)
-                motor[mRGLiftArm] = -RG_ARM_LIFT_POWER;
-            else
+            // If the lifting arm sags, lift it back up with full power!
+            if (armPos > RG_ARM_LIFT_POS) {
+                // Only keep lifting if we were able to lift it!
+                if (time1[T1] < MAX_LIFT_TIME)
+                    motor[mRGLiftArm] = -RG_ARM_LIFT_POWER;
+                else
+                    // Give up!
+                    motor[mRGLiftArm] = 0;
+            } else {
                 motor[mRGLiftArm] = 0;
+
+                // Motor turned off because we hit the target lift
+                // position, so we can reset the lift time.
+                time1[T1] = 0;
+            }
             break;
 
-        case UNLOAD:
-            // Get ready to drop the goal
-            motor[mRGLiftArm] = RG_ARM_MOVE_POWER;
-            lState = LOWERING_RG;
-            break;
-
-        case LOWERING_RG:
+        case UNLOAD_GOAL:
+            // Keep droping the arm until we get low enough
+            motor[mRGLiftArm] = calculateTetrixPower(
+                RG_ARM_MOVE_POWER, armPos, RG_ARM_DROP_POS);
             if (armPos >= RG_ARM_DROP_POS) {
                 // Done lowering, so start moving the teeth back up
                 motor[mRGLiftArm] = 0;
                 servo[sRGTeethL] = RG_TEETH_LEFT_UP;
                 servo[sRGTeethR] = RG_TEETH_RIGHT_UP;
-                lState = RAISING_TEETH;
+                lState = RAISE_TEETH;
             }
             break;
 
-        case RAISING_TEETH:
+        case RAISE_TEETH:
             // Keeping those teeth moving up
             servo[sRGTeethL] = RG_TEETH_LEFT_UP;
             servo[sRGTeethR] = RG_TEETH_RIGHT_UP;
@@ -779,4 +775,34 @@ task RGLiftTask()
             break;
         }
     }
+}
+
+int calculateTetrixPower(int power, long currPos, long targetPos)
+{
+    // If you want less than 20% power, you don't need this.
+    if (abs(power) < 20)
+        return power;
+
+    // If we're getting 'close', slow down a bit.
+    long posDiff = abs(currPos - targetPos);
+
+    // These numbers are determined via trial and error.  I'm sure their
+    // is a better way of calculating them, probably using some
+    // calculation that takes power into consideration.
+    if (posDiff < 250)
+        power = power / 2;
+    else if (posDiff < 500)
+        power = power * 3 / 4;
+    else if (posDiff < 1000)
+        power = power * 9 / 10;
+
+    // Note, the minimum speed we allow is 20%, since otherwise the
+    // motors may not move.
+    if (abs(power) < 20) {
+        if (power < 0)
+            power = -20;
+        else
+            power = 20;
+    }
+    return power;
 }
