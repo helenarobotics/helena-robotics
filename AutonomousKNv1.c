@@ -176,15 +176,15 @@ int calcMove(float dist)
 
 void move(float dist)
 {
-    if(!moving())
+    if (!moving())
     {
         moveTime = calcMove(dist);
-        if(dist < 0)
+        if (dist < 0)
         {
             moveTime = abs(moveTime);
             mState = MOVE_BACKWARD;
         }
-        if(dist > 0)
+        if (dist > 0)
             mState = MOVE_FOREWARD;
     }
 }
@@ -196,9 +196,9 @@ void stopMove()
 
 task MoveTask()
 {
-    while(true)
+    while (true)
     {
-        switch(mState)
+        switch (mState)
         {
         case STOP_MOVE:
             motor[mLTrack] = 0;
@@ -211,7 +211,7 @@ task MoveTask()
             mState = FOREWARD;
             break;
         case FOREWARD:
-            if(time1[T3] > moveTime)
+            if (time1[T3] > moveTime)
             {
                 mState = STOP_MOVE;
             }
@@ -223,7 +223,7 @@ task MoveTask()
             mState = BACKWARD;
             break;
         case BACKWARD:
-            if(time1[T3] > moveTime)
+            if (time1[T3] > moveTime)
             {
                 mState = STOP_MOVE;
             }
@@ -249,28 +249,28 @@ int calcTurn(float deg)
 {
     float time;
     //convert degrees to be more useful
-    if(abs(deg) >= 180)
+    if (abs(deg) >= 180)
     {
-        if(deg < 0)
-            deg+=360;
-        if(deg > 0)
-            deg-=360;
+        if (deg < 0)
+            deg += 360;
+        if (deg > 0)
+            deg -= 360;
     }
-    time = (deg/360) * FULL_TURN_TIME * 1000;
+    time = (deg / 360) * FULL_TURN_TIME * 1000;
 
     return (int)time;
 }
 
 void turn(float deg)
 {
-    if(!moving())
+    if (!moving())
     {
         turnTime = calcTurn(deg);
-        if(turnTime > 0)
+        if (turnTime > 0)
         {
             tState = TURN_CW;
         }
-        if(turnTime < 0)
+        if (turnTime < 0)
         {
             turnTime = abs(turnTime);
             tState = TURN_CCW;
@@ -285,9 +285,9 @@ void stopTurn()
 
 task TurnTask()
 {
-    while(true)
+    while (true)
     {
-        switch(tState)
+        switch (tState)
         {
         case STOP_TURN:
             motor[mLTrack] = 0;
@@ -300,7 +300,7 @@ task TurnTask()
             tState = CW;
             break;
         case CW:
-            if(time1[T3] > turnTime)
+            if (time1[T3] > turnTime)
             {
                 tState = STOP_TURN;
             }
@@ -312,7 +312,7 @@ task TurnTask()
             tState = CCW;
             break;
         case CCW:
-            if(time1[T3] > turnTime)
+            if (time1[T3] > turnTime)
             {
                 tState = STOP_TURN;
             }
@@ -343,9 +343,9 @@ bridgeState lastDir = BACKWARD;
 
 void toggleBrArm()
 {
-    if(lastDir == BACKWARD)
+    if (lastDir == BACKWARD)
         brState = MOVE_FOREWARD;
-    else if(lastDir == FOREWARD)
+    else if (lastDir == FOREWARD)
         brState = MOVE_BACKWARD;
 }
 
@@ -356,9 +356,9 @@ void stopBrArm()
 
 task BridgeTask()
 {
-    while(true)
+    while (true)
     {
-        switch(brState)
+        switch (brState)
         {
         case STOP_BARM:
             motor[mBridgeAr] = 0;
@@ -370,7 +370,7 @@ task BridgeTask()
             lastDir = FOREWARD;
             break;
         case FOREWARD:
-            if(time1[T1] > BRARM_DROP_TIME)
+            if (time1[T1] > BRARM_DROP_TIME)
                 brState = STOP_BARM;
             break;
         case MOVE_BACKWARD:
@@ -380,7 +380,7 @@ task BridgeTask()
             lastDir = BACKWARD;
             break;
         case BACKWARD:
-            if(time1[T1] > BRARM_DROP_TIME)
+            if (time1[T1] > BRARM_DROP_TIME)
                 brState = STOP_BARM;
             break;
         }
@@ -405,9 +405,9 @@ void closeBatonCup()
 
 task BatonCupTask()
 {
-    while(true)
+    while (true)
     {
-        if(cupOpen)
+        if (cupOpen)
             servo[sBatonCup] = BCUP_MIN;
         else
             servo[sBatonCup] = BCUP_MAX;
@@ -433,9 +433,9 @@ void raiseDispenser()
 
 task DispenseTask()
 {
-    while(true)
+    while (true)
     {
-        if(dispDown)
+        if (dispDown)
             servo[sRoDisp] = DISPENSER_MIN;
         else
             servo[sRoDisp] = DISPENSER_MAX;
@@ -461,9 +461,9 @@ void raiseMouth()
 
 task MouthTask()
 {
-    while(true)
+    while (true)
     {
-        if(mouthDown)
+        if (mouthDown)
             servo[sMouDisp] = MOUTH_MIN;
         else
             servo[sMouDisp] = MOUTH_MAX;
@@ -485,7 +485,7 @@ blockState lastDirection = MOVE_LEFT;
 
 void toggleBlockArm()
 {
-    if(lastDirection == MOVE_LEFT)
+    if (lastDirection == MOVE_LEFT)
         bState = MOVE_RIGHT;
     else
         bState = MOVE_LEFT;
@@ -499,9 +499,9 @@ void stopBlockArm()
 task BlockTask()
 {
     //XXX Keep track of how long the movement has progressed
-    while(true)
+    while (true)
     {
-        switch(bState)
+        switch (bState)
         {
         case NOT_MOVING:
             motor[mBlockAr] = 0;
@@ -513,7 +513,7 @@ task BlockTask()
             lastDirection = MOVE_LEFT;
             break;
         case MOVING_LEFT:
-            if(time1[T1] > BA_TIME)
+            if (time1[T1] > BA_TIME)
                 bState = NOT_MOVING;
             break;
         case MOVE_RIGHT:
@@ -523,7 +523,7 @@ task BlockTask()
             lastDirection = MOVE_RIGHT;
             break;
         case MOVING_RIGHT:
-            if(time1[T1] > BA_TIME)
+            if (time1[T1] > BA_TIME)
                 bState = NOT_MOVING;
             break;
         default:
@@ -556,7 +556,7 @@ liftState lState = READY;
 
 void toggleRGLift()
 {
-    switch(lState)
+    switch (lState)
     {
     case PARKED:
         lState = DROP_ARM;
@@ -590,7 +590,7 @@ void toggleRGLift()
 
 void abortRGLift()
 {
-    switch(lState)
+    switch (lState)
     {
     case PARKED:
     case RAISE_ARM:
@@ -622,9 +622,9 @@ void abortRGLift()
 
 task RGLiftTask()
 {
-    while(true)
+    while (true)
     {
-        switch(lState)
+        switch (lState)
         {
         case PARKED:
             servo[sRGTeeth] = RGTEETH_MIN;
@@ -636,7 +636,7 @@ task RGLiftTask()
             lState = DROPPING_ARM;
             break;
         case DROPPING_ARM:
-            if(time1[T2] > RGARM_DROP_TIME)
+            if (time1[T2] > RGARM_DROP_TIME)
             {
                 motor[mRGLiftAr] = 0;
                 lState = READY;
@@ -648,7 +648,7 @@ task RGLiftTask()
             lState = RAISING_ARM;
             break;
         case RAISING_ARM:
-            if(time1[T2] > RGARM_DROP_TIME)
+            if (time1[T2] > RGARM_DROP_TIME)
             {
                 motor[mRGLiftAr] = 0;
                 lState = PARKED;
@@ -664,7 +664,7 @@ task RGLiftTask()
             break;
         case LOWERING_TEETH:
             servo[sRGTeeth] = RGTEETH_MAX;
-            if(ServoValue[sRGTeeth] == RGTEETH_MAX)
+            if (ServoValue[sRGTeeth] == RGTEETH_MAX)
                 lState = LIFT_RG;
             break;
         case LIFT_RG:
@@ -675,7 +675,7 @@ task RGLiftTask()
             break;
         case LIFTING_RG:
             servo[sRGTeeth] = RGTEETH_MAX;
-            if(time1[T2] > RGARM_LIFT_TIME)
+            if (time1[T2] > RGARM_LIFT_TIME)
             {
                 motor[mRGLiftAr] = 0;
                 lState = LOADED;
@@ -684,7 +684,7 @@ task RGLiftTask()
             break;
         case LOADED:
             servo[sRGTeeth] = RGTEETH_MAX;
-            if(time1[T2] > 500)
+            if (time1[T2] > 500)
             {
                 time1[T2] = 0;
                 motor[mRGLiftAr] = -RGLIFT_ARM_POWER;
@@ -700,7 +700,7 @@ task RGLiftTask()
             lState = LOWERING_RG;
             break;
         case LOWERING_RG:
-            if(time1[T2] > RGARM_LIFT_TIME)
+            if (time1[T2] > RGARM_LIFT_TIME)
             {
                 motor[mRGLiftAr] = 0;
                 servo[sRGTeeth] = RGTEETH_MIN;
@@ -708,7 +708,7 @@ task RGLiftTask()
             }
             break;
         case RAISING_TEETH:
-            if(ServoValue[sRGTeeth] == RGTEETH_MIN)
+            if (ServoValue[sRGTeeth] == RGTEETH_MIN)
             {
                 lState = READY;
             }
