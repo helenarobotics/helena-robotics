@@ -50,23 +50,25 @@
 *      Controls the power and direction of left track motor (mLTrack)
 *   Right Analog
 *      Controls the power and direction of right track motor (mRTrack)
-*   R2 {Far Right Shoulder}
-*      Toggles the rolling goal lift arm and lock teeth
-*         (mRGLiftArm & sRGTeethL/sRGTeethR)
-*   L2 {Far Left Shoulder}
+*   L1 {Upper Back Left}
 *      Aborts the rolling goal process before it completes
 *         (mRGLiftArm &  sRGTeethL/sRGTeethR)
+*   R1 {Upper Back Right}
+*      Toggles the rolling goal lift arm and lock teeth
+*         (mRGLiftArm & sRGTeethL/sRGTeethR)
 * Joysitck 2:
 *   Left Analog
 *      Controls the dispensing arm (mDispArm)
+*   L1 {Upper Back Left}
+*      Toggles dispenser teeth position (sDispTeeth)
+*   L2 {Lower Back Left}
+*      Toggles dispenser mouth position (sDispMouth)
 *   Right Analog
 *      Controls the bridge arm (mBridgeArm)
-*   L1 (Front Left Shoulder)
-*      Toggles dispenser teeth position (sDispTeeth)
-*   R1 (Front Right Shoulder)
-*      Toggles dispenser mouth position (sDispMouth)
-*   R2 (Back Right Shoulder)
-*      Toggles Autonomous baton arm position (sBatonCup)
+*   R1 {Upper Back Right}
+*      Toggles deployment of the blocking/baton arm (mBlockArm)
+*   R2 {Lower Back Right}
+*      Unloads the batons (sBatonCup)
 */
 
 // XXX - Need BatonCup code
@@ -420,7 +422,7 @@ void moveDispenserArm()
 bool dispMouthButtonWasPressed = false;
 void moveDispenserMouth()
 {
-    bool btnPress = joy2Btn(6);
+    bool btnPress = joy2Btn(7);
     if (!btnPress && dispMouthButtonWasPressed)
         toggleDispenserMouth();
     dispMouthButtonWasPressed = btnPress;
