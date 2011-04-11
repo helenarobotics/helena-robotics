@@ -52,7 +52,7 @@
 *      Controls the power and direction of right track motor (mRTrack)
 *   R2 {Far Right Shoulder}
 *      Toggles the rolling goal lift arm and lock teeth
-*         (mRGLiftArm &  sRGTeethL/sRGTeethR)
+*         (mRGLiftArm & sRGTeethL/sRGTeethR)
 *   L2 {Far Left Shoulder}
 *      Aborts the rolling goal process before it completes
 *         (mRGLiftArm &  sRGTeethL/sRGTeethR)
@@ -506,7 +506,7 @@ void moveRGLift()
         toggleRGLift();
     rgLiftButtonWasPressed = btnPress;
 
-    btnPress = joy1Btn(6);
+    btnPress = joy1Btn(5);
     if (!btnPress && rgAbortButtonWasPressed)
         abortRGLift();
     rgAbortButtonWasPressed = btnPress;
