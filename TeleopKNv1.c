@@ -106,7 +106,7 @@ const int BRIDGE_ARM_MOVE_POWER = 30;
 
 //
 // Dispenser Constants
-// 
+//
 const int DISPENSER_TEETH_DOWN = 0;
 const int DISPENSER_TEETH_UP = 140;
 
@@ -474,7 +474,7 @@ void moveRGLift()
     rgLiftButtonWasPressed = btnPress;
 
     btnPress = joy1Btn(6);
-    if (!btnPress && rgAbortButtonWasPressed) 
+    if (!btnPress && rgAbortButtonWasPressed)
         abortRGLift();
     rgAbortButtonWasPressed = btnPress;
 }
