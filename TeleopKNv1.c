@@ -17,44 +17,21 @@
 * By Bridger Howell
 * Team 4309
 **************************************************
-* Motors
-* ------
-* mLTrack
-*      Controls left side of the track
-* mRTrack
-*      Controls right side of the track
-* mBatonArm
-*      Controls the baton/block arm with the attached baton cup (left)
-* mBridgeArm
-*      Controls bridge lowering arm (right)
-* mDispArm
-*      Controls the dispensing arm (front/center)
-* mRGLiftArm
-*      Controls the rolling goal lifting arm (rear/center)
-**************************************************
-* Servos
-* ------
-* sRGTeethL + sRGTeethR
-*      Controls the teeth used in conjunction with mRGLiftArm
-* sBatonCup
-*      Controls the baton cup in conjunction mBatonArm
-* sDispTeeth
-*      Controls the dispenser teeth in conjunction with sDispMouth & mDispArm
-* sDispMouth
-*      Controls the dispensing mouth in conjunction with sDispTeeth & mDispArm
-**************************************************
 * Controls
 * --------
 * Joystick 1:
-*   Left Analog
+*   Left Analog (TANK DRIVE MODE)
 *      Controls the power and direction of left track motor (mLTrack)
-*   Right Analog
+*   Right Analog (TANK DRIVE MODE)
 *      Controls the power and direction of right track motor (mRTrack)
+* [[ OR ]]
+*   Left Analog (ARCADE DRIVE MODE)
+*      Controls the power and direction of both tracks (mlTrack & mRTrack)
 *   L1 {Upper Back Left}
-*      Aborts the rolling goal process before it completes
-*         (mRGLiftArm &  sRGTeethL/sRGTeethR)
+*      Interrupts/reverses the rolling goal capture process to previous state
+*         (mRGLiftArm & sRGTeethL/sRGTeethR)
 *   R1 {Upper Back Right}
-*      Toggles the rolling goal lift arm and lock teeth
+*      Initiates the rolling goal capture process
 *         (mRGLiftArm & sRGTeethL/sRGTeethR)
 * Joysitck 2:
 *   Left Analog
@@ -69,11 +46,37 @@
 *      Toggles deployment of the baton/blocking arm (mBatonArm)
 *   R2 {Lower Back Right}
 *      Unloads the batons (sBatonCup)
+**************************************************
+* Motors
+* ------
+* mLTrack
+*      Controls tank track movement (left track)
+* mRTrack
+*      Controls tank track movement (right track)
+* mBatonArm
+*      Controls the baton/blocking arm with the attached baton cup (left arm)
+* mBridgeArm
+*      Controls bridge lowering arm (right arm)
+* mDispArm
+*      Controls the dispensing arm (front/center arm)
+* mRGLiftArm
+*      Controls the rolling goal lifting arm (rear/center arm)
+**************************************************
+* Servos
+* ------
+* sBatonCup
+*      Controls the baton cup on baton arm (mBatonArm)
+* sDispMouth
+*      Controls the dispenser mouth on front arm (mDispArm)
+* sDispTeeth
+*      Controls the dispenser teeth on front arm (mDispArm)
+* sRGTeethL + sRGTeethR
+*      Controls the teeth used in conjunction with rear arm (mRGLiftArm)
 */
 
 #include "JoystickDriver.c"
 
-// Mode to drive
+// Mode for controlling the tank tracks
 const int DRIVE_TANK_LINEAR   = 0;
 const int DRIVE_TANK_EXPO     = 1;
 const int DRIVE_ARCADE_LINEAR = 2;
@@ -105,11 +108,9 @@ const int BATON_DISPENSER_OPEN = 140;
 // How far to move the arm all the way out
 const int BRIDGE_ARM_DEPLOYED_POS = 1440 * 2;
 
-/*
-  Unused, as the bridge arm is controlled by the joystick
 // Power to the bridge arm
-const int BRIDGE_ARM_MOVE_POWER = 30;
-*/
+// XXX - Unused, as the bridge arm is controlled by the joystick
+// const int BRIDGE_ARM_MOVE_POWER = 30;
 
 //
 // Dispenser Constants (front/center arm)
@@ -158,7 +159,7 @@ task BatonArmTask();
 
 void moveBatonDrop();
 void toggleBatonDrop();
-/*
+/* unused
 void closeBatonDrop();
 void openBatonDrop();
 */
@@ -170,7 +171,7 @@ void moveDispenserArm();
 
 void moveDispenserMouth();
 void toggleDispenserMouth();
-/*
+/* unused
 void closeDispenserMouth();
 void openDispenserMouth();
 */
@@ -178,7 +179,7 @@ task DispenserMouthTask();
 
 void moveDispenserTeeth();
 void toggleDispenserTeeth();
-/*
+/* unused
 void closeDispenserTeeth();
 void openDispenserTeeth();
 */
@@ -419,7 +420,7 @@ void toggleBatonDrop()
 {
     batonDropClosed = !batonDropClosed;
 }
-/*
+/* unused
 void closeBatonDrop()
 {
     batonDropClosed = true;
@@ -492,7 +493,7 @@ void toggleDispenserMouth()
 {
     dispMouthClosed = !dispMouthClosed;
 }
-/*
+/* unused
 void closeDispenserMouth()
 {
     dispMouthClosed = true;
@@ -530,7 +531,7 @@ void toggleDispenserTeeth()
 {
     dispTeethDown = !dispTeethDown;
 }
-/*
+/* unused
 void closeDispenserTeeth()
 {
     dispTeethDown = true;
