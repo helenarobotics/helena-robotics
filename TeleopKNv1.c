@@ -155,8 +155,10 @@ task BatonArmTask();
 
 void moveBatonDrop();
 void toggleBatonDrop();
+/*
 void closeBatonDrop();
 void openBatonDrop();
+*/
 task BatonDropTask();
 
 void moveBridgeArm();
@@ -401,7 +403,7 @@ void moveBatonDrop()
 {
     bool btnPress = joy2Btn(8);
     if (!btnPress && batonDropWasPressed)
-        toggleBatonArm();
+        toggleBatonDrop();
     batonDropWasPressed = btnPress;
 }
 
@@ -410,7 +412,7 @@ void toggleBatonDrop()
 {
     batonDropClosed = !batonDropClosed;
 }
-
+/*
 void closeBatonDrop()
 {
     batonDropClosed = true;
@@ -420,7 +422,7 @@ void openBatonDrop()
 {
     batonDropClosed = false;
 }
-
+*/
 task BatonDropTask()
 {
     while (true) {
@@ -443,8 +445,8 @@ void moveBridgeArm()
     // the end
 //    int armPower = expoJoystick(joystick.joy2_y2);
     int armPower = joystick.joy2_y2 * 100 / 127;
-    if ((nMotorEncoder[mBridgeArm] <= 10 && power < 0) ||
-        (nMotorEncoder[mBridgeArm] >= BRIDGE_ARM_DEPLOYED_POS && power > 0))
+    if ((nMotorEncoder[mBridgeArm] <= 10 && armPower < 0) ||
+        (nMotorEncoder[mBridgeArm] >= BRIDGE_ARM_DEPLOYED_POS && armPower > 0))
         motor[mBridgeArm] = 0;
     else
         motor[mBridgeArm] = armPower;
@@ -461,8 +463,8 @@ void moveDispenserArm()
     // the end
 //    int armPower = expoJoystick(joystick.joy2_y1);
     int armPower = joystick.joy2_y1 * 100 / 127;
-    if ((nMotorEncoder[mDispArm] <= 10 && power < 0) ||
-        (nMotorEncoder[mDispArm] >= DISPENSE_ARM_DEPLOYED_POS && power > 0))
+    if ((nMotorEncoder[mDispArm] <= 10 && armPower < 0) ||
+        (nMotorEncoder[mDispArm] >= DISPENSER_ARM_DEPLOYED_POS && armPower > 0))
         motor[mDispArm] = 0;
     else
         motor[mDispArm] = armPower;
