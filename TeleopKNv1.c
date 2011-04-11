@@ -1,7 +1,7 @@
 #pragma config(Hubs,  S1, HTMotor,  HTServo,  HTMotor,  HTMotor)
 #pragma config(Motor,  mtr_S1_C1_1,     mLTrack,       tmotorNormal, openLoop)
 #pragma config(Motor,  mtr_S1_C1_2,     mRTrack,       tmotorNormal, openLoop)
-#pragma config(Motor,  mtr_S1_C3_1,     mBlockArm,      tmotorNormal, openLoop)
+#pragma config(Motor,  mtr_S1_C3_1,     mBatonArm,      tmotorNormal, openLoop)
 #pragma config(Motor,  mtr_S1_C3_2,     mBridgeArm,     tmotorNormal, openLoop)
 #pragma config(Motor,  mtr_S1_C4_1,     mDispArm,       tmotorNormal, openLoop)
 #pragma config(Motor,  mtr_S1_C4_2,     mRGLiftArm,     tmotorNormal, openLoop)
@@ -23,10 +23,10 @@
 *      Controls left side of the track
 * mRTrack
 *      Controls right side of the track
-* mBlockArm
-*      Controls the block arm with the attached baton cup (left)
+* mBatonArm
+*      Controls the baton/block arm with the attached baton cup (left)
 * mBridgeArm
-*      Controls bridge lowering arm (left)
+*      Controls bridge lowering arm (right)
 * mDispArm
 *      Controls the dispensing arm (front/center)
 * mRGLiftArm
@@ -37,7 +37,7 @@
 * sRGTeethL + sRGTeethR
 *      Controls the teeth used in conjunction with mRGLiftArm
 * sBatonCup
-*      Controls the baton cup in conjunction mBlockArm
+*      Controls the baton cup in conjunction mBatonArm
 * sDispTeeth
 *      Controls the dispenser teeth in conjunction with sDispMouth & mDispArm
 * sDispMouth
@@ -66,7 +66,7 @@
 *   Right Analog
 *      Controls the bridge arm (mBridgeArm)
 *   R1 {Upper Back Right}
-*      Toggles deployment of the blocking/baton arm (mBlockArm)
+*      Toggles deployment of the baton/blocking arm (mBatonArm)
 *   R2 {Lower Back Right}
 *      Unloads the batons (sBatonCup)
 */
@@ -89,15 +89,15 @@ int DRIVE_MODE = DRIVE_TANK_LINEAR;
 const int ARM_ZERO_SLOP = 150;
 
 //
-// Blocking Arm constants
+// Baton/Blocking Arm constants (left arm)
 //
-const int BLOCK_ARM_DEPLOYED_POS = 1440 * 2;
+const int BATON_ARM_DEPLOYED_POS = 1440 * 2;
 
-// Power to the blocking arm
-const int BLOCK_ARM_MOVE_POWER = 30;
+// Power to the baton arm
+const int BATON_ARM_MOVE_POWER = 30;
 
 //
-// Bridge Arm constants
+// Bridge Arm constants (right arm)
 //
 
 // How far to move the arm all the way out
@@ -105,12 +105,12 @@ const int BRIDGE_ARM_DEPLOYED_POS = 1440 * 2;
 
 /*
   Unused, as the bridge arm is controlled by the joystick
-// Power to the blocking arm
+// Power to the bridge arm
 const int BRIDGE_ARM_MOVE_POWER = 30;
 */
 
 //
-// Dispenser Constants
+// Dispenser Constants (front/center arm)
 //
 
 // How far to move the arm all the way out
@@ -125,7 +125,7 @@ const int DISPENSER_MOUTH_OPEN = 0;
 const int DISPENSER_MOUTH_CLOSED = 140;
 
 //
-// Rolling Goal Arm constants
+// Rolling Goal Arm constants (rear/center arm)
 //
 
 // 2 full rotations down from park (~90 degrees)!
@@ -147,9 +147,9 @@ const int RG_TEETH_RIGHT_UP = 200;
 const int RG_TEETH_RIGHT_DOWN = 0;
 
 // Forward method declarations
-void moveBlockArm();
-void toggleBlockArm();
-task BlockArmTask();
+void moveBatonArm();
+void toggleBatonArm();
+task BatonArmTask();
 
 void moveBridgeArm();
 
@@ -193,7 +193,7 @@ void initializeRobot()
 
     // Startup the routines that control the different robot
     // attachments (arms, servos, etc..)
-    StartTask(BlockArmTask);
+    StartTask(BatonArmTask);
     StartTask(DispenserMouthTask);
     StartTask(DispenserTeethTask);
     StartTask(RGLiftTask);
@@ -224,10 +224,11 @@ task main()
         moveBridgeArm();
         moveDispenserArm();
 
-        moveBlockArm();
+        moveBatonArm();
         moveDispenserMouth();
         moveDispenserTeeth();
         moveRGLift();
+
         moveTracks();
     }
 }
@@ -315,69 +316,69 @@ void moveTracks()
 }
 
 //
-// Blocking Arm Control (right arm)
+// Baton Arm Control (right arm)
 //
-bool blockArmButtonWasPressed = false;
-void moveBlockArm()
+bool batonArmButtonWasPressed = false;
+void moveBatonArm()
 {
     bool btnPress = joy2Btn(8);
-    if (!btnPress && blockArmButtonWasPressed)
-        toggleBlockArm();
-    blockArmButtonWasPressed = btnPress;
+    if (!btnPress && batonArmButtonWasPressed)
+        toggleBatonArm();
+    batonArmButtonWasPressed = btnPress;
 }
 
 typedef enum {
-    BLOCK_PARKED,
+    BATON_PARKED,
     MOVE_LEFT,
-    BLOCK_DEPLOYED,
+    BATON_DEPLOYED,
     MOVE_RIGHT
-} blockState;
+} batonState;
 
-blockState bState = BLOCK_PARKED;
+batonState bState = BATON_PARKED;
 
-void toggleBlockArm()
+void toggleBatonArm()
 {
-    switch (blockState) {
-    case BLOCK_PARKED:
+    switch (bState) {
+    case BATON_PARKED:
     case MOVE_RIGHT:
         bState = MOVE_LEFT;
         break;
 
     case MOVE_LEFT:
-    case BLOCK_DEPLOYED:
+    case BATON_DEPLOYED:
         bState = MOVE_RIGHT;
         break;
     }
 }
 
-task BlockArmTask()
+task BtonArmTask()
 {
     // Reset the encoder.  Note, we assume the arm is tucked into the
     // robot at program start.
-    nMotorEncoder[mBlockArm] = 0;
+    nMotorEncoder[mBatonArm] = 0;
     while (true) {
-        long armPos = abs(nMotorEncoder[mBlockArm]);
+        long armPos = abs(nMotorEncoder[mBatonArm]);
 
         switch (bState) {
-        case BLOCK_PARKED:
-        case BLOCK_DEPLOYED:
-            motor[mBlockArm] = 0;
+        case BATON_PARKED:
+        case BATON_DEPLOYED:
+            motor[mBatonArm] = 0;
             break;
 
         case MOVE_LEFT:
-            motor[mBlockArm] = BLOCK_ARM_MOVE_POWER;
-            if (armPos >= BLOCK_ARM_DEPLOYED_POS)
-                bState = BLOCK_DEPLOYED;
+            motor[mBatonArm] = BATON_ARM_MOVE_POWER;
+            if (armPos >= BATON_ARM_DEPLOYED_POS)
+                bState = BATON_DEPLOYED;
             break;
 
         case MOVE_RIGHT:
-            motor[mBlockArm] = -BLOCK_ARM_MOVE_POWER;
+            motor[mBatonArm] = -BATON_ARM_MOVE_POWER;
             if (armPos <= ARM_ZERO_SLOP)
-                bState = BLOCK_PARKED;
+                bState = BATON_PARKED;
             break;
 
         default:
-            nxtDisplayString(3, "BLOCK ARM ERROR %d", bState);
+            nxtDisplayString(3, "BATON ARM ERROR %d", bState);
             break;
         }
         EndTimeSlice();
@@ -385,7 +386,7 @@ task BlockArmTask()
 }
 
 //
-// Bridge Arm Controls (left arm)
+// Bridge Arm Controls (right arm)
 //
 void moveBridgeArm()
 {
