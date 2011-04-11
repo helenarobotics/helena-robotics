@@ -94,15 +94,15 @@ const int BLOCK_ARM_DEPLOYED_POS = 1440 * 2;
 // Power to the blocking arm
 const int BLOCK_ARM_MOVE_POWER = 30;
 
-/*
-  Unused, as the bridge arm is controlled by the joystick
 //
 // Bridge Arm constants
 //
 
 // How far to move the arm all the way out
-const int BRIDGE_ARM_MOVE_AMT = 1440 * 2;
+const int BRIDGE_ARM_DEPLOYED_POS = 1440 * 2;
 
+/*
+  Unused, as the bridge arm is controlled by the joystick
 // Power to the blocking arm
 const int BRIDGE_ARM_MOVE_POWER = 30;
 */
@@ -110,9 +110,15 @@ const int BRIDGE_ARM_MOVE_POWER = 30;
 //
 // Dispenser Constants
 //
+
+// How far to move the arm all the way out
+const int DISPENSER_ARM_DEPLOYED_POS = 1440 * 2;
+
+// Servo 'teeth'
 const int DISPENSER_TEETH_DOWN = 0;
 const int DISPENSER_TEETH_UP = 140;
 
+// Servo 'mouth'
 const int DISPENSER_MOUTH_OPEN = 0;
 const int DISPENSER_MOUTH_CLOSED = 140;
 
@@ -176,6 +182,13 @@ void initializeRobot()
     motor[mLTrack] = 0;
     motor[mRTrack] = 0;
 
+    // The bridge arm, dispenser arm, and tracks are all controlled via
+    // the joystick and have no background tasks.
+
+    // Reset the encoders on the joystick controlled arms.
+    nMotorEncoder[mBridgeArm] = 0;
+    nMotorEncoder[mDispArm] = 0;
+
     // Startup the routines that control the different robot
     // attachments (arms, servos, etc..)
     StartTask(BlockArmTask);
@@ -183,8 +196,6 @@ void initializeRobot()
     StartTask(DispenserTeethTask);
     StartTask(RGLiftTask);
 
-    // The bridge arm, dispenser arm, and tracks are all controlled via
-    // the joystick and have no background tasks.
 }
 
 /* Main method of program
@@ -208,9 +219,10 @@ task main()
         getJoystickSettings(joystick);
 
         // Move robot
-        moveBlockArm();
         moveBridgeArm();
         moveDispenserArm();
+
+        moveBlockArm();
         moveDispenserMouth();
         moveDispenserTeeth();
         moveRGLift();
@@ -375,9 +387,15 @@ task BlockArmTask()
 //
 void moveBridgeArm()
 {
-    // Move Bridge Arm according to the y axis of the right analog on
-    // the 2nd joystick
-    motor[mBridgeArm] = (joystick.joy2_y2 * 100 / 127);
+    // Move Bridge Arm.  Don't let the folks move the arm if we're at
+    // the end
+//    int armPower = expoJoystick(joystick.joy2_y2);
+    int armPower = joystick.joy2_y2 * 100 / 127;
+    if ((nMotorEncoder[mBridgeArm] <= 10 && power < 0) ||
+        (nMotorEncoder[mBridgeArm] >= BRIDGE_ARM_DEPLOYED_POS && power > 0))
+        motor[mBridgeArm] = 0;
+    else
+        motor[mBridgeArm] = armPower;
 }
 
 //
@@ -387,9 +405,15 @@ void moveBridgeArm()
 // Moves the arm using the joystick controls
 void moveDispenserArm()
 {
-    // Move Dispensing Arm according to the y axis of the left analog on
-    // the 2nd joystick.
-    motor[mDispArm] = (joystick.joy2_y1 * 100 / 127);
+    // Move Dispensinge Arm.  Don't let the folks move the arm if we're at
+    // the end
+//    int armPower = expoJoystick(joystick.joy2_y1);
+    int armPower = joystick.joy2_y1 * 100 / 127;
+    if ((nMotorEncoder[mDispArm] <= 10 && power < 0) ||
+        (nMotorEncoder[mDispArm] >= DISPENSE_ARM_DEPLOYED_POS && power > 0))
+        motor[mDispArm] = 0;
+    else
+        motor[mDispArm] = armPower;
 }
 
 // Dispenser Mouth Open/Closed
