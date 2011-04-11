@@ -71,8 +71,6 @@
 *      Unloads the batons (sBatonCup)
 */
 
-// XXX - Need BatonCup code
-
 #include "JoystickDriver.c"
 
 // Mode to drive
@@ -95,6 +93,10 @@ const int BATON_ARM_DEPLOYED_POS = 1440 * 2;
 
 // Power to the baton arm
 const int BATON_ARM_MOVE_POWER = 30;
+
+// Baton dispenser open/close
+const int BATON_DISPENSER_CLOSE = 0;
+const int BATON_DISPENSER_OPEN = 140;
 
 //
 // Bridge Arm constants (right arm)
@@ -151,6 +153,12 @@ void moveBatonArm();
 void toggleBatonArm();
 task BatonArmTask();
 
+void moveBatonDrop();
+void toggleBatonDrop();
+void closeBatonDrop();
+void openBatonDrop();
+task BatonDropTask();
+
 void moveBridgeArm();
 
 void moveDispenserArm();
@@ -194,6 +202,7 @@ void initializeRobot()
     // Startup the routines that control the different robot
     // attachments (arms, servos, etc..)
     StartTask(BatonArmTask);
+    StartTask(BatonDropTask);
     StartTask(DispenserMouthTask);
     StartTask(DispenserTeethTask);
     StartTask(RGLiftTask);
@@ -225,6 +234,7 @@ task main()
         moveDispenserArm();
 
         moveBatonArm();
+        moveBatonDrop();
         moveDispenserMouth();
         moveDispenserTeeth();
         moveRGLift();
@@ -316,12 +326,12 @@ void moveTracks()
 }
 
 //
-// Baton Arm Control (right arm)
+// Baton Arm Control (left arm)
 //
 bool batonArmButtonWasPressed = false;
 void moveBatonArm()
 {
-    bool btnPress = joy2Btn(8);
+    bool btnPress = joy2Btn(6);
     if (!btnPress && batonArmButtonWasPressed)
         toggleBatonArm();
     batonArmButtonWasPressed = btnPress;
@@ -351,7 +361,7 @@ void toggleBatonArm()
     }
 }
 
-task BtonArmTask()
+task BatonArmTask()
 {
     // Reset the encoder.  Note, we assume the arm is tucked into the
     // robot at program start.
@@ -381,6 +391,45 @@ task BtonArmTask()
             nxtDisplayString(3, "BATON ARM ERROR %d", bState);
             break;
         }
+        EndTimeSlice();
+    }
+}
+
+// Baton dropper
+bool batonDropWasPressed = false;
+void moveBatonDrop()
+{
+    bool btnPress = joy2Btn(8);
+    if (!btnPress && batonDropWasPressed)
+        toggleBatonArm();
+    batonDropWasPressed = btnPress;
+}
+
+bool batonDropClosed = true;
+void toggleBatonDrop()
+{
+    batonDropClosed = !batonDropClosed;
+}
+
+void closeBatonDrop()
+{
+    batonDropClosed = true;
+}
+
+void openBatonDrop()
+{
+    batonDropClosed = false;
+}
+
+task BatonDropTask()
+{
+    while (true) {
+        if (batonDropClosed)
+            servo[sBatonCup] = BATON_DISPENSER_CLOSE;
+        else
+            servo[sBatonCup] = BATON_DISPENSER_OPEN;
+
+        // Give the other threads a chance to run.
         EndTimeSlice();
     }
 }
