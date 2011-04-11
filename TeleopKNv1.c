@@ -73,8 +73,13 @@
 
 #include "JoystickDriver.c"
 
-// Mode to drive; 0 is Tank, 1 is Arcade
-const int DRIVE_MODE = 0;
+// Mode to drive
+const int DRIVE_TANK_LINEAR   = 0;
+const int DRIVE_TANK_EXPO     = 1;
+const int DRIVE_ARCADE_LINEAR = 2;
+const int DRIVE_ARCADE_EXPO   = 3;
+
+int DRIVE_MODE = DRIVE_TANK_LINEAR;
 
 // The arm motors overshoot a bit, so until we write useful PID
 // controllers for them, we consider 'zero' when moving back to the
@@ -204,28 +209,82 @@ task main()
     }
 }
 
+// These give us a nice exponential band to make using the robots
+// controls easier.
+float Power(float num, int exp) {
+    // require positive integer for the exponent
+    if (exp <= 0)
+       return 0;
+
+    float result = num;
+    for (int i = 1; i < exp; i++)
+        result *= num;
+    return result;
+}
+
+// http://www.chiefdelphi.com/forums/showthread.php?p=921992
+const float SENSITIVITY = 0.7;
+int expoJoystick(int eJoy)
+{
+    // convert the joystick inputs to a floating point number
+    // between -1 and +1
+    float floatJoy = eJoy / 127.0;
+    float result = SENSITIVITY * Power(floatJoy, 3) +
+                    (1 - SENSITIVITY) * floatJoy;
+
+    // Convert the number back to a motor power, which is between -100
+    // and 100.
+    return (int)(100.0 * result);
+}
+
 // Move the robot!
 void moveTracks()
 {
     int rPow, lPow;
 
-    // tank drive (above values set)
-    if (DRIVE_MODE == 0) {
-        rPow = (joystick.joy1_y1 * 100 / 127);
-        lPow = (joystick.joy1_y2 * 100 / 127);
-    } else if (DRIVE_MODE == 1) {
-        // arcade drive
-        float ratio;
+    switch (DRIVE_MODE) {
+    default:
+    case DRIVE_TANK_LINEAR:
+        rPow = joystick.joy1_y1 * 100 / 127;
+        lPow = joystick.joy1_y2 * 100 / 127;
+        break;
+
+    case DRIVE_TANK_EXPO:
+        // Make things less sensitive around the center (a slight
+        // dead-band), and more aggressive at the extremes.
+        rPow = expoJoystick(joystick.joy1_y1);
+        lPow = expoJoystick(joystick.joy1_y2);
+        break;
+
+    case DRIVE_ARCADE_LINEAR:
+        // Simplification of Bridger's code - NWW
         lPow = (joystick.joy1_y1 * 100 / 127);
         rPow = lPow;
-        if (joystick.joy1_x2 < 0) {
-            ratio = joystick.joy1_x2 * - 100 / 127;
-            lPow -= ratio;
+        lPow -= joystick.joy1_x2 * 100 / 127;
+        break;
+
+    case DRIVE_ARCADE_EXPO:
+        // Make things less sensitive around the center (a slight
+        // dead-band), and more aggressive at the extremes.
+        int nSpeedPower = expoJoystick(joystick.joy1_y1);
+        int nTurnPower = expoJoystick(joystick.joy1_x2);
+
+        // Power and speed
+        lPow = nSpeedPower - nTurnPower;
+        rPow = nSpeedPower + nTurnPower;
+
+        // Reduce turning power at speed by 5%
+        if (abs(nSpeedPower) > 30) {
+            lPow += nTurnPower / 20;
+            rPow -= nTurnPower / 20;
         }
-        if (joystick.joy1_x2 > 0) {
-            ratio = joystick.joy1_x2 * 100 / 127;
-            rPow -= ratio;
+
+        // XXX - If we're in slow speed mode, reduce power by half
+        if (false) {
+            lPow /= 2;
+            rPow /= 2;
         }
+        break;
     }
 
     motor[mLTrack] = lPow;
