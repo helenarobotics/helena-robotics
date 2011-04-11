@@ -192,7 +192,7 @@ task RGLiftTask();
 
 void moveTracks();
 
-int calculateTetrixPower(int power, long currentPos, long targetPos);
+int calculateTetrixPower(int power, long currPos, long targetPos);
 
 void initializeRobot()
 {
@@ -722,7 +722,7 @@ task RGLiftTask()
                 lState = LOADED;
 
                 // Reset the time again if we've hit the target.
-                if (time1[T1] < RG_ARM_MAX_LIFT_TIME) {
+                if (time1[T1] < RG_ARM_MAX_LIFT_TIME)
                     time1[T1] = 0;
             }
             break;
@@ -735,7 +735,7 @@ task RGLiftTask()
             // If the lifting arm sags, lift it back up with full power!
             if (armPos > RG_ARM_LIFT_POS) {
                 // Only keep lifting if we were able to lift it!
-                if (time1[T1] < MAX_LIFT_TIME)
+                if (time1[T1] < RG_ARM_MAX_LIFT_TIME)
                     motor[mRGLiftArm] = -RG_ARM_LIFT_POWER;
                 else
                     // Give up!
