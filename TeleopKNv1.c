@@ -110,8 +110,8 @@ const int BRIDGE_ARM_MOVE_POWER = 30;
 const int DISPENSER_TEETH_DOWN = 0;
 const int DISPENSER_TEETH_UP = 140;
 
-const int DISPENSER_MOUTH_MIN = 0;
-const int DISPENSER_MOUTH_MAX = 140;
+const int DISPENSER_MOUTH_OPEN = 0;
+const int DISPENSER_MOUTH_CLOSED = 140;
 
 //
 // Rolling Goal Arm constants
@@ -146,20 +146,26 @@ void moveDispenserArm();
 
 void moveDispenserMouth();
 void toggleDispenserMouth();
+/*
 void closeDispenserMouth();
 void openDispenserMouth();
+*/
 task DispenserMouthTask();
 
 void moveDispenserTeeth();
 void toggleDispenserTeeth();
+/*
 void closeDispenserTeeth();
 void openDispenserTeeth();
+*/
 task DispenserTeethTask();
 
 void moveRGLift();
 void toggleRGLift();
 void abortRGLift();
 task RGLiftTask();
+
+void moveTracks();
 
 void initializeRobot()
 {
@@ -306,7 +312,7 @@ void moveBlockArm()
 typedef enum {
     BLOCK_PARKED,
     MOVE_LEFT,
-    BLOK_DEPLOYED,
+    BLOCK_DEPLOYED,
     MOVE_RIGHT
 } blockState;
 
@@ -333,7 +339,7 @@ task BlockArmTask()
     // robot at program start.
     nMotorEncoder[mBlockArm] = 0;
     while (true) {
-        long armPos = abs(nMotorEncoder[mBlocktArm]);
+        long armPos = abs(nMotorEncoder[mBlockArm]);
 
         switch (bState) {
         case BLOCK_PARKED:
@@ -399,22 +405,22 @@ void toggleDispenserMouth()
 {
     dispMouthClosed = !dispMouthClosed;
 }
-
+/*
 void closeDispenserMouth()
 {
-    dispMouthClose = true;
+    dispMouthClosed = true;
 }
 
 void openDispenserMouth()
 {
-    dispMouthClose = false;
+    dispMouthClosed = false;
 }
-
+*/
 task DispenserMouthTask()
 {
     while (true) {
         if (dispMouthClosed)
-            servo[sDispMouth] = DISPENSER_MOUTH_CLOSE;
+            servo[sDispMouth] = DISPENSER_MOUTH_CLOSED;
         else
             servo[sDispMouth] = DISPENSER_MOUTH_OPEN;
 
@@ -427,7 +433,7 @@ bool dispTeethButtonWasPressed = false;
 void moveDispenserTeeth()
 {
     bool btnPress = joy2Btn(5);
-    if (!btnPress && dispArmButtonWasPressed)
+    if (!btnPress && dispTeethButtonWasPressed)
         toggleDispenserTeeth();
     dispTeethButtonWasPressed = btnPress;
 }
@@ -437,7 +443,7 @@ void toggleDispenserTeeth()
 {
     dispTeethDown = !dispTeethDown;
 }
-
+/*
 void closeDispenserTeeth()
 {
     dispTeethDown = true;
@@ -447,7 +453,7 @@ void openDispenserTeeth()
 {
     dispTeethDown = false;
 }
-
+*/
 task DispenserTeethTask()
 {
     while (true) {
