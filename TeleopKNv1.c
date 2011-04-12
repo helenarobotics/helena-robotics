@@ -6,7 +6,7 @@
 #pragma config(Motor,  mtr_S1_C4_1,     mDispArm,       tmotorNormal, openLoop)
 #pragma config(Motor,  mtr_S1_C4_2,     mRGLiftArm,     tmotorNormal, openLoop)
 #pragma config(Servo,  srvo_S1_C2_1,    sDispMouth,           tServoStandard)
-#pragma config(Servo,  srvo_S1_C2_2,    sDispTeeth,           tServoStandard)
+#pragma config(Servo,  srvo_S1_C2_2,    sDispFlipper,         tServoStandard)
 #pragma config(Servo,  srvo_S1_C2_3,    sBatonCup,            tServoStandard)
 #pragma config(Servo,  srvo_S1_C2_4,    sRGTeethL,            tServoStandard)
 #pragma config(Servo,  srvo_S1_C2_5,    sRGTeethR,            tServoStandard)
@@ -33,11 +33,11 @@
 *   R1 {Upper Back Right}
 *      Initiates the rolling goal capture process
 *         (mRGLiftArm & sRGTeethL/sRGTeethR)
-* Joysitck 2:
+* Joystick 2:
 *   Left Analog
 *      Controls the dispensing arm (mDispArm)
 *   L1 {Upper Back Left}
-*      Toggles dispenser teeth position (sDispTeeth)
+*      Toggles dispenser flipper position (sDispFlipper)
 *   L2 {Lower Back Left}
 *      Toggles dispenser mouth position (sDispMouth)
 *   Right Analog
@@ -54,9 +54,9 @@
 * mRTrack
 *      Controls tank track movement (right track)
 * mBatonArm
-*      Controls the baton/blocking arm with the attached baton cup (left arm)
+*      Controls the baton/blocking arm with the attached baton cup (right arm)
 * mBridgeArm
-*      Controls bridge lowering arm (right arm)
+*      Controls bridge lowering arm (left arm)
 * mDispArm
 *      Controls the dispensing arm (front/center arm)
 * mRGLiftArm
@@ -68,8 +68,8 @@
 *      Controls the baton cup on baton arm (mBatonArm)
 * sDispMouth
 *      Controls the dispenser mouth on front arm (mDispArm)
-* sDispTeeth
-*      Controls the dispenser teeth on front arm (mDispArm)
+* sDispFlipper
+*      Controls the dispenser flipper on front arm (mDispArm)
 * sRGTeethL + sRGTeethR
 *      Controls the teeth used in conjunction with rear arm (mRGLiftArm)
 */
@@ -90,9 +90,9 @@ int DRIVE_MODE = DRIVE_TANK_EXPO;
 const int ARM_POS_ZERO_SLOP = 150;
 
 //
-// Baton/Blocking Arm constants (left arm)
+// Baton/Blocking Arm constants (right arm)
 //
-const int BATON_ARM_DEPLOYED_POS = 1440 * 2;
+const int BATON_ARM_DEPLOYED_POS = 1440 / 2;
 
 // Power to the baton arm
 const int BATON_ARM_MOVE_POWER = 30;
@@ -102,7 +102,7 @@ const int BATON_DISPENSER_CLOSE = 0;
 const int BATON_DISPENSER_OPEN = 140;
 
 //
-// Bridge Arm constants (right arm)
+// Bridge Arm constants (left arm)
 //
 
 // How far to move the arm all the way out
@@ -120,8 +120,8 @@ const int BRIDGE_ARM_DEPLOYED_POS = 1440 * 2;
 const int DISPENSER_ARM_DEPLOYED_POS = 1440 * 2;
 
 // Servo 'teeth'
-const int DISPENSER_TEETH_DOWN = 0;
-const int DISPENSER_TEETH_UP = 140;
+const int DISPENSER_FLIPPER_DOWN = 0;
+const int DISPENSER_FLIPPER_UP = 140;
 
 // Servo 'mouth'
 const int DISPENSER_MOUTH_OPEN = 0;
@@ -177,11 +177,11 @@ void openDispenserMouth();
 */
 task DispenserMouthTask();
 
-void moveDispenserTeeth();
-void toggleDispenserTeeth();
+void moveDispenserFlipper();
+void toggleDispenserFlipper();
 /* unused
-void closeDispenserTeeth();
-void openDispenserTeeth();
+void liftDispenserFlipper();
+void dropDispenserFlipper();
 */
 task DispenserTeethTask();
 
@@ -334,7 +334,7 @@ void moveTracks()
 }
 
 //
-// Baton Arm Control (left arm)
+// Baton Arm Control (right arm)
 //
 bool batonArmButtonWasPressed = false;
 void moveBatonArm()
@@ -347,9 +347,9 @@ void moveBatonArm()
 
 typedef enum {
     BATON_PARKED,
-    MOVE_LEFT,
+    MOVE_OUT,
     BATON_DEPLOYED,
-    MOVE_RIGHT
+    MOVE_IN
 } batonState;
 
 batonState bState = BATON_PARKED;
@@ -358,13 +358,13 @@ void toggleBatonArm()
 {
     switch (bState) {
     case BATON_PARKED:
-    case MOVE_RIGHT:
-        bState = MOVE_LEFT;
+    case MOVE_IN:
+        bState = OUT;
         break;
 
-    case MOVE_LEFT:
+    case MOVE_OUT:
     case BATON_DEPLOYED:
-        bState = MOVE_RIGHT;
+        bState = MOVE_IN;
         break;
     }
 }
@@ -383,14 +383,14 @@ task BatonArmTask()
             motor[mBatonArm] = 0;
             break;
 
-        case MOVE_LEFT:
+        case MOVE_OUT:
             motor[mBatonArm] = calculateTetrixPower(
                 BATON_ARM_MOVE_POWER, armPos, BATON_ARM_DEPLOYED_POS);
             if (armPos >= BATON_ARM_DEPLOYED_POS)
                 bState = BATON_DEPLOYED;
             break;
 
-        case MOVE_RIGHT:
+        case MOVE_IN:
             motor[mBatonArm] = calculateTetrixPower(
                 -BATON_ARM_MOVE_POWER, armPos, 0);
             if (armPos <= ARM_POS_ZERO_SLOP)
@@ -445,7 +445,7 @@ task BatonDropTask()
 }
 
 //
-// Bridge Arm Controls (right arm)
+// Bridge Arm Controls (left arm)
 //
 void moveBridgeArm()
 {
