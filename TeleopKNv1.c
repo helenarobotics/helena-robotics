@@ -451,11 +451,13 @@ void moveBridgeArm()
 {
     // Move Bridge Arm.  Don't let the arm move if we're at the endpoints
     int armPower = expoJoystick(joystick.joy2_y2);
+/*
 //    int armPower = joystick.joy2_y2 * 100 / 127;
     if ((nMotorEncoder[mBridgeArm] <= 10 && armPower < 0) ||
         (nMotorEncoder[mBridgeArm] >= BRIDGE_ARM_DEPLOYED_POS && armPower > 0))
         motor[mBridgeArm] = 0;
     else
+*/
         motor[mBridgeArm] = armPower;
 }
 
@@ -469,11 +471,13 @@ void moveDispenserArm()
     // Move Dispensing Arm.  Don't let the arm move if we're at the
     // endpoints.
     int armPower = expoJoystick(joystick.joy2_y1);
+/*
 //    int armPower = joystick.joy2_y1 * 100 / 127;
     if ((nMotorEncoder[mDispArm] <= 10 && armPower < 0) ||
         (nMotorEncoder[mDispArm] >= DISPENSER_ARM_DEPLOYED_POS && armPower > 0))
         motor[mDispArm] = 0;
     else
+*/
         motor[mDispArm] = armPower;
 }
 
