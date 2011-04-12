@@ -244,7 +244,7 @@ task main()
         moveBatonArm();
         moveBatonDrop();
         moveDispenserMouth();
-        moveDispenserTeeth();
+        moveDispenserFlipper();
         moveRGLift();
 
         moveTracks();
@@ -359,7 +359,7 @@ void toggleBatonArm()
     switch (bState) {
     case BATON_PARKED:
     case MOVE_IN:
-        bState = OUT;
+        bState = MOVE_OUT;
         break;
 
     case MOVE_OUT:
@@ -518,16 +518,16 @@ task DispenserMouthTask()
 
 // Dispenser teeth raise/lower routines
 bool dispTeethButtonWasPressed = false;
-void moveDispenserTeeth()
+void moveDispenserFlipper()
 {
     bool btnPress = joy2Btn(5);
     if (!btnPress && dispTeethButtonWasPressed)
-        toggleDispenserTeeth();
+        toggleDispenserFlipper();
     dispTeethButtonWasPressed = btnPress;
 }
 
 bool dispTeethDown = true;
-void toggleDispenserTeeth()
+void toggleDispenserFlipper()
 {
     dispTeethDown = !dispTeethDown;
 }
@@ -546,9 +546,9 @@ task DispenserTeethTask()
 {
     while (true) {
         if (dispTeethDown)
-            servo[sDispTeeth] = DISPENSER_TEETH_DOWN;
+            servo[sDispFlipper] = DISPENSER_FLIPPER_DOWN;
         else
-            servo[sDispTeeth] = DISPENSER_TEETH_UP;
+            servo[sDispFlipper] = DISPENSER_FLIPPER_UP;
 
         // Give the other threads a chance to run.
         EndTimeSlice();
