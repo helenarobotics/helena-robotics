@@ -192,7 +192,7 @@ task RGLiftTask();
 
 void moveTracks();
 
-int calculateTetrixPower(int power, long currPos, long targetPos);
+int calculateTetrixPower(int power, long remainDist);
 
 void initializeRobot()
 {
@@ -385,14 +385,14 @@ task BatonArmTask()
 
         case MOVE_OUT:
             motor[mBatonArm] = calculateTetrixPower(
-                BATON_ARM_MOVE_POWER, armPos, BATON_ARM_DEPLOYED_POS);
+                BATON_ARM_MOVE_POWER, abs(armPos - BATON_ARM_DEPLOYED_POS));
             if (armPos >= BATON_ARM_DEPLOYED_POS)
                 bState = BATON_DEPLOYED;
             break;
 
         case MOVE_IN:
             motor[mBatonArm] = calculateTetrixPower(
-                -BATON_ARM_MOVE_POWER, armPos, 0);
+                -BATON_ARM_MOVE_POWER, abs(armPos));
             if (armPos <= ARM_POS_ZERO_SLOP)
                 bState = BATON_PARKED;
             break;
@@ -667,7 +667,7 @@ task RGLiftTask()
 
         case DROP_ARM:
             motor[mRGLiftArm] = calculateTetrixPower(
-                RG_ARM_MOVE_POWER, armPos, RG_ARM_DROP_POS);
+                RG_ARM_MOVE_POWER, abs(armPos - RG_ARM_DROP_POS));
             // XXX - Give us a bit of slop when parking so we don't
             // overshoot and jam the arm.
             if (armPos >= RG_ARM_DROP_POS) {
@@ -678,7 +678,7 @@ task RGLiftTask()
 
         case RAISE_ARM:
             motor[mRGLiftArm] = calculateTetrixPower(
-                -RG_ARM_MOVE_POWER, armPos, 0);
+                -RG_ARM_MOVE_POWER, abs(armPos));
             if (armPos <= ARM_POS_ZERO_SLOP) {
                 motor[mRGLiftArm] = 0;
                 lState = PARKED;
@@ -756,7 +756,7 @@ task RGLiftTask()
         case UNLOAD_GOAL:
             // Keep droping the arm until we get low enough
             motor[mRGLiftArm] = calculateTetrixPower(
-                RG_ARM_MOVE_POWER, armPos, RG_ARM_DROP_POS);
+                RG_ARM_MOVE_POWER, abs(armPos - RG_ARM_DROP_POS));
             if (armPos >= RG_ARM_DROP_POS) {
                 // Done lowering, so start moving the teeth back up
                 motor[mRGLiftArm] = 0;
@@ -782,23 +782,20 @@ task RGLiftTask()
     }
 }
 
-int calculateTetrixPower(int power, long currPos, long targetPos)
+int calculateTetrixPower(int power, long remainDist)
 {
     // If you want less than 20% power, you don't need this.
     if (abs(power) < 20)
         return power;
 
-    // If we're getting 'close', slow down a bit.
-    long posDiff = abs(currPos - targetPos);
-
     // These numbers are determined via trial and error.  I'm sure their
     // is a better way of calculating them, probably using some
     // calculation that takes power into consideration.
-    if (posDiff < 250)
+    if (remainDist < 250)
         power = power / 2;
-    else if (posDiff < 500)
+    else if (remainDist < 500)
         power = power * 3 / 4;
-    else if (posDiff < 1000)
+    else if (remainDist < 1000)
         power = power * 9 / 10;
 
     // Note, the minimum speed we allow is 20%, since otherwise the
