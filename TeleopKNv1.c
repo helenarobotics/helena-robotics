@@ -119,11 +119,11 @@ const int BRIDGE_ARM_DEPLOYED_POS = 1440 * 2;
 // How far to move the arm all the way out
 const int DISPENSER_ARM_DEPLOYED_POS = 1440 * 2;
 
-// Servo 'teeth'
+// Servo that controls 'flipper'
 const int DISPENSER_FLIPPER_DOWN = 0;
 const int DISPENSER_FLIPPER_UP = 140;
 
-// Servo 'mouth'
+// Servo that controls 'mouth'
 const int DISPENSER_MOUTH_OPEN = 0;
 const int DISPENSER_MOUTH_CLOSED = 140;
 
@@ -183,7 +183,7 @@ void toggleDispenserFlipper();
 void liftDispenserFlipper();
 void dropDispenserFlipper();
 */
-task DispenserTeethTask();
+task DispenserFlipperTask();
 
 void moveRGLift();
 void toggleRGLift();
@@ -530,26 +530,26 @@ void moveDispenserFlipper()
     dispTeethButtonWasPressed = btnPress;
 }
 
-bool dispTeethDown = true;
+bool dispFlipperDown = true;
 void toggleDispenserFlipper()
 {
-    dispTeethDown = !dispTeethDown;
+    dispFlipperDown = !dispFlipperDown;
 }
 /* unused
-void closeDispenserTeeth()
+void dropDispenserFlipper()
 {
-    dispTeethDown = true;
+    dispFlipperDown = true;
 }
 
-void openDispenserTeeth()
+void liftDispenserFlipper()
 {
-    dispTeethDown = false;
+    dispFlipperDown = false;
 }
 */
-task DispenserTeethTask()
+task DispenserFlipperTask()
 {
     while (true) {
-        if (dispTeethDown)
+        if (dispFlipperDown)
             servo[sDispFlipper] = DISPENSER_FLIPPER_DOWN;
         else
             servo[sDispFlipper] = DISPENSER_FLIPPER_UP;
