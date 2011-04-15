@@ -212,7 +212,7 @@ void initializeRobot()
     StartTask(BatonArmTask);
     StartTask(BatonDropTask);
     StartTask(DispenserMouthTask);
-    StartTask(DispenserTeethTask);
+    StartTask(DispenserFlipperTask);
     StartTask(RGLiftTask);
 
 }
