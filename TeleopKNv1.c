@@ -106,7 +106,7 @@ const int BATON_DISPENSER_OPEN = 140;
 //
 
 // How far to move the arm all the way out
-const int BRIDGE_ARM_DEPLOYED_POS = 1440 * 2;
+// const int BRIDGE_ARM_DEPLOYED_POS = 1440 * 2;
 
 // Power to the bridge arm
 // XXX - Unused, as the bridge arm is controlled by the joystick
@@ -117,7 +117,7 @@ const int BRIDGE_ARM_DEPLOYED_POS = 1440 * 2;
 //
 
 // How far to move the arm all the way out
-const int DISPENSER_ARM_DEPLOYED_POS = 1440 * 2;
+// const int DISPENSER_ARM_DEPLOYED_POS = 1440 * 2;
 
 // Servo that controls 'flipper'
 const int DISPENSER_FLIPPER_DOWN = 0;
