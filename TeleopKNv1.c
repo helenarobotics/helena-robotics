@@ -778,29 +778,22 @@ task RGLiftTask()
     }
 }
 
-const int MIN_POWER = 20;
+const int MIN_POWER = 10;
+const int SLOW_START_DIST = 1000;
+
 int calculateTetrixPower(int power, long remainDist)
 {
     // We only do the calculations if the request is for more than MIN_POWER.
-    if (abs(power) < MIN_POWER)
+    if (abs(power) < MIN_POWER || remainDist > SLOW_START_DIST)
         return power;
 
-    // These numbers are determined via trial and error.  I'm sure their
-    // is a better way of calculating them, probably using some
-    // calculation that takes power into consideration.
-    if (remainDist < 250)
-        power = power / 2;
-    else if (remainDist < 500)
-        power = power * 3 / 4;
-    else if (remainDist < 1000)
-        power = power * 9 / 10;
-
     // Limit ourself to at least MIN_POWER
-    if (abs(power) < MIN_POWER) {
-        if (power < 0)
-            power = -MIN_POWER;
+    int newPower = (int)((float)power * (float)remainDist / 1000.0);
+    if (abs(newPower) < MIN_POWER) {
+        if (newPower < 0)
+            newPower = -MIN_POWER;
         else
-            power = MIN_POWER;
+            newPower = MIN_POWER;
     }
-    return power;
+    return newPower;
 }
