@@ -1,10 +1,10 @@
 #pragma config(Hubs,  S1, HTMotor,  HTMotor,  HTMotor,  HTServo)
-#pragma config(Motor,  mtr_S1_C1_1,     mLTrack,       tmotorNormal, openLoop)
-#pragma config(Motor,  mtr_S1_C1_2,     mRTrack,       tmotorNormal, openLoop)
-#pragma config(Motor,  mtr_S1_C2_1,     mBatonArm,     tmotorNormal, openLoop, reversed)
-#pragma config(Motor,  mtr_S1_C2_2,     mBridgeArm,    tmotorNormal, openLoop, reversed)
-#pragma config(Motor,  mtr_S1_C3_1,     mDispArm,      tmotorNormal, openLoop)
-#pragma config(Motor,  mtr_S1_C3_2,     mRGLiftArm,    tmotorNormal, openLoop, reversed)
+#pragma config(Motor,  mtr_S1_C1_1,     mLTrack,       tmotorNormal, PIDControl, reversed, encoder)
+#pragma config(Motor,  mtr_S1_C1_2,     mRTrack,       tmotorNormal, PIDControl, encoder)
+#pragma config(Motor,  mtr_S1_C2_1,     mBatonArm,     tmotorNormal, PIDControl, encoder)
+#pragma config(Motor,  mtr_S1_C2_2,     mBridgeArm,    tmotorNormal, PIDControl, reversed, encoder)
+#pragma config(Motor,  mtr_S1_C3_1,     mDispArm,      tmotorNormal, PIDControl, encoder)
+#pragma config(Motor,  mtr_S1_C3_2,     mRGLiftArm,    tmotorNormal, PIDControl, reversed, encoder)
 #pragma config(Servo,  srvo_S1_C4_1,    ,                     tServoStandard)
 #pragma config(Servo,  srvo_S1_C4_3,    sBatonCup,            tServoStandard)
 #pragma config(Servo,  srvo_S1_C4_4,    sRGTeethL,            tServoStandard)
@@ -76,12 +76,11 @@
 #include "JoystickDriver.c"
 
 // Mode for controlling the tank tracks
-const int DRIVE_TANK_LINEAR   = 0;
-const int DRIVE_TANK_EXPO     = 1;
-const int DRIVE_ARCADE_LINEAR = 2;
-const int DRIVE_ARCADE_EXPO   = 3;
+const int DRIVE_TANK          = 0;
+const int DRIVE_ARCADE_ONEJOY = 1;
+const int DRIVE_ARCADE_TWOJOY = 2;
 
-int DRIVE_MODE = DRIVE_TANK_EXPO;
+int DRIVE_MODE = DRIVE_ARCADE_TWOJOY;
 
 // The arm motors overshoot a bit, so until we write useful PID
 // controllers for them, we consider 'zero' when moving back to the
@@ -94,7 +93,7 @@ const int ARM_POS_ZERO_SLOP = 150;
 const int BATON_ARM_DEPLOYED_POS = 720;
 
 // Power to the baton arm
-const int BATON_ARM_MOVE_POWER = 30;
+const int BATON_ARM_MOVE_POWER = 20;
 
 // Baton dispenser open/close
 const int BATON_DISPENSER_CLOSE = 0;
@@ -109,7 +108,7 @@ const int BRIDGE_ARM_DEPLOYED_POS = 1200;
 
 // Power to the bridge arm
 // XXX - Unused, as the bridge arm is controlled by the joystick
-// const int BRIDGE_ARM_MOVE_POWER = 30;
+const int BRIDGE_ARM_MOVE_POWER = 40;
 
 //
 // Dispenser Constants (front/center arm)
@@ -146,9 +145,9 @@ const int RG_ARM_MAX_LIFT_TIME = 5 * 1000;
 
 // The servos that control the Rolling Goal are the 'teeth' the control
 // the goal at the top
-const int RG_TEETH_LEFT_UP = 240;
+const int RG_TEETH_LEFT_UP = 200;
 const int RG_TEETH_LEFT_DOWN = 40;
-const int RG_TEETH_RIGHT_UP = 0;
+const int RG_TEETH_RIGHT_UP = 40;
 const int RG_TEETH_RIGHT_DOWN = 200;
 
 // Forward method declarations
@@ -279,33 +278,45 @@ int expoJoystick(int eJoy)
 void moveTracks()
 {
     int rPow, lPow;
+    int nSpeedPower, nTurnPower;
 
     switch (DRIVE_MODE) {
     default:
-    case DRIVE_TANK_LINEAR:
-        rPow = joystick.joy1_y1 * 100 / 127;
-        lPow = joystick.joy1_y2 * 100 / 127;
-        break;
-
-    case DRIVE_TANK_EXPO:
+    case DRIVE_TANK:
         // Make things less sensitive around the center (a slight
         // dead-band), and more aggressive at the extremes.
-        rPow = expoJoystick(joystick.joy1_y1);
-        lPow = expoJoystick(joystick.joy1_y2);
+        lPow = expoJoystick(joystick.joy1_y1);
+        rPow = expoJoystick(joystick.joy1_y2);
         break;
 
-    case DRIVE_ARCADE_LINEAR:
-        // Simplification of Bridger's code - NWW
-        lPow = (joystick.joy1_y1 * 100 / 127);
-        rPow = lPow;
-        lPow -= joystick.joy1_x2 * 100 / 127;
-        break;
-
-    case DRIVE_ARCADE_EXPO:
+    case DRIVE_ARCADE_ONEJOY:
         // Make things less sensitive around the center (a slight
         // dead-band), and more aggressive at the extremes.
-        int nSpeedPower = expoJoystick(joystick.joy1_y1);
-        int nTurnPower = expoJoystick(joystick.joy1_x2);
+        nSpeedPower = expoJoystick(joystick.joy1_y1);
+        nTurnPower = expoJoystick(joystick.joy1_x1);
+
+        // Power and speed
+        lPow = nSpeedPower - nTurnPower;
+        rPow = nSpeedPower + nTurnPower;
+
+        // Reduce turning power at speed by 5%
+        if (abs(nSpeedPower) > 30) {
+            lPow += nTurnPower / 20;
+            rPow -= nTurnPower / 20;
+        }
+
+        // XXX - If we're in slow speed mode, reduce power by half
+        if (false) {
+            lPow /= 2;
+            rPow /= 2;
+        }
+        break;
+
+    case DRIVE_ARCADE_TWOJOY:
+        // Make things less sensitive around the center (a slight
+        // dead-band), and more aggressive at the extremes.
+        nSpeedPower = expoJoystick(joystick.joy1_y1);
+        nTurnPower = expoJoystick(joystick.joy1_x2);
 
         // Power and speed
         lPow = nSpeedPower - nTurnPower;
@@ -352,14 +363,21 @@ batonState bState = BATON_PARKED;
 
 void toggleBatonArm()
 {
+    int armPos = nMotorEncoder[mBatonArm];
     switch (bState) {
     case BATON_PARKED:
     case MOVE_IN:
+        nMotorEncoder[mBatonArm] = 0;
+        nMotorEncoderTarget[mBatonArm] = BATON_ARM_DEPLOYED_POS - armPos;
+        motor[mBatonArm] = BATON_ARM_MOVE_POWER;
         bState = MOVE_OUT;
         break;
 
     case MOVE_OUT:
     case BATON_DEPLOYED:
+        nMotorEncoder[mBatonArm] = 0;
+        nMotorEncoderTarget[mBatonArm] = armPos;
+        motor[mBatonArm] = -BATON_ARM_MOVE_POWER;
         bState = MOVE_IN;
         break;
     }
@@ -372,6 +390,7 @@ task BatonArmTask()
     nMotorEncoder[mBatonArm] = 0;
     while (true) {
         long armPos = abs(nMotorEncoder[mBatonArm]);
+        nxtDisplayString(1, "BatA %d", armPos);
 
         switch (bState) {
         case BATON_PARKED:
@@ -380,17 +399,14 @@ task BatonArmTask()
             break;
 
         case MOVE_OUT:
-            motor[mBatonArm] = calculateTetrixPower(
-                BATON_ARM_MOVE_POWER, abs(armPos - BATON_ARM_DEPLOYED_POS));
-            if (armPos >= BATON_ARM_DEPLOYED_POS)
+            if (nMotorRunState[mBatonArm] == runStateIdle ||
+                nMotorRunState[mBatonArm] == runStateHoldPosition)
                 bState = BATON_DEPLOYED;
             break;
 
         case MOVE_IN:
-            motor[mBatonArm] = calculateTetrixPower(
-                -BATON_ARM_MOVE_POWER, abs(armPos));
-            // XXX - The slop is just a guess, but it seems to work.
-            if (armPos <= ARM_POS_ZERO_SLOP / 4)
+            if (nMotorRunState[mBatonArm] == runStateIdle ||
+                nMotorRunState[mBatonArm] == runStateHoldPosition)
                 bState = BATON_PARKED;
             break;
 
@@ -448,6 +464,12 @@ void moveBridgeArm()
 {
     // Move Bridge Arm.  Don't let the arm move if we're at the endpoints
     int armPower = expoJoystick(joystick.joy2_y2);
+    if (abs(armPower) > BRIDGE_ARM_MOVE_POWER) {
+        if (armPower < 0)
+            armPower = -BRIDGE_ARM_MOVE_POWER;
+         else
+            armPower = BRIDGE_ARM_MOVE_POWER;
+    }
     if ((abs(nMotorEncoder[mBridgeArm]) <= 10 && armPower < 0) ||
         (abs(nMotorEncoder[mBridgeArm]) >= BRIDGE_ARM_DEPLOYED_POS && armPower > 0))
         motor[mBridgeArm] = 0;
@@ -465,7 +487,6 @@ void moveDispenserArm()
     // Move Dispensing Arm.  Don't let the arm move if we're at the
     // endpoints.
     int armPower = expoJoystick(joystick.joy2_y1);
-    nxtDisplayString(1, "%d", nMotorEncoder[mDispArm]);
 /*
 //    int armPower = joystick.joy2_y1 * 100 / 127;
     if ((nMotorEncoder[mDispArm] <= 10 && armPower < 0) ||
@@ -778,8 +799,8 @@ task RGLiftTask()
     }
 }
 
-const int MIN_POWER = 10;
-const int SLOW_START_DIST = 1000;
+const int MIN_POWER = 35;
+const int SLOW_START_DIST = 500;
 
 int calculateTetrixPower(int power, long remainDist)
 {
@@ -788,7 +809,7 @@ int calculateTetrixPower(int power, long remainDist)
         return power;
 
     // Limit ourself to at least MIN_POWER
-    int newPower = (int)((float)power * (float)remainDist / 1000.0);
+    int newPower = (int)((float)power * (float)remainDist / (float)SLOW_START_DIST);
     if (abs(newPower) < MIN_POWER) {
         if (newPower < 0)
             newPower = -MIN_POWER;
