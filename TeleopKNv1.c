@@ -1,6 +1,6 @@
 #pragma config(Hubs,  S1, HTMotor,  HTMotor,  HTMotor,  HTServo)
-#pragma config(Motor,  mtr_S1_C1_1,     mRTrack,       tmotorNormal, openLoop, reversed)
-#pragma config(Motor,  mtr_S1_C1_2,     mLTrack,       tmotorNormal, openLoop)
+#pragma config(Motor,  mtr_S1_C1_1,     mLTrack,       tmotorNormal, openLoop)
+#pragma config(Motor,  mtr_S1_C1_2,     mRTrack,       tmotorNormal, openLoop)
 #pragma config(Motor,  mtr_S1_C2_1,     mBatonArm,     tmotorNormal, openLoop, reversed)
 #pragma config(Motor,  mtr_S1_C2_2,     mBridgeArm,    tmotorNormal, openLoop, reversed)
 #pragma config(Motor,  mtr_S1_C3_1,     mDispArm,      tmotorNormal, openLoop)
@@ -448,7 +448,6 @@ void moveBridgeArm()
 {
     // Move Bridge Arm.  Don't let the arm move if we're at the endpoints
     int armPower = expoJoystick(joystick.joy2_y2);
-    nxtDisplayString(1, "%d", nMotorEncoder[mBridgeArm]);
     if ((abs(nMotorEncoder[mBridgeArm]) <= 10 && armPower < 0) ||
         (abs(nMotorEncoder[mBridgeArm]) >= BRIDGE_ARM_DEPLOYED_POS && armPower > 0))
         motor[mBridgeArm] = 0;
@@ -466,6 +465,7 @@ void moveDispenserArm()
     // Move Dispensing Arm.  Don't let the arm move if we're at the
     // endpoints.
     int armPower = expoJoystick(joystick.joy2_y1);
+    nxtDisplayString(1, "%d", nMotorEncoder[mDispArm]);
 /*
 //    int armPower = joystick.joy2_y1 * 100 / 127;
     if ((nMotorEncoder[mDispArm] <= 10 && armPower < 0) ||
