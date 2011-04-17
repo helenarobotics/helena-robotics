@@ -778,10 +778,11 @@ task RGLiftTask()
     }
 }
 
+const int MIN_POWER = 20;
 int calculateTetrixPower(int power, long remainDist)
 {
-    // If you want less than 20% power, you don't need this.
-    if (abs(power) < 20)
+    // We only do the calculations if the request is for more than MIN_POWER.
+    if (abs(power) < MIN_POWER)
         return power;
 
     // These numbers are determined via trial and error.  I'm sure their
@@ -794,13 +795,12 @@ int calculateTetrixPower(int power, long remainDist)
     else if (remainDist < 1000)
         power = power * 9 / 10;
 
-    // Note, the minimum speed we allow is 20%, since otherwise the
-    // motors may not move.
-    if (abs(power) < 20) {
+    // Limit ourself to at least MIN_POWER
+    if (abs(power) < MIN_POWER) {
         if (power < 0)
-            power = -20;
+            power = -MIN_POWER;
         else
-            power = 20;
+            power = MIN_POWER;
     }
     return power;
 }
