@@ -117,7 +117,7 @@ const int BRIDGE_ARM_MOVE_POWER = 40;
 const int DISPENSER_ARM_DEPLOYED_POS = 3500;
 
 // The dispenser cup's center position at start
-const int DISPENSER_CUP_CENTER_POS = 128;
+const int DISPENSER_CUP_CENTER_POS = 0;
 
 //
 // Rolling Goal Arm constants (rear/center arm)
@@ -803,11 +803,12 @@ int calculateTetrixPower(int power, long remainDist)
         else if (remainDist < 1000)
             power = power * 9 / 10;
     } else {
-        // Limit ourself to at least MIN_POWER
+        // Linear reduction in power based on how far we have remaining.
         power = (int)((float)power * (float)remainDist /
                       (float)SLOW_START_DIST);
     }
 
+    // Limit ourself to at least MIN_POWER
     if (abs(power) < MIN_POWER) {
         if (power < 0)
             power = -MIN_POWER;
