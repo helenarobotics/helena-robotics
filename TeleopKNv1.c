@@ -425,7 +425,7 @@ task BatonArmTask()
 
         case MOVE_IN:
             // XXX - The slop is just a guess, but it seems to work.
-            if (armPos <= ARM_POS_ZERO_SLOP / 4)
+            if (armPos <= ARM_POS_ZERO_SLOP)
                 bState = BATON_PARKED;
             // fall through
         case BATON_PARKED:
@@ -836,8 +836,7 @@ task DispenserWristTask()
         case WRIST_UP:
             motor[mDispWristL] = calculateTetrixPower(
                 DISPENSER_WRIST_MOVE_POWER, abs(armPos));
-            // XXX - The slop is just a guess, but it seems to work.
-            if (armPos <= ARM_POS_ZERO_SLOP / 4)
+            if (armPos <= ARM_POS_ZERO_SLOP)
                 wState = WRIST_PARKED;
 
         default:
