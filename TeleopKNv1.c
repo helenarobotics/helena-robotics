@@ -1,5 +1,6 @@
 #pragma config(Hubs,  S1, HTMotor,  HTMotor,  HTMotor,  HTServo)
-#pragma config(Motor,  motorA,          mDispWrist,    tmotorNormal, PIDControl, encoder)
+#pragma config(Motor,  motorA,          mDispWristL,   tmotorNormal, PIDControl, encoder)
+#pragma config(Motor,  motorB,          mDispWristR,   tmotorNormal, PIDControl, encoder)
 #pragma config(Motor,  mtr_S1_C1_1,     mLTrack,       tmotorNormal, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C1_2,     mRTrack,       tmotorNormal, PIDControl, encoder)
 #pragma config(Motor,  mtr_S1_C2_1,     mBatonArm,     tmotorNormal, PIDControl, reversed, encoder)
@@ -75,8 +76,10 @@
 *      Controls bridge lowering arm (left arm)
 * mDispArm
 *      Controls the dispensing arm (front/center arm)
-* mDispWrist
-*      Controls the dispensing arm wrist (front/center arm)
+* mDispWristL
+*      Controls the dispensing arm left wrist (front/center arm)
+* mDispWristR
+*      Controls the dispensing arm right wrist (front/center arm)
 * mRGLiftArm
 *      Controls the rolling goal lifting arm (rear/center arm)
 **************************************************
@@ -834,12 +837,17 @@ void toggleDispenserWrist()
 
 task DispenserWristTask()
 {
+    // Sync the left/right motors together, so we'll only control the
+    // left motor.
+    nSyncedMotors = synchAB;
+
     // Turn off the motor and reset the encoder.  Note, we assume the
     // arm is tucked into the robot at program start.
-    motor[mDispWrist] = 0;
-    nMotorEncoder[mDispWrist] = 0;
+    motor[mDispWristL] = 0;
+    nMotorEncoder[mDispWristL] = 0;
+
     while (true) {
-        long armPos = abs(nMotorEncoder[mDispWrist]);
+        long armPos = abs(nMotorEncoder[mDispWristL]);
 
         switch (wState) {
         case WRIST_PARKED:
@@ -848,7 +856,7 @@ task DispenserWristTask()
             break;
 
         case WRIST_DOWN:
-            motor[mBatonArm] = calculateTetrixPower(
+            motor[mDispWristL] = calculateTetrixPower(
                 DISPENSER_WRIST_MOVE_POWER,
                 abs(DISPENSER_WRIST_DEPLOYED_POS - armPos));
             if (armPos >= DISPENSER_WRIST_DEPLOYED_POS)
@@ -856,7 +864,7 @@ task DispenserWristTask()
             break;
 
         case WRIST_UP:
-            motor[mBatonArm] = calculateTetrixPower(
+            motor[mDispWristL] = calculateTetrixPower(
                 DISPENSER_WRIST_MOVE_POWER, abs(armPos));
             // XXX - The slop is just a guess, but it seems to work.
             if (armPos <= ARM_POS_ZERO_SLOP / 4)
