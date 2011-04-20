@@ -26,9 +26,9 @@
 *      Controls the power and direction of right track motor (mRTrack)
 * [[ OR ]]
 *   Left Analog - Y-Axis (ARCADE TWOJOY DRIVE)
-*      Controls the power (front/back) of both tracks (mlTrack & mRTrack)
+*      Controls the power (front/back) of both tracks (mLTrack & mRTrack)
 *   Right Analog - X-Asix (ARCADE TWOJOY DRIVE)
-*      Controls the direction of both tracks (mlTrack & mRTrack)
+*      Controls the direction of both tracks (mLTrack & mRTrack)
 *   L1 {Upper Back Left}
 *      Interrupts/reverses the rolling goal capture process to previous state
 *         (mRGLiftArm & sRGTeethL/sRGTeethR)
@@ -116,6 +116,18 @@ const int BRIDGE_ARM_MOVE_POWER = 40;
 // How far to move the arm all the way out
 const int DISPENSER_ARM_DEPLOYED_POS = 3500;
 
+// Power to the dispenser arm
+const int DISPENSER_ARM_MOVE_POWER = 40;
+
+// The three preset heights for the DISPENSER ARM
+const int DISPENSER_ARM_HIGH_POS = 3000;
+const int DISPENSER_ARM_MED_POS = 2000;
+const int DISPENSER_ARM_LOW_POS = 1000;
+
+// How close does the arm need to be to the setpoint to consider it
+// 'good enough'?
+const int DISPENSER_ARM_SLOP = 50;
+
 // The dispenser cup's center position at start
 const int DISPENSER_CUP_CENTER_POS = 0;
 
@@ -161,8 +173,8 @@ void moveBridgeArm();
 void toggleBridgeArm();
 task BridgeArmTask();
 
-void moveDispenserArm();
-void moveDispenserCup();
+void moveDispenserControls();
+task DispenserArmTask();
 
 void moveRGLift();
 void toggleRGLift();
@@ -179,21 +191,19 @@ void initializeRobot()
     motor[mLTrack] = 0;
     motor[mRTrack] = 0;
 
-    // The bridge arm, dispenser arm, and tracks are all controlled via
-    // the joystick and have no background tasks.
+    // The tracks are controlled via the joystick and have no background
+    // tasks.
 
-    // Reset the encoders on the joystick controlled arms.
-    nMotorEncoder[mBridgeArm] = 0;
-    nMotorEncoder[mDispArm] = 0;
+    // Finally, set the dispenser cup to it's center position
     servo[sDispCup] = DISPENSER_CUP_CENTER_POS;
 
     // Startup the routines that control the different robot
     // attachments (arms, servos, etc..)
     StartTask(BatonArmTask);
     StartTask(BatonDropTask);
-//    StartTask(BridgeArmTask);
+    StartTask(BridgeArmTask);
+    StartTask(DispenserArmTask);
     StartTask(RGLiftTask);
-
 }
 
 /* Main method of program
@@ -218,11 +228,10 @@ task main()
 
         // Move robot
         moveBridgeArm();
-        moveDispenserArm();
+        moveDispenserControls();
 
         moveBatonArm();
         moveBatonDrop();
-        moveDispenserCup();
         moveRGLift();
 
         moveTracks();
@@ -257,7 +266,12 @@ int expoJoystick(int eJoy)
     return (int)(100.0 * result);
 }
 
+//
 // Move the robot!
+//
+
+bool slowSpeedButtonWasPressed = false;
+bool slowSpeedEnabled = false;
 void moveTracks()
 {
     int rPow, lPow;
@@ -304,8 +318,12 @@ void moveTracks()
         rPow += nTurnPower / 20;
     }
 
-    // XXX - If we're in slow speed mode, reduce power by half
-    if (false) {
+    // Check the low-speed power setting.  If set, reduce power by half.
+    bool btnPress = joy1Btn(8);
+    if (!btnPress && slowSpeedButtonWasPressed)
+        slowSpeedEnabled = !slowSpeedEnabled;
+    slowSpeedButtonWasPressed = btnPress;
+    if (slowSpeedEnabled) {
         lPow /= 2;
         rPow /= 2;
     }
@@ -432,6 +450,8 @@ task BatonDropTask()
 bool bridgeArmButtonWasPressed = false;
 void moveBridgeArm()
 {
+    // XXX - Make sure to change the default state of brState if this is
+    // disabled.
     if (true) {
     // Move Bridge Arm.  Don't let the arm move if we're at the endpoints
     int armPower = expoJoystick(joystick.joy2_y2);
@@ -455,18 +475,22 @@ void moveBridgeArm()
 }
 
 typedef enum {
+    BRIDGE_MANUAL,
     BRIDGE_PARKED,
     BRIDGE_OUT,
     BRIDGE_DEPLOYED,
     BRIDGE_IN
 } bridgeState;
 
-bridgeState brState = BRIDGE_PARKED;
+bridgeState brState = BRIDGE_MANUAL;
+//bridgeState brState = BRIDGE_PARKED;
 
 void toggleBridgeArm()
 {
-    int armPos = nMotorEncoder[mBridgeArm];
     switch (brState) {
+    case BRIDGE_MANUAL:
+        break;
+
     case BRIDGE_PARKED:
     case BRIDGE_IN:
         brState = BRIDGE_OUT;
@@ -485,50 +509,55 @@ task BridgeArmTask()
     // robot at program start.
     nMotorEncoder[mBridgeArm] = 0;
     while (true) {
-        long armPos = abs(nMotorEncoder[mBridgeArm]);
+        long armPos = nMotorEncoder[mBridgeArm];
+        long targetPos = -1;
 
         switch (brState) {
-        case BRIDGE_PARKED:
-            // Keep the arm parked!
-            if (armPos < 0)
-                motor[mBridgeArm] = calculateTetrixPower(
-                    -BRIDGE_ARM_MOVE_POWER, abs(armPos));
-            else if (armPos > BRIDGE_ARM_DEPLOYED_POS)
-                motor[mBridgeArm] = calculateTetrixPower(
-                    BRIDGE_ARM_MOVE_POWER, abs(armPos));
-            else
-                motor[mBridgeArm] = 0;
-            break;
-
-        case BRIDGE_DEPLOYED:
-            // Keep the arm deployed!
-            if (armPos > BRIDGE_ARM_DEPLOYED_POS)
-                motor[mBridgeArm] = calculateTetrixPower(
-                    -BRIDGE_ARM_MOVE_POWER,
-                    abs(armPos - BRIDGE_ARM_DEPLOYED_POS));
-            else if (armPos < (BRIDGE_ARM_DEPLOYED_POS - ARM_POS_ZERO_SLOP))
-                motor[mBridgeArm] = calculateTetrixPower(
-                    BRIDGE_ARM_MOVE_POWER, abs(ARM_POS_ZERO_SLOP));
-            else
-                motor[mBridgeArm] = 0;
-            break;
-
-        case BRIDGE_OUT:
-            motor[mBridgeArm] = calculateTetrixPower(
-                BRIDGE_ARM_MOVE_POWER, abs(armPos - BRIDGE_ARM_DEPLOYED_POS));
-            if (armPos >= BRIDGE_ARM_DEPLOYED_POS)
-                brState = BRIDGE_DEPLOYED;
+        case BRIDGE_MANUAL:
+            // User analog joystick controlled
             break;
 
         case BRIDGE_IN:
-            motor[mBridgeArm] = calculateTetrixPower(
-                -BRIDGE_ARM_MOVE_POWER, abs(armPos));
+            // XXX - The slop is just a guess, but it seems to work.
+            if (abs(armPos) <= ARM_POS_ZERO_SLOP)
                 brState = BRIDGE_PARKED;
+            // Fall through
+        case BRIDGE_PARKED:
+            // Keep the arm at the parked position!
+            targetPos = 0;
+            break;
+
+        case BRIDGE_OUT:
+            if (armPos >= BRIDGE_ARM_DEPLOYED_POS)
+                brState = BRIDGE_DEPLOYED;
+            // Fall through
+        case BRIDGE_DEPLOYED:
+            // Keep the arm at the deployed position!
+            targetPos = BRIDGE_ARM_DEPLOYED_POS;
             break;
 
         default:
             nxtDisplayString(3, "BRIDGE ARM ERROR %d", brState);
             break;
+        }
+
+        // Do we need to move the arm?
+        if (targetPos >= 0) {
+            // No need to do anything if we're 'close enough' to the
+            // target.
+            if (abs(armPos - targetPos) <= ARM_POS_ZERO_SLOP) {
+                // Turn off the motor
+                motor[mBridgeArm] = 0;
+            } else {
+                // Gotta move to get there!
+                int armPower = calculateTetrixPower(
+                    BRIDGE_ARM_MOVE_POWER, abs(targetPos - armPos));
+                // XXX - Check if these are correct for this motor?
+                if (targetPos > armPos)
+                    motor[mBridgeArm] = armPower;
+                else
+                    motor[mBridgeArm] = -armPower;
+            }
         }
         EndTimeSlice();
     }
@@ -537,27 +566,143 @@ task BridgeArmTask()
 //
 // Dispenser Arm Controls (front/center)
 //
+typedef enum {
+    DISPENSER_JOYSTICK,
+    DISPENSER_LOW_PRESET,
+    DISPENSER_MED_PRESET,
+    DISPENSER_HIGH_PRESET,
+} dispState;
 
-// Moves the arm using the joystick controls
-void moveDispenserArm()
+dispState dState = DISPENSER_JOYSTICK;
+int tweakDispArmAmt = 0;
+
+void moveDispenserControls()
 {
-    // Move Dispensing Arm.  Don't let the arm move if we're at the
-    // endpoints.
+    // Move Dispensing Arm.
     int armPower = expoJoystick(joystick.joy2_y1);
-    if ((nMotorEncoder[mDispArm] <= 10 && armPower < 0) ||
-        (nMotorEncoder[mDispArm] >= DISPENSER_ARM_DEPLOYED_POS && armPower > 0))
-        motor[mDispArm] = 0;
-    else
-        motor[mDispArm] = armPower;
+    if (armPower == 0) {
+        // Are any of the preset height buttons being pressed.  If they
+        // are, assume we want to go back to the 'default' height.
+        //
+        // XXX - It may not be the best solution to reset the
+        // tweakDispArmAmt everytime the button is pressed, since if we
+        // have a standard 'offset' we're off, we have to redo it
+        // everytime.
+        if (joy2Btn(4) == 1) {
+            dState = DISPENSER_HIGH_PRESET;
+            tweakDispArmAmt = 0;
+        } else if (joy2Btn(1) == 1 || joy2Btn(3) == 1) {
+            dState = DISPENSER_MED_PRESET;
+            tweakDispArmAmt = 0;
+        } else if (joy2Btn(2) == 1) {
+            dState = DISPENSER_LOW_PRESET;
+            tweakDispArmAmt = 0;
+        }
+    } else {
+        // Joystick is controlling the arm.
+        dState = DISPENSER_JOYSTICK;
+
+        // Don't let the arm move if we're at the endpoints.
+        if ((nMotorEncoder[mDispArm] <= 10 && armPower < 0) ||
+            (nMotorEncoder[mDispArm] >= DISPENSER_ARM_DEPLOYED_POS && armPower > 0))
+            motor[mDispArm] = 0;
+        else
+            motor[mDispArm] = armPower;
+    }
+
+    // Controls the Dispenser cup rotation and allows for small
+    // movements of the dispenser arm when we use the preset height
+    // buttons.  Note, the rotation controls are much more forgiving
+    // than the dispenser arm tweak controls, which must be an exact hit
+    // since the former are expected to be used more often.
+    int dispenseCmd = joystick.joy2_TopHat;
+    switch (dispenseCmd) {
+    case 0:
+        // Tweak the dispenser arm up.
+        tweakDispArmAmt++;
+        break;
+
+    case 4:
+        // Tweak the dispenser arm down.
+        tweakDispArmAmt--;
+        break;
+
+    case 1:
+    case 2:
+    case 3:
+        // Rotate the cup counter-clockwise
+        servo[sDispCup] = ServoValue[sDispCup] - 5;
+        break;
+
+    case 5:
+    case 6:
+    case 7:
+        // Rotate the cup clockwise
+        servo[sDispCup] = ServoValue[sDispCup] - 5;
+        break;
+
+    case -1:
+    default:
+        // Ignored
+        break;
+    }
 }
 
-void moveDispenserCup()
+task DispenserArmTask()
 {
-    int cupControl = expoJoystick(joystick.joy2_x1);
-    if (cupControl > 10)
-        servo[sDispCup] = ServoValue[sDispCup] - 5;
-    else if (cupControl < -10)
-        servo[sDispCup] = ServoValue[sDispCup] + 5;
+    // Reset the encoder.  Note, we assume the arm is tucked into the
+    // robot at program start.
+    nMotorEncoder[mDispArm] = 0;
+    while (true) {
+        long armPos = abs(nMotorEncoder[mDispArm]);
+        long targetPos = -1;
+        switch (dState) {
+        case DISPENSER_JOYSTICK:
+            // The user is in control, so we don't have a target.
+            break;
+
+        case DISPENSER_LOW_PRESET:
+            // Move to and hold the low arm position
+            targetPos = DISPENSER_ARM_LOW_POS;
+            break;
+
+        case DISPENSER_MED_PRESET:
+            // Move to and hold the high arm position
+            targetPos = DISPENSER_ARM_MED_POS;
+            break;
+
+        case DISPENSER_HIGH_PRESET:
+            // Move to and hold the medium arm position
+            targetPos = DISPENSER_ARM_HIGH_POS;
+            break;
+        }
+
+        // Do we have a target position, and are we there?  If not, move
+        // there
+        if (targetPos >= 0) {
+            // Include any minor changes to the arm height
+            targetPos += tweakDispArmAmt;
+
+            // Ignore the command if the target is already at the bottom
+            // or top of the arm's range, or if we're 'close enough' to
+            // the target.
+            if (targetPos < 100 || targetPos >= DISPENSER_ARM_DEPLOYED_POS ||
+                abs(armPos - targetPos) <= DISPENSER_ARM_SLOP) {
+                // Turn off the motor
+                motor[mDispArm] = 0;
+            } else {
+                // Gotta move to get there!
+                int armPower = calculateTetrixPower(
+                    DISPENSER_ARM_MOVE_POWER, abs(targetPos - armPos));
+                // XXX - Check if these are correct?
+                if (targetPos > armPos)
+                    motor[mDispArm] = armPower;
+                else
+                    motor[mDispArm] = -armPower;
+            }
+        }
+        EndTimeSlice();
+    }
 }
 
 // Rolling Goal has two control buttons that affect each other.  One for
