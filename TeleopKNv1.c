@@ -107,14 +107,13 @@ const int BATON_DISPENSER_OPEN = 104;
 const int BRIDGE_ARM_DEPLOYED_POS = 1200;
 
 // Power to the bridge arm
-// XXX - Unused, as the bridge arm is controlled by the joystick
 const int BRIDGE_ARM_MOVE_POWER = 40;
 
 //
 // Dispenser Constants (front/center arm)
 //
 
-// XXX - How far to move the arm all the way out
+// How far to move the arm all the way out
 const int DISPENSER_ARM_DEPLOYED_POS = 3500;
 
 // The dispenser cup's center position at start
@@ -271,6 +270,9 @@ void moveTracks()
         // dead-band), and more aggressive at the extremes.
         lPow = expoJoystick(joystick.joy1_y1);
         rPow = expoJoystick(joystick.joy1_y2);
+
+        // Unused, but avoids a calculation later
+        nTurnPower = 0;
         break;
 
     case DRIVE_ARCADE_ONEJOY:
@@ -282,18 +284,6 @@ void moveTracks()
         // Power and speed
         lPow = nSpeedPower + nTurnPower;
         rPow = nSpeedPower - nTurnPower;
-
-        // Reduce turning power at speed by 5%
-        if (abs(nSpeedPower) > 30) {
-            lPow += nTurnPower / 20;
-            rPow -= nTurnPower / 20;
-        }
-
-        // XXX - If we're in slow speed mode, reduce power by half
-        if (false) {
-            lPow /= 2;
-            rPow /= 2;
-        }
         break;
 
     case DRIVE_ARCADE_TWOJOY:
@@ -305,19 +295,19 @@ void moveTracks()
         // Power and speed
         lPow = nSpeedPower + nTurnPower;
         rPow = nSpeedPower - nTurnPower;
-
-        // Reduce turning power at speed by 5%
-        if (abs(nSpeedPower) > 30) {
-            lPow += nTurnPower / 20;
-            rPow -= nTurnPower / 20;
-        }
-
-        // XXX - If we're in slow speed mode, reduce power by half
-        if (false) {
-            lPow /= 2;
-            rPow /= 2;
-        }
         break;
+    }
+
+    // Reduce turning power at speed by 5%
+    if (nTurnPower != 0 && abs(nSpeedPower) > 30) {
+        lPow -= nTurnPower / 20;
+        rPow += nTurnPower / 20;
+    }
+
+    // XXX - If we're in slow speed mode, reduce power by half
+    if (false) {
+        lPow /= 2;
+        rPow /= 2;
     }
 
     motor[mLTrack] = lPow;
@@ -347,7 +337,6 @@ batonState bState = BATON_PARKED;
 
 void toggleBatonArm()
 {
-    int armPos = nMotorEncoder[mBatonArm];
     switch (bState) {
     case BATON_PARKED:
     case MOVE_IN:
@@ -385,6 +374,7 @@ task BatonArmTask()
         case MOVE_IN:
             motor[mBatonArm] = calculateTetrixPower(
                 -BATON_ARM_MOVE_POWER, abs(armPos));
+            // XXX - The slop is just a guess, but it seems to work.
             if (armPos <= ARM_POS_ZERO_SLOP / 4)
                 bState = BATON_PARKED;
             break;
@@ -457,7 +447,7 @@ void moveBridgeArm()
     else
         motor[mBridgeArm] = armPower;
     } else {
-    bool btnPress = joy2Btn(7);
+    bool btnPress = joy2Btn(5);
     if (!btnPress && bridgeArmButtonWasPressed)
         toggleBridgeArm();
     bridgeArmButtonWasPressed = btnPress;
