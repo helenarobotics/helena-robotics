@@ -92,6 +92,12 @@
 
 #include "JoystickDriver.c"
 
+//
+// The BOUND macro limits the value (n) within the bounds between the given
+// low (l) and high (h).
+//
+#define BOUND(n, l, h)    (((n) < (l))? (l): ((n) > (h))? (h): (n))
+
 // Mode for controlling the tank tracks
 const int DRIVE_TANK          = 0;
 const int DRIVE_ARCADE_ONEJOY = 1;
@@ -144,6 +150,10 @@ const int DISPENSER_ARM_MOVE_POWER = 40;
 const int DISPENSER_ARM_HIGH_PRESET_POS = 3000;
 const int DISPENSER_ARM_MED_PRESET_POS = 2000;
 const int DISPENSER_ARM_LOW_PRESET_POS = 1000;
+
+// The maximum amount we can 'tweak' the preset heights.
+const int DISPENSER_ARM_TWEAK_LIMIT =
+    (DISPENSER_ARM_HIGH_PRESET_POS - DISPENSER_ARM_MED_PRESET_POS) / 2;
 
 // How close does the arm need to be to the setpoint to consider it
 // 'good enough'?
@@ -526,24 +536,19 @@ void moveBridgeArm()
     // Note, we only allow joystick movement if the arm is already
     // deployed.
     if (brState == BRIDGE_DEPLOYED) {
-        // Allow joystick movements, but limit the amount of power
-        // allowed.
+        // Allow joystick movements.
         int armPower = expoJoystick(joystick.joy2_y1);
-        if (abs(armPower) > BRIDGE_ARM_MOVE_POWER) {
-            if (armPower < 0)
-                armPower = -BRIDGE_ARM_MOVE_POWER;
-            else
-                armPower = BRIDGE_ARM_MOVE_POWER;
-        }
 
-        // Apply power to move the Arm.  Note, we don't let the arm move
-        // if we're at the position limits.
+        // Apply power to move the arm.  Note, we disable power if the
+        // arm is already at the position limits.
         int armPos = abs(nMotorEncoder[mBridgeArm]);
         if ((armPos <= BRIDGE_ARM_DEPLOYED_UPPER_LIMIT && armPower < 0) ||
             (armPos > BRIDGE_ARM_DEPLOYED_LOWER_LIMIT && armPower > 0))
             motor[mBridgeArm] = 0;
         else
-            motor[mBridgeArm] = armPower;
+            // Limit the amount of power allowed.
+            motor[mBridgeArm] = 
+                BOUND(armPower, -BRIDGE_ARM_MOVE_POWER, BRIDGE_ARM_MOVE_POWER);
     }
 }
 
@@ -659,23 +664,19 @@ void moveDispenserControls()
             tweakDispArmAmt = 0;
         }
     } else {
-        // Joystick is controlling the arm.
+        // Joystick control!
         dState = DISPENSER_JOYSTICK;
 
         // Don't let the arm move if we're at the endpoints.
-        if ((nMotorEncoder[mDispArm] <= 10 && armPower < 0) ||
+        if ((nMotorEncoder[mDispArm] <= 0 && armPower < 0) ||
             (nMotorEncoder[mDispArm] >= DISPENSER_ARM_HIGHEST_POS &&
              armPower > 0)) {
             motor[mDispArm] = 0;
         } else {
-            // Limit the power from going too high
-            if (abs(armPower) > DISPENSER_ARM_MOVE_POWER) {
-                if (armPower > 0)
-                    armPower = DISPENSER_ARM_MOVE_POWER;
-                else
-                    armPower = -DISPENSER_ARM_MOVE_POWER;
-            }
-            motor[mDispArm] = armPower;
+            // Limit the power.
+            motor[mDispArm] =
+                BOUND(armPower,
+                      -DISPENSER_ARM_MOVE_POWER, DISPENSER_ARM_MOVE_POWER);
         }
     }
 
@@ -715,6 +716,11 @@ void moveDispenserControls()
         // Ignored
         break;
     }
+
+    // Limit the tweak amount.
+    tweakDispArmAmt =
+        BOUND(tweakDispArmAmt,
+              -DISPENSER_ARM_TWEAK_LIMIT, DISPENSER_ARM_TWEAK_LIMIT);
 }
 
 task DispenserArmTask()
@@ -758,8 +764,10 @@ task DispenserArmTask()
 
             // Ignore the command if the target is already at the bottom
             // or top of the arm's range, or if we're 'close enough' to
-            // the target.
-            if (targetPos < 100 || targetPos >= DISPENSER_ARM_HIGHEST_POS ||
+            // the target.  The targetPos can only be too big or too
+            // small if they user continually continues to tweak the
+            // height adjustment beyond a reasonable amount.
+            if (targetPos <= 0 || targetPos >= DISPENSER_ARM_HIGHEST_POS ||
                 abs(armPos - targetPos) <= DISPENSER_ARM_PRESET_SLOP) {
                 // Turn off the motor
                 motor[mDispArm] = 0;
