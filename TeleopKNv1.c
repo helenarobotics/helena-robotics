@@ -99,8 +99,8 @@ const int DRIVE_ARCADE_TWOJOY = 2;
 int DRIVE_MODE = DRIVE_ARCADE_TWOJOY;
 
 // The arm motors overshoot a bit, so until we write useful PID
-// controllers for them, we consider 'zero' when moving back to the
-// original location anything less than 150.
+// controllers for them, we consider 'zero' when moving back to a
+// position anything less than this.
 const int ARM_POS_ZERO_SLOP = 150;
 
 //
