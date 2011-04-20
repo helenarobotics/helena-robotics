@@ -1100,7 +1100,7 @@ int expoJoystick(int eJoy)
     return (int)(100.0 * result);
 }
 
-const int MIN_POWER = 10;
+const int MIN_POWER = 20;
 const int SLOW_START_DIST = 1000;
 
 int calculateTetrixPower(int power, long remainDist)
