@@ -386,6 +386,7 @@ task BatonArmTask()
     motor[mBatonArm] = 0;
     nMotorEncoder[mBatonArm] = 0;
     while (true) {
+if (true) {
         long armPos = abs(nMotorEncoder[mBatonArm]);
 
         switch (bState) {
@@ -413,6 +414,51 @@ task BatonArmTask()
             nxtDisplayString(3, "BATON ARM ERROR %d", bState);
             break;
         }
+} else {
+        long armPos = nMotorEncoder[mBatonArm];
+        long targetPos = -1;
+        switch (bState) {
+        case MOVE_OUT:
+            if (armPos >= BATON_ARM_DEPLOYED_POS)
+                bState = BATON_DEPLOYED;
+            // fall through
+        case BATON_DEPLOYED:
+            targetPos = BATON_ARM_DEPLOYED_POS;
+            break;
+
+        case MOVE_IN:
+            // XXX - The slop is just a guess, but it seems to work.
+            if (armPos <= ARM_POS_ZERO_SLOP / 4)
+                bState = BATON_PARKED;
+            // fall through
+        case BATON_PARKED:
+            targetPos = 0;
+            break;
+
+        default:
+            nxtDisplayString(3, "BATON ARM ERROR %d", bState);
+            break;
+        }
+
+        // Do we need to move the arm?
+        if (targetPos >= 0) {
+            // No need to do anything if we're 'close enough' to the
+            // target.
+            if (abs(armPos - targetPos) <= ARM_POS_ZERO_SLOP) {
+                // Turn off the motor
+                motor[mBatonArm] = 0;
+            } else {
+                // Gotta move to get there!
+                int armPower = calculateTetrixPower(
+                    BATON_ARM_MOVE_POWER, abs(targetPos - armPos));
+                // XXX - Check if these are correct for this motor?
+                if (targetPos > armPos)
+                    motor[mBatonArm] = armPower;
+                else
+                    motor[mBatonArm] = -armPower;
+            }
+        }
+}
         EndTimeSlice();
     }
 }
