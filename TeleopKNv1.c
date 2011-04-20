@@ -39,6 +39,8 @@
 *   Left Analog
 *      Y-Axis - Controls the dispensing arm (mDispArm)
 *      X-Axis - Controls the dispensing cup rotation (sDispCup)
+*   L1 {Upper Back Left}
+*      Toggles between deploying and parking the bridge arm (mBridgeArm)
 *   Right Analog
 *      Controls the bridge arm (mBridgeArm)
 *   R1 {Upper Back Right}
@@ -157,6 +159,8 @@ void openBatonDrop();
 task BatonDropTask();
 
 void moveBridgeArm();
+void toggleBridgeArm();
+task BridgeArmTask();
 
 void moveDispenserArm();
 void moveDispenserCup();
@@ -380,6 +384,7 @@ task BatonArmTask()
         case MOVE_IN:
             motor[mBatonArm] = calculateTetrixPower(
                 -BATON_ARM_MOVE_POWER, abs(armPos));
+            if (armPos <= BATON_ARM_DEPLOYED_POS / 4)
                 bState = BATON_PARKED;
             break;
 
@@ -433,8 +438,10 @@ task BatonDropTask()
 //
 // Bridge Arm Controls (left arm)
 //
+bool bridgeArmButtonWasPressed = false;
 void moveBridgeArm()
 {
+    if (true) {
     // Move Bridge Arm.  Don't let the arm move if we're at the endpoints
     int armPower = expoJoystick(joystick.joy2_y2);
     if (abs(armPower) > BRIDGE_ARM_MOVE_POWER) {
@@ -448,6 +455,72 @@ void moveBridgeArm()
         motor[mBridgeArm] = 0;
     else
         motor[mBridgeArm] = armPower;
+    } else {
+    bool btnPress = joy2Btn(7);
+    if (!btnPress && bridgeArmButtonWasPressed)
+        toggleBridgeArm();
+    bridgeArmButtonWasPressed = btnPress;
+    }
+}
+
+typedef enum {
+    BRIDGE_PARKED,
+    BRIDGE_OUT,
+    BRIDGE_DEPLOYED,
+    BRIDGE_IN
+} bridgeState;
+
+bridgeState brState = BRIDGE_PARKED;
+
+void toggleBridgeArm()
+{
+    int armPos = nMotorEncoder[mBridgeArm];
+    switch (brState) {
+    case BRIDGE_PARKED:
+    case BRIDGE_IN:
+        brState = BRIDGE_OUT;
+        break;
+
+    case BRIDGE_OUT:
+    case BRIDGE_DEPLOYED:
+        brState = BRIDGE_IN;
+        break;
+    }
+}
+
+task BridgeArmTask()
+{
+    // Reset the encoder.  Note, we assume the arm is tucked into the
+    // robot at program start.
+    nMotorEncoder[mBridgeArm] = 0;
+    while (true) {
+        long armPos = abs(nMotorEncoder[mBridgeArm]);
+
+        switch (brState) {
+        case BRIDGE_PARKED:
+        case BRIDGE_DEPLOYED:
+            motor[mBridgeArm] = 0;
+            break;
+
+        case BRIDGE_OUT:
+            motor[mBridgeArm] = calculateTetrixPower(
+                BRIDGE_ARM_MOVE_POWER, abs(armPos - BRIDGE_ARM_DEPLOYED_POS));
+            if (armPos >= BRIDGE_ARM_DEPLOYED_POS)
+                brState = BRIDGE_DEPLOYED;
+            break;
+
+        case BRIDGE_IN:
+            motor[mBridgeArm] = calculateTetrixPower(
+                -BRIDGE_ARM_MOVE_POWER, abs(armPos));
+                brState = BRIDGE_PARKED;
+            break;
+
+        default:
+            nxtDisplayString(3, "BRIDGE ARM ERROR %d", brState);
+            break;
+        }
+        EndTimeSlice();
+    }
 }
 
 //
