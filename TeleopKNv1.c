@@ -25,9 +25,10 @@
 *   Right Analog (TANK DRIVE MODE)
 *      Controls the power and direction of right track motor (mRTrack)
 * [[ OR ]]
-*   Left Analog - Y-Axis (ARCADE TWOJOY DRIVE)
+*   Left Analog - Y-Axis (ARCADE ONEJOY & TWOJOY DRIVE)
 *      Controls the power (front/back) of both tracks (mLTrack & mRTrack)
-*   Right Analog - X-Asix (ARCADE TWOJOY DRIVE)
+*   Left Analog - X-Axis (ARCADE ONEJOY DRIVE )
+*   Right Analog - X-Axis (ARCADE TWOJOY DRIVE)
 *      Controls the direction of both tracks (mLTrack & mRTrack)
 *   L1 {Upper Back Left}
 *      Interrupts/reverses the rolling goal capture process to previous state
@@ -199,15 +200,14 @@ int calculateTetrixPower(int power, long remainDist);
 
 void initializeRobot()
 {
-    // Turn off the motors
+    // Turn off the motors and initialize their encoders
     motor[mLTrack] = 0;
     motor[mRTrack] = 0;
+    nMotorEncoder[mLTrack] = 0;
+    nMotorEncoder[mRTrack] = 0;
 
     // The tracks are controlled via the joystick and have no background
     // tasks.
-
-    // Finally, set the dispenser cup to it's center position
-    servo[sDispCup] = DISPENSER_CUP_CENTER_POS;
 
     // Startup the routines that control the different robot
     // attachments (arms, servos, etc..)
@@ -340,6 +340,10 @@ void moveTracks()
         rPow /= 2;
     }
 
+    // Check to make sure these are working.
+    nxtDisplayString(3, "L/R %d/%d",
+                     nMotorEncoder[mLTrack], nMotorEncoder[mRTrack]);
+    
     motor[mLTrack] = lPow;
     motor[mRTrack] = rPow;
 }
@@ -671,6 +675,9 @@ void moveDispenserControls()
 
 task DispenserArmTask()
 {
+    // Set the dispenser cup to it's center position
+    servo[sDispCup] = DISPENSER_CUP_CENTER_POS;
+
     // Reset the encoder.  Note, we assume the arm is tucked into the
     // robot at program start.
     nMotorEncoder[mDispArm] = 0;
