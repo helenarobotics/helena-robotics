@@ -35,18 +35,30 @@
 *   R1 {Upper Back Right}
 *      Initiates the rolling goal capture process
 *         (mRGLiftArm & sRGTeethL/sRGTeethR)
+*   CL {Center Button just Left of 'Logitech' Logo }
+*      Toggles slow-speed drive mode. When enabled, the robot moves at
+*      half-speed.
+*
 * Joystick 2:
 *   Left Analog
-*      Y-Axis - Controls the dispensing arm (mDispArm)
+*      Controls the bridge arm pos (mBridgeArm)
+*   Left HAT
 *      X-Axis - Controls the dispensing cup rotation (sDispCup)
+*      Y-Axis - Small adjustments to the preset dispensing arm pos (mDispArm)
 *   L1 {Upper Back Left}
 *      Toggles between deploying and parking the bridge arm (mBridgeArm)
 *   Right Analog
-*      Controls the bridge arm (mBridgeArm)
+*      Y-Axis - Controls the dispensing arm (mDispArm)
 *   R1 {Upper Back Right}
 *      Toggles deployment of the baton/blocking arm (mBatonArm)
 *   R2 {Lower Back Right}
 *      Unloads the batons (sBatonCup)
+*   B4 {Button 4 on the right-portion of the controller}
+*      Moves the dispenser arm to the highest preset pos (mDispArm)
+*   B1/B3 {Button 1 & 3 on the right-portion of the controller}
+*      Moves the dispenser arm to the medium preset pos (mDispArm)
+*   B2 {Button 2 on the right-portion of the controller}
+*      Moves the dispenser arm to the lowest preset pos (mDispArm)
 **************************************************
 * Motors
 * ------
@@ -454,7 +466,7 @@ void moveBridgeArm()
     // disabled.
     if (true) {
     // Move Bridge Arm.  Don't let the arm move if we're at the endpoints
-    int armPower = expoJoystick(joystick.joy2_y2);
+    int armPower = expoJoystick(joystick.joy2_y1);
     if (abs(armPower) > BRIDGE_ARM_MOVE_POWER) {
         if (armPower < 0)
             armPower = -BRIDGE_ARM_MOVE_POWER;
@@ -579,7 +591,7 @@ int tweakDispArmAmt = 0;
 void moveDispenserControls()
 {
     // Move Dispensing Arm.
-    int armPower = expoJoystick(joystick.joy2_y1);
+    int armPower = expoJoystick(joystick.joy2_y2);
     if (armPower == 0) {
         // Are any of the preset height buttons being pressed.  If they
         // are, assume we want to go back to the 'default' height.
