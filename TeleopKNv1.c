@@ -1101,7 +1101,7 @@ int expoJoystick(int eJoy)
 }
 
 const int MIN_POWER = 20;
-const int SLOW_START_DIST = 1000;
+const int SLOW_START_DIST = 500;
 
 int calculateTetrixPower(int power, long remainDist)
 {
@@ -1109,23 +1109,13 @@ int calculateTetrixPower(int power, long remainDist)
     if (abs(power) < MIN_POWER || remainDist > SLOW_START_DIST)
         return power;
 
-    if (true) {
-        // These numbers are determined via trial and error.  I'm sure their
-        // is a better way of calculating them, probably using some
-        // calculation that takes power into consideration.
-        if (remainDist < 250)
-            power = power / 2;
-        else if (remainDist < 500)
-            power = power * 3 / 4;
-        else if (remainDist < 1000)
-            power = power * 9 / 10;
-    } else {
-        // Linear reduction in power based on how far we have remaining.
-        power = (int)((float)power * (float)remainDist /
-                      (float)SLOW_START_DIST);
-    }
 
-    // Limit ourself to at least MIN_POWER
+    // We want to reduce power by at most 50%, so we reduce it
+    // up to 50% of the power
+    power -= (int)(((float)remainDist / (float)SLOW_START_DIST) *
+                   (float)power / 2.0);
+
+    // Limit ourself to at least MIN_POWER, although the above 
     if (abs(power) < MIN_POWER) {
         if (power < 0)
             power = -MIN_POWER;
