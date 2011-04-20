@@ -92,6 +92,9 @@
 
 #include "JoystickDriver.c"
 
+// Determine the length of an array
+#define ARRAYSIZE(a)        (sizeof(a)/sizeof((a)[0]))
+
 //
 // The BOUND macro limits the input (n) inside the bounds between the
 // provided low (l) and high (h) limits.
@@ -557,7 +560,7 @@ void moveBridgeArm()
             motor[mBridgeArm] = 0;
         else
             // Limit the amount of power allowed.
-            motor[mBridgeArm] = 
+            motor[mBridgeArm] =
                 BOUND(armPower, -BRIDGE_ARM_MOVE_POWER, BRIDGE_ARM_MOVE_POWER);
     }
 }
