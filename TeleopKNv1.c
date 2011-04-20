@@ -93,10 +93,20 @@
 #include "JoystickDriver.c"
 
 //
-// The BOUND macro limits the value (n) within the bounds between the given
-// low (l) and high (h).
+// The BOUND macro limits the input (n) inside the bounds between the
+// provided low (l) and high (h) limits.
 //
-#define BOUND(n, l, h)    (((n) < (l))? (l): ((n) > (h))? (h): (n))
+#define BOUND(n, l, h)      (((n) < (l))? (l): ((n) > (h))? (h): (n))
+
+//
+// The DEADBANK macro ignores inputs (n) that are within the deadbank
+// threshold (t).  This often used when reading analog joysticks which
+// rarely center at zero.  Therefore, if the joystick is within the
+// threshold, we will consider it 'zero'.  The 'expoJoystick' method
+// performs a similar function, but we may need a larger deadband for
+// certain controls.
+//
+#define DEADBAND(n,t)       ((abs(n) > (t))? (n): 0)
 
 // Mode for controlling the tank tracks
 const int DRIVE_TANK          = 0;
