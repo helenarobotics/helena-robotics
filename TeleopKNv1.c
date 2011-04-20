@@ -1,4 +1,5 @@
 #pragma config(Hubs,  S1, HTMotor,  HTMotor,  HTMotor,  HTServo)
+#pragma config(Motor,  motorA,          mDispWrist,    tmotorNormal, PIDControl, encoder)
 #pragma config(Motor,  mtr_S1_C1_1,     mLTrack,       tmotorNormal, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C1_2,     mRTrack,       tmotorNormal, PIDControl, encoder)
 #pragma config(Motor,  mtr_S1_C2_1,     mBatonArm,     tmotorNormal, PIDControl, reversed, encoder)
@@ -227,6 +228,7 @@ void initializeRobot()
     StartTask(BatonDropTask);
     StartTask(BridgeArmTask);
     StartTask(DispenserArmTask);
+    StartTask(DispenserWristTask);
     StartTask(RGLiftTask);
 }
 
@@ -356,7 +358,7 @@ void moveTracks()
     // Check to make sure these are working.
     nxtDisplayString(3, "L/R %d/%d",
                      nMotorEncoder[mLTrack], nMotorEncoder[mRTrack]);
-    
+
     motor[mLTrack] = lPow;
     motor[mRTrack] = rPow;
 }
@@ -799,15 +801,15 @@ task DispenserWristTask()
 
         case WRIST_DOWN:
             motor[mBatonArm] = calculateTetrixPower(
-                DISPENSER_WRIST_ARM_MOVE_POWER,
+                DISPENSER_WRIST_MOVE_POWER,
                 abs(DISPENSER_WRIST_DEPLOYED_POS - armPos));
             if (armPos >= DISPENSER_WRIST_DEPLOYED_POS)
-                bState = WRIST_DEPLOYED;
+                wState = WRIST_DEPLOYED;
             break;
 
         case WRIST_UP:
             motor[mBatonArm] = calculateTetrixPower(
-                DISPENSER_WRIST_ARM_MOVE_POWER, abs(armPos));
+                DISPENSER_WRIST_MOVE_POWER, abs(armPos));
             // XXX - The slop is just a guess, but it seems to work.
             if (armPos <= ARM_POS_ZERO_SLOP / 4)
                 wState = WRIST_PARKED;
