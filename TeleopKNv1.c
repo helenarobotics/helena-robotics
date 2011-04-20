@@ -129,7 +129,7 @@ const int ARM_POS_ZERO_SLOP = 25;
 //
 // Baton/Blocking Arm constants (right arm)
 //
-const int BATON_ARM_DEPLOYED_POS = 680;
+const int BATON_ARM_DEPLOYED_POS = 720;
 
 // Power to the baton arm
 const int BATON_ARM_MOVE_POWER = 45;
@@ -160,7 +160,8 @@ const int BRIDGE_ARM_MOVE_POWER = 40;
 const int DISPENSER_ARM_HIGHEST_POS = 3500;
 
 // Power to the dispenser arm
-const int DISPENSER_ARM_MOVE_POWER = 40;
+const int DISPENSER_ARM_MOVE_POWER = 30;
+const int DISPENSER_ARM_PRESET_MOVE_POWER = 10;
 
 // The three preset heights for the dispenser arm
 const int DISPENSER_ARM_HIGH_PRESET_POS = 3000;
@@ -173,7 +174,7 @@ const int DISPENSER_ARM_TWEAK_LIMIT =
 
 // How close does the arm need to be to the setpoint to consider it
 // 'good enough'?
-const int DISPENSER_ARM_PRESET_SLOP = 50;
+const int DISPENSER_ARM_PRESET_SLOP = 20;
 
 // The dispenser cup's center position at start
 const int DISPENSER_CUP_CENTER_POS = 0;
@@ -263,7 +264,7 @@ void initializeRobot()
     StartTask(BatonDropTask);
     StartTask(BridgeArmTask);
     StartTask(DispenserArmTask);
-    StartTask(DispenserWristTask);
+//    StartTask(DispenserWristTask);
     StartTask(RGLiftTask);
 }
 
@@ -291,7 +292,7 @@ task main()
         moveTracks();
         moveBridgeArm();
         moveDispenserControls();
-        moveDispenserWrist();
+//        moveDispenserWrist();
 
         moveBatonArm();
         moveBatonDrop();
@@ -424,7 +425,6 @@ task BatonArmTask()
             break;
 
         case MOVE_IN:
-            // XXX - The slop is just a guess, but it seems to work.
             if (armPos <= ARM_POS_ZERO_SLOP)
                 bState = BATON_PARKED;
             // fall through
@@ -630,39 +630,35 @@ int tweakDispArmAmt = 0;
 void moveDispenserControls()
 {
     // Move Dispensing Arm.
-    int armPower = expoJoystick(joystick.joy2_y2);
-    if (armPower == 0) {
         // Are any of the preset height buttons being pressed.  If they
         // are, assume we want to go back to the 'default' height.
-        //
-        // XXX - It may not be the best solution to reset the
-        // tweakDispArmAmt everytime the button is pressed, since if we
-        // have a standard 'offset' we're off, we have to redo it
-        // everytime.
         if (joy2Btn(4) == 1) {
             dState = DISPENSER_HIGH_PRESET;
-            tweakDispArmAmt = 0;
         } else if (joy2Btn(1) == 1 || joy2Btn(3) == 1) {
             dState = DISPENSER_MED_PRESET;
-            tweakDispArmAmt = 0;
         } else if (joy2Btn(2) == 1) {
             dState = DISPENSER_LOW_PRESET;
-            tweakDispArmAmt = 0;
-        }
     } else {
-        // Joystick control!
-        dState = DISPENSER_JOYSTICK;
+        // Read the joystick and check if we're using joystick control!
+        int armPower = expoJoystick(joystick.joy2_y2);
+        if (abs(armPower) > 0 && dState != DISPENSER_JOYSTICK)
+            dState = DISPENSER_JOYSTICK;
 
-        // Don't let the arm move if we're at the endpoints.
-        if ((nMotorEncoder[mDispArm] <= 0 && armPower < 0) ||
-            (nMotorEncoder[mDispArm] >= DISPENSER_ARM_HIGHEST_POS &&
-             armPower > 0)) {
-            motor[mDispArm] = 0;
-        } else {
-            // Limit the power.
-            motor[mDispArm] =
-                BOUND(armPower,
-                      -DISPENSER_ARM_MOVE_POWER, DISPENSER_ARM_MOVE_POWER);
+        // We only allow the joystick to move the robot if we're in
+        // joystick control.  Otherwise we'll fight the preset code and
+        // turn the motors off.
+        if (dState == DISPENSER_JOYSTICK) {
+            // Don't let the arm move if we're at the endpoints.
+            int armPos = nMotorEncoder[mDispArm];
+            if ((armPos <= 10 && armPower < 0) ||
+                (armPos >= DISPENSER_ARM_HIGHEST_POS && armPower > 0)) {
+                motor[mDispArm] = 0;
+            } else {
+                // Limit the power.
+                motor[mDispArm] =
+                    BOUND(armPower,
+                          -DISPENSER_ARM_MOVE_POWER , DISPENSER_ARM_MOVE_POWER);
+            }
         }
     }
 
@@ -719,8 +715,8 @@ task DispenserArmTask()
     motor[mDispArm] = 0;
     nMotorEncoder[mDispArm] = 0;
     while (true) {
-        long armPos = abs(nMotorEncoder[mDispArm]);
         long targetPos = -1;
+
         switch (dState) {
         case DISPENSER_JOYSTICK:
             // The user is in control, so we don't have a target.
@@ -742,9 +738,9 @@ task DispenserArmTask()
             break;
         }
 
-        // Do we have a target position, and are we there?  If not, move
-        // there
-        if (targetPos >= 0) {
+        // If we're not doing joystick, then we're trying to set the
+        // position.
+        if (dState != JOYSTICK) {
             // Include any minor changes to the arm height
             targetPos += tweakDispArmAmt;
 
@@ -753,6 +749,7 @@ task DispenserArmTask()
             // the target.  The targetPos can only be too big or too
             // small if they user continually continues to tweak the
             // height adjustment beyond a reasonable amount.
+            long armPos = nMotorEncoder[mDispArm];
             if (targetPos <= 0 || targetPos >= DISPENSER_ARM_HIGHEST_POS ||
                 abs(armPos - targetPos) <= DISPENSER_ARM_PRESET_SLOP) {
                 // Turn off the motor
@@ -760,10 +757,10 @@ task DispenserArmTask()
             } else {
                 // Gotta move to get there!
                 int armPower = calculateTetrixPower(
-                    DISPENSER_ARM_MOVE_POWER, abs(targetPos - armPos));
-                // XXX - Check if these are correct?
+                    DISPENSER_ARM_PRESET_MOVE_POWER, abs(targetPos - armPos));
                 if (targetPos > armPos)
-                    motor[mDispArm] = armPower;
+                    // It takes more power to go up vs. down!
+                    motor[mDispArm] = armPower + 4;
                 else
                     motor[mDispArm] = -armPower;
             }
@@ -1101,21 +1098,23 @@ int expoJoystick(int eJoy)
 }
 
 const int MIN_POWER = 20;
-const int SLOW_START_DIST = 500;
+const int SLOW_START_DIST = 720;
 
 int calculateTetrixPower(int power, long remainDist)
 {
-    // We only do the calculations if the request is for more than MIN_POWER.
+    // We only reduce power if the calculations if the request is for more than
+    // MIN_POWER and that we have a 'bit of distance' to go.  If we're close, we need
+    // full power (in case we're stopped), so we only slow down as we start to get
+    // close and then speed back up.
     if (abs(power) < MIN_POWER || remainDist > SLOW_START_DIST)
         return power;
 
+    // Linear reduction in power based on how far we have remaining.
+    power -= (int)((float)power / 2.0 *
+                   (((float)SLOW_START_DIST - (float)remainDist) /
+                    (float)SLOW_START_DIST));
 
-    // We want to reduce power by at most 50%, so we reduce it
-    // up to 50% of the power
-    power -= (int)(((float)remainDist / (float)SLOW_START_DIST) *
-                   (float)power / 2.0);
-
-    // Limit ourself to at least MIN_POWER, although the above 
+    // Limit ourself to at least MIN_POWER.
     if (abs(power) < MIN_POWER) {
         if (power < 0)
             power = -MIN_POWER;
