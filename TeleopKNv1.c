@@ -499,8 +499,28 @@ task BridgeArmTask()
 
         switch (brState) {
         case BRIDGE_PARKED:
+            // Keep the arm parked!
+            if (armPos < 0)
+                motor[mBridgeArm] = calculateTetrixPower(
+                    -BRIDGE_ARM_MOVE_POWER, abs(armPos));
+            else if armPos > BRIDGE_ARM_DEPLOYED_POS)
+                motor[mBridgeArm] = calculateTetrixPower(
+                    BRIDGE_ARM_MOVE_POWER, abs(armPos));
+            else
+                motor[mBridgeArm] = 0;
+            break;
+            
         case BRIDGE_DEPLOYED:
-            motor[mBridgeArm] = 0;
+            // Keep the arm deployed!
+            if (armPos > BRIDGE_ARM_DEPLOYED_POS)
+                motor[mBridgeArm] = calculateTetrixPower(
+                    -BRIDGE_ARM_MOVE_POWER,
+                    abs(armPos - BRIDGE_ARM_DEPLOYED_POS));
+            else if (armPos < (BRIDGE_ARM_DEPLOYED_POS - ARM_POS_ZERO_SLOP))
+                motor[mBridgeArm] = calculateTetrixPower(
+                    BRIDGE_ARM_MOVE_POWER, abs(ARM_POS_ZERO_SLOP));
+            else
+                motor[mBridgeArm] = 0;
             break;
 
         case BRIDGE_OUT:
