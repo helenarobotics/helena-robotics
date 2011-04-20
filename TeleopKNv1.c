@@ -44,13 +44,14 @@
 * Joystick 2:
 *   Left Analog
 *      Controls the bridge arm pos (mBridgeArm)
+*   L1 {Upper Back Left}
+*      Toggles between deploying and parking the bridge arm (mBridgeArm)
+*
+*   Right Analog
+*      Y-Axis - Controls the dispensing arm (mDispArm)
 *   Left HAT
 *      X-Axis - Controls the dispensing cup rotation (sDispCup)
 *      Y-Axis - Small adjustments to the preset dispensing arm pos (mDispArm)
-*   L1 {Upper Back Left}
-*      Toggles between deploying and parking the bridge arm (mBridgeArm)
-*   Right Analog
-*      Y-Axis - Controls the dispensing arm (mDispArm)
 *   R1 {Upper Back Right}
 *      Toggles deployment of the baton/blocking arm (mBatonArm)
 *   R2 {Lower Back Right}
@@ -121,6 +122,10 @@ const int BATON_DISPENSER_OPEN = 104;
 
 // How far to move the arm all the way out
 const int BRIDGE_ARM_DEPLOYED_POS = 1200;
+
+// The limits for the joystick control on the bridge arm
+const int BRIDGE_ARM_DEPLOYED_UPPER_LIMIT = BRIDGE_ARM_DEPLOYED_POS - 200;
+const int BRIDGE_ARM_DEPLOYED_LOWER_LIMIT = BRIDGE_ARM_DEPLOYED_POS;
 
 // Power to the bridge arm
 const int BRIDGE_ARM_MOVE_POWER = 40;
@@ -454,50 +459,51 @@ task BatonDropTask()
 //
 // Bridge Arm Controls (left arm)
 //
-bool bridgeArmButtonWasPressed = false;
-void moveBridgeArm()
-{
-    // XXX - Make sure to change the default state of brState if this is
-    // disabled.
-    if (true) {
-    // Move Bridge Arm.  Don't let the arm move if we're at the endpoints
-    int armPower = expoJoystick(joystick.joy2_y1);
-    if (abs(armPower) > BRIDGE_ARM_MOVE_POWER) {
-        if (armPower < 0)
-            armPower = -BRIDGE_ARM_MOVE_POWER;
-         else
-            armPower = BRIDGE_ARM_MOVE_POWER;
-    }
-    if ((abs(nMotorEncoder[mBridgeArm]) <= 10 && armPower < 0) ||
-        (abs(nMotorEncoder[mBridgeArm]) >= BRIDGE_ARM_DEPLOYED_POS && armPower > 0))
-        motor[mBridgeArm] = 0;
-    else
-        motor[mBridgeArm] = armPower;
-    } else {
-    bool btnPress = joy2Btn(5);
-    if (!btnPress && bridgeArmButtonWasPressed)
-        toggleBridgeArm();
-    bridgeArmButtonWasPressed = btnPress;
-    }
-}
-
 typedef enum {
-    BRIDGE_MANUAL,
     BRIDGE_PARKED,
     BRIDGE_OUT,
     BRIDGE_DEPLOYED,
     BRIDGE_IN
 } bridgeState;
 
-bridgeState brState = BRIDGE_MANUAL;
-//bridgeState brState = BRIDGE_PARKED;
+bridgeState brState = BRIDGE_PARKED;
+
+bool bridgeArmButtonWasPressed = false;
+void moveBridgeArm()
+{
+    // Check the bridge deployment button
+    bool btnPress = joy2Btn(5);
+    if (!btnPress && bridgeArmButtonWasPressed)
+        toggleBridgeArm();
+    bridgeArmButtonWasPressed = btnPress;
+
+    // Note, we only allow joystick movement if the arm is already
+    // deployed.
+    if (brState == BRIDGE_DEPLOYED) {
+        // Allow joystick movements, but limit the amount of power
+        // allowed.
+        int armPower = expoJoystick(joystick.joy2_y1);
+        if (abs(armPower) > BRIDGE_ARM_MOVE_POWER) {
+            if (armPower < 0)
+                armPower = -BRIDGE_ARM_MOVE_POWER;
+            else
+                armPower = BRIDGE_ARM_MOVE_POWER;
+        }
+
+        // Apply power to move the Arm.  Note, we don't let the arm move
+        // if we're at the position limits.
+        int armPos = abs(nMotorEncoder[mBridgeArm]);
+        if ((armPos <= BRIDGE_ARM_DEPLOYED_UPPER_LIMIT && armPower < 0) ||
+            (armPos > BRIDGE_ARM_DEPLOYED_LOWER_LIMIT && armPower > 0))
+            motor[mBridgeArm] = 0;
+        else
+            motor[mBridgeArm] = armPower;
+    }
+}
 
 void toggleBridgeArm()
 {
     switch (brState) {
-    case BRIDGE_MANUAL:
-        break;
-
     case BRIDGE_PARKED:
     case BRIDGE_IN:
         brState = BRIDGE_OUT;
@@ -521,10 +527,6 @@ task BridgeArmTask()
         long targetPos = -1;
 
         switch (brState) {
-        case BRIDGE_MANUAL:
-            // User analog joystick controlled
-            break;
-
         case BRIDGE_IN:
             // XXX - The slop is just a guess, but it seems to work.
             if (abs(armPos) <= ARM_POS_ZERO_SLOP)
@@ -536,12 +538,16 @@ task BridgeArmTask()
             break;
 
         case BRIDGE_OUT:
+            targetPos = BRIDGE_ARM_DEPLOYED_POS;
             if (armPos >= BRIDGE_ARM_DEPLOYED_POS)
                 brState = BRIDGE_DEPLOYED;
+            break;
+
             // Fall through
         case BRIDGE_DEPLOYED:
-            // Keep the arm at the deployed position!
-            targetPos = BRIDGE_ARM_DEPLOYED_POS;
+            // We allow the users to move the bridge arm in the deployed
+            // position, so we can't set a target position and hold it
+            // here.
             break;
 
         default:
