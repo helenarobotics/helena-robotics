@@ -129,20 +129,20 @@ const int BRIDGE_ARM_MOVE_POWER = 40;
 // Dispenser Constants (front/center arm)
 //
 
-// How far to move the arm all the way out
-const int DISPENSER_ARM_DEPLOYED_POS = 3500;
+// How far to move the arm all the way up
+const int DISPENSER_ARM_HIGHEST_POS = 3500;
 
 // Power to the dispenser arm
 const int DISPENSER_ARM_MOVE_POWER = 40;
 
-// The three preset heights for the DISPENSER ARM
-const int DISPENSER_ARM_HIGH_POS = 3000;
-const int DISPENSER_ARM_MED_POS = 2000;
-const int DISPENSER_ARM_LOW_POS = 1000;
+// The three preset heights for the dispenser arm
+const int DISPENSER_ARM_HIGH_PRESET_POS = 3000;
+const int DISPENSER_ARM_MED_PRESET_POS = 2000;
+const int DISPENSER_ARM_LOW_PRESET_POS = 1000;
 
 // How close does the arm need to be to the setpoint to consider it
 // 'good enough'?
-const int DISPENSER_ARM_SLOP = 50;
+const int DISPENSER_ARM_PRESET_SLOP = 50;
 
 // The dispenser cup's center position at start
 const int DISPENSER_CUP_CENTER_POS = 0;
@@ -150,7 +150,7 @@ const int DISPENSER_CUP_CENTER_POS = 0;
 // Dispenser arm 'wrist'
 const int DISPENSER_WRIST_DEPLOYED_POS = 90;
 
-// Power to the dispenser arm
+// Power to the dispenser wrist
 const int DISPENSER_WRIST_MOVE_POWER = 40;
 
 //
@@ -164,11 +164,13 @@ const int RG_ARM_DROP_POS = 1440 * 2;
 const int RG_ARM_LIFT_AMT = 240;
 const int RG_ARM_LIFT_POS = RG_ARM_DROP_POS - RG_ARM_LIFT_AMT;
 
-// We don't need much power to move, but use it all for lifting the goal
+// We don't need much power to move it up/down, but use it all for
+// lifting the goal
 const int RG_ARM_MOVE_POWER = 30;
 const int RG_ARM_LIFT_POWER = 100;
 
-// The maximum amount of time we'll use to 'lift' the goal at full power.
+// The maximum amount of time we'll use to 'lift' the goal at full
+// power.  If we can't get there, this avoids burning up the motors.
 const int RG_ARM_MAX_LIFT_TIME = 5 * 1000;
 
 // The servos that control the Rolling Goal are the 'teeth' the control
@@ -179,6 +181,8 @@ const int RG_TEETH_RIGHT_UP = 20;
 const int RG_TEETH_RIGHT_DOWN = 200;
 
 // Forward method declarations
+void moveTracks();
+
 void moveBatonArm();
 void toggleBatonArm();
 task BatonArmTask();
@@ -207,20 +211,20 @@ void toggleRGLift();
 void abortRGLift();
 task RGLiftTask();
 
-void moveTracks();
+float Power(float num, int exp);
+int expoJoystick(int eJoy);
 
+// XXX - This should be doing PID calculations
 int calculateTetrixPower(int power, long remainDist);
 
 void initializeRobot()
 {
-    // Turn off the motors and initialize their encoders
+    // The tracks are controlled via the joystick and have no background
+    // tasks, so turn off the motors and initialize their encoders.
     motor[mLTrack] = 0;
     motor[mRTrack] = 0;
     nMotorEncoder[mLTrack] = 0;
     nMotorEncoder[mRTrack] = 0;
-
-    // The tracks are controlled via the joystick and have no background
-    // tasks.
 
     // Startup the routines that control the different robot
     // attachments (arms, servos, etc..)
@@ -249,10 +253,11 @@ task main()
 
     // Loop indefinitely
     while (true) {
-        // Get current joystick button and analog movement
+        // Get current joystick buttons and analog movements
         getJoystickSettings(joystick);
 
         // Move robot
+        moveTracks();
         moveBridgeArm();
         moveDispenserControls();
         moveDispenserWrist();
@@ -260,37 +265,7 @@ task main()
         moveBatonArm();
         moveBatonDrop();
         moveRGLift();
-
-        moveTracks();
     }
-}
-
-// These give us a nice exponential band to make using the robots
-// controls easier.
-float Power(float num, int exp) {
-    // require positive integer for the exponent
-    if (exp <= 0)
-       return 0;
-
-    float result = num;
-    for (int i = 1; i < exp; i++)
-        result *= num;
-    return result;
-}
-
-// http://www.chiefdelphi.com/forums/showthread.php?p=921992
-const float SENSITIVITY = 0.7;
-int expoJoystick(int eJoy)
-{
-    // convert the joystick inputs to a floating point number
-    // between -1 and +1
-    float floatJoy = eJoy / 127.0;
-    float result = SENSITIVITY * Power(floatJoy, 3) +
-                    (1 - SENSITIVITY) * floatJoy;
-
-    // Convert the number back to a motor power, which is between -100
-    // and 100.
-    return (int)(100.0 * result);
 }
 
 //
@@ -355,7 +330,7 @@ void moveTracks()
         rPow /= 2;
     }
 
-    // Check to make sure these are working.
+    // XXX - Check to make sure these are working.
     nxtDisplayString(3, "L/R %d/%d",
                      nMotorEncoder[mLTrack], nMotorEncoder[mRTrack]);
 
@@ -401,8 +376,8 @@ void toggleBatonArm()
 
 task BatonArmTask()
 {
-    // Reset the encoder.  Note, we assume the arm is tucked into the
-    // robot at program start.
+    // Turn off the motor and reset the encoder.  Note, we assume the
+    // arm is tucked into the robot at program start.
     motor[mBatonArm] = 0;
     nMotorEncoder[mBatonArm] = 0;
     while (true) {
@@ -537,8 +512,8 @@ void toggleBridgeArm()
 
 task BridgeArmTask()
 {
-    // Reset the encoder.  Note, we assume the arm is tucked into the
-    // robot at program start.
+    // Turn off the motor and reset the encoder.  Note, we assume the
+    // arm is tucked into the robot at program start.
     motor[mBridgeArm] = 0;
     nMotorEncoder[mBridgeArm] = 0;
     while (true) {
@@ -637,7 +612,7 @@ void moveDispenserControls()
 
         // Don't let the arm move if we're at the endpoints.
         if ((nMotorEncoder[mDispArm] <= 10 && armPower < 0) ||
-            (nMotorEncoder[mDispArm] >= DISPENSER_ARM_DEPLOYED_POS &&
+            (nMotorEncoder[mDispArm] >= DISPENSER_ARM_HIGHEST_POS &&
              armPower > 0)) {
             motor[mDispArm] = 0;
         } else {
@@ -695,8 +670,8 @@ task DispenserArmTask()
     // Set the dispenser cup to it's center position
     servo[sDispCup] = DISPENSER_CUP_CENTER_POS;
 
-    // Reset the encoder.  Note, we assume the arm is tucked into the
-    // robot at program start.
+    // Turn off the motor and reset the encoder.  Note, we assume the
+    // arm is tucked into the robot at program start.
     motor[mDispArm] = 0;
     nMotorEncoder[mDispArm] = 0;
     while (true) {
@@ -709,17 +684,17 @@ task DispenserArmTask()
 
         case DISPENSER_LOW_PRESET:
             // Move to and hold the low arm position
-            targetPos = DISPENSER_ARM_LOW_POS;
+            targetPos = DISPENSER_ARM_LOW_PRESET_POS;
             break;
 
         case DISPENSER_MED_PRESET:
-            // Move to and hold the high arm position
-            targetPos = DISPENSER_ARM_MED_POS;
+            // Move to and hold the medium arm position
+            targetPos = DISPENSER_ARM_MED_PRESET_POS;
             break;
 
         case DISPENSER_HIGH_PRESET:
-            // Move to and hold the medium arm position
-            targetPos = DISPENSER_ARM_HIGH_POS;
+            // Move to and hold the high arm position
+            targetPos = DISPENSER_ARM_HIGH_PRESET_POS;
             break;
         }
 
@@ -732,8 +707,8 @@ task DispenserArmTask()
             // Ignore the command if the target is already at the bottom
             // or top of the arm's range, or if we're 'close enough' to
             // the target.
-            if (targetPos < 100 || targetPos >= DISPENSER_ARM_DEPLOYED_POS ||
-                abs(armPos - targetPos) <= DISPENSER_ARM_SLOP) {
+            if (targetPos < 100 || targetPos >= DISPENSER_ARM_HIGHEST_POS ||
+                abs(armPos - targetPos) <= DISPENSER_ARM_PRESET_SLOP) {
                 // Turn off the motor
                 motor[mDispArm] = 0;
             } else {
@@ -786,8 +761,8 @@ void toggleDispenserWrist()
 
 task DispenserWristTask()
 {
-    // Reset the encoder.  Note, we assume the arm is tucked into the
-    // robot at program start.
+    // Turn off the motor and reset the encoder.  Note, we assume the
+    // arm is tucked into the robot at program start.
     motor[mDispWrist] = 0;
     nMotorEncoder[mDispWrist] = 0;
     while (true) {
@@ -914,8 +889,8 @@ void abortRGLift()
 
 task RGLiftTask()
 {
-    // Reset the encoder.  Note, we assume the arm is in the 'PARKED'
-    // position at program start.
+    // Turn off the motor and reset the encoder.  Note, we assume the
+    // arm is tucked into the robot at program start.
     motor[mRGLiftArm] = 0;
     nMotorEncoder[mRGLiftArm] = 0;
     while (true) {
@@ -1044,6 +1019,35 @@ task RGLiftTask()
             break;
         }
     }
+}
+
+// These give us a nice exponential band to make using the robots
+// controls easier.
+float Power(float num, int exp)
+{
+    // require positive integer for the exponent
+    if (exp <= 0)
+       return 0;
+
+    float result = num;
+    for (int i = 1; i < exp; i++)
+        result *= num;
+    return result;
+}
+
+// http://www.chiefdelphi.com/forums/showthread.php?p=921992
+const float SENSITIVITY = 0.7;
+int expoJoystick(int eJoy)
+{
+    // convert the joystick inputs to a floating point number
+    // between -1 and +1
+    float floatJoy = eJoy / 127.0;
+    float result = SENSITIVITY * Power(floatJoy, 3) +
+                    (1 - SENSITIVITY) * floatJoy;
+
+    // Convert the number back to a motor power, which is between -100
+    // and 100.
+    return (int)(100.0 * result);
 }
 
 const int MIN_POWER = 10;
