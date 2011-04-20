@@ -604,10 +604,19 @@ void moveDispenserControls()
 
         // Don't let the arm move if we're at the endpoints.
         if ((nMotorEncoder[mDispArm] <= 10 && armPower < 0) ||
-            (nMotorEncoder[mDispArm] >= DISPENSER_ARM_DEPLOYED_POS && armPower > 0))
+            (nMotorEncoder[mDispArm] >= DISPENSER_ARM_DEPLOYED_POS &&
+             armPower > 0)) {
             motor[mDispArm] = 0;
-        else
+        } else {
+            // Limit the power from going too high
+            if (abs(armPower) > DISPENSER_ARM_MOVE_POWER) {
+                if (armPower > 0)
+                    armPower = DISPENSER_ARM_MOVE_POWER;
+                else
+                    armPower = -DISPENSER_ARM_MOVE_POWER;
+            }
             motor[mDispArm] = armPower;
+        }
     }
 
     // Controls the Dispenser cup rotation and allows for small
