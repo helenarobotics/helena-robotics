@@ -124,7 +124,7 @@ int DRIVE_MODE = DRIVE_ARCADE_TWOJOY;
 // The arm motors overshoot a bit, so until we write useful PID
 // controllers for them, we consider 'zero' when moving back to a
 // position anything less than this.
-const int ARM_POS_ZERO_SLOP = 150;
+const int ARM_POS_ZERO_SLOP = 25;
 
 //
 // Baton/Blocking Arm constants (right arm)
