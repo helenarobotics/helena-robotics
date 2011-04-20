@@ -630,14 +630,15 @@ int tweakDispArmAmt = 0;
 void moveDispenserControls()
 {
     // Move Dispensing Arm.
-        // Are any of the preset height buttons being pressed.  If they
-        // are, assume we want to go back to the 'default' height.
-        if (joy2Btn(4) == 1) {
-            dState = DISPENSER_HIGH_PRESET;
-        } else if (joy2Btn(1) == 1 || joy2Btn(3) == 1) {
-            dState = DISPENSER_MED_PRESET;
-        } else if (joy2Btn(2) == 1) {
-            dState = DISPENSER_LOW_PRESET;
+
+    // Are any of the preset height buttons being pressed.  If they are,
+    // assume we want to go to that 'preset' height.
+    if (joy2Btn(4) == 1) {
+        dState = DISPENSER_HIGH_PRESET;
+    } else if (joy2Btn(1) == 1 || joy2Btn(3) == 1) {
+        dState = DISPENSER_MED_PRESET;
+    } else if (joy2Btn(2) == 1) {
+        dState = DISPENSER_LOW_PRESET;
     } else {
         // Read the joystick and check if we're using joystick control!
         int armPower = expoJoystick(joystick.joy2_y2);
@@ -740,7 +741,7 @@ task DispenserArmTask()
 
         // If we're not doing joystick, then we're trying to set the
         // position.
-        if (dState != JOYSTICK) {
+        if (dState != DISPENSER_JOYSTICK) {
             // Include any minor changes to the arm height
             targetPos += tweakDispArmAmt;
 
