@@ -331,7 +331,7 @@ void moveTracks()
     }
 
     // Check the low-speed power setting.  If set, reduce power by half.
-    bool btnPress = joy1Btn(8);
+    bool btnPress = joy1Btn(9);
     if (!btnPress && slowSpeedButtonWasPressed)
         slowSpeedEnabled = !slowSpeedEnabled;
     slowSpeedButtonWasPressed = btnPress;
