@@ -132,7 +132,7 @@ const int ARM_POS_ZERO_SLOP = 25;
 const int BATON_ARM_DEPLOYED_POS = 720;
 
 // Power to the baton arm
-const int BATON_ARM_MOVE_POWER = 45;
+const int BATON_ARM_MOVE_POWER = 40;
 
 // Baton dispenser open/close
 const int BATON_DISPENSER_CLOSE = 244;
@@ -177,7 +177,7 @@ const int DISPENSER_ARM_TWEAK_LIMIT =
 const int DISPENSER_ARM_PRESET_SLOP = 20;
 
 // The dispenser cup's center position at start
-const int DISPENSER_CUP_CENTER_POS = 0;
+const int DISPENSER_CUP_CENTER_POS = 128;
 
 // Dispenser arm 'wrist'
 const int DISPENSER_WRIST_DEPLOYED_POS = 90;
@@ -198,7 +198,7 @@ const int RG_ARM_LIFT_POS = RG_ARM_DROP_POS - RG_ARM_LIFT_AMT;
 
 // We don't need much power to move it up/down, but use it all for
 // lifting the goal
-const int RG_ARM_MOVE_POWER = 30;
+const int RG_ARM_MOVE_POWER = 40;
 const int RG_ARM_LIFT_POWER = 100;
 
 // The maximum amount of time we'll use to 'lift' the goal at full
@@ -631,8 +631,8 @@ void moveDispenserControls()
 {
     // Move Dispensing Arm.
 
-    // Are any of the preset height buttons being pressed.  If they are,
-    // assume we want to go to that 'preset' height.
+    // Are any of the preset height buttons being pressed.  If they
+    // are, assume we want to go to a 'preset' height.
     if (joy2Btn(4) == 1) {
         dState = DISPENSER_HIGH_PRESET;
     } else if (joy2Btn(1) == 1 || joy2Btn(3) == 1) {
@@ -671,13 +671,15 @@ void moveDispenserControls()
     int dispenseCmd = joystick.joy2_TopHat;
     switch (dispenseCmd) {
     case 0:
-        // Tweak the dispenser arm up.
-        tweakDispArmAmt++;
+        // Tweak the dispenser arm up if we're not in JOYSTICK mode
+        if (dState != DISPENSER_JOYSTICK)
+            tweakDispArmAmt++;
         break;
 
     case 4:
         // Tweak the dispenser arm down.
-        tweakDispArmAmt--;
+        if (dState != DISPENSER_JOYSTICK)
+            tweakDispArmAmt--;
         break;
 
     case 1:
@@ -691,7 +693,7 @@ void moveDispenserControls()
     case 6:
     case 7:
         // Rotate the cup clockwise
-        servo[sDispCup] = ServoValue[sDispCup] - 5;
+        servo[sDispCup] = ServoValue[sDispCup] + 5;
         break;
 
     case -1:
