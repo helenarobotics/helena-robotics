@@ -2,9 +2,8 @@
 #pragma config(Motor,  mtr_S1_C1_1,     mLTrack,       tmotorNormal, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C1_2,     mRTrack,       tmotorNormal, PIDControl, encoder)
 #pragma config(Motor,  mtr_S1_C2_1,     mBatonArm,     tmotorNormal, PIDControl, reversed, encoder)
-#pragma config(Motor,  mtr_S1_C2_1,     mBatonArm,     tmotorNormal, PIDControl, encoder)
 #pragma config(Motor,  mtr_S1_C2_2,     mBridgeArm,    tmotorNormal, PIDControl, reversed, encoder)
-#pragma config(Motor,  mtr_S1_C3_1,     mDispArm,      tmotorNormal, PIDControl, encoder)
+#pragma config(Motor,  mtr_S1_C3_1,     mDispArm,      tmotorNormal, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C3_2,     mRGLiftArm,    tmotorNormal, PIDControl, reversed, encoder)
 #pragma config(Servo,  srvo_S1_C4_1,    ,                     tServoStandard)
 #pragma config(Servo,  srvo_S1_C4_3,    sBatonCup,            tServoStandard)
@@ -116,10 +115,10 @@ const int BRIDGE_ARM_MOVE_POWER = 40;
 //
 
 // XXX - How far to move the arm all the way out
-// const int DISPENSER_ARM_DEPLOYED_POS = 1440 * 2;
+const int DISPENSER_ARM_DEPLOYED_POS = 3500;
 
 // The dispenser cup's center position at start
-const int DISPENSER_CUP_CENTER_POS = 0;
+const int DISPENSER_CUP_CENTER_POS = 128;
 
 //
 // Rolling Goal Arm constants (rear/center arm)
@@ -281,8 +280,8 @@ void moveTracks()
         nTurnPower = expoJoystick(joystick.joy1_x1);
 
         // Power and speed
-        lPow = nSpeedPower - nTurnPower;
-        rPow = nSpeedPower + nTurnPower;
+        lPow = nSpeedPower + nTurnPower;
+        rPow = nSpeedPower - nTurnPower;
 
         // Reduce turning power at speed by 5%
         if (abs(nSpeedPower) > 30) {
@@ -304,8 +303,8 @@ void moveTracks()
         nTurnPower = expoJoystick(joystick.joy1_x2);
 
         // Power and speed
-        lPow = nSpeedPower - nTurnPower;
-        rPow = nSpeedPower + nTurnPower;
+        lPow = nSpeedPower + nTurnPower;
+        rPow = nSpeedPower - nTurnPower;
 
         // Reduce turning power at speed by 5%
         if (abs(nSpeedPower) > 30) {
@@ -504,13 +503,13 @@ task BridgeArmTask()
             if (armPos < 0)
                 motor[mBridgeArm] = calculateTetrixPower(
                     -BRIDGE_ARM_MOVE_POWER, abs(armPos));
-            else if armPos > BRIDGE_ARM_DEPLOYED_POS)
+            else if (armPos > BRIDGE_ARM_DEPLOYED_POS)
                 motor[mBridgeArm] = calculateTetrixPower(
                     BRIDGE_ARM_MOVE_POWER, abs(armPos));
             else
                 motor[mBridgeArm] = 0;
             break;
-            
+
         case BRIDGE_DEPLOYED:
             // Keep the arm deployed!
             if (armPos > BRIDGE_ARM_DEPLOYED_POS)
@@ -555,13 +554,10 @@ void moveDispenserArm()
     // Move Dispensing Arm.  Don't let the arm move if we're at the
     // endpoints.
     int armPower = expoJoystick(joystick.joy2_y1);
-/*
-//    int armPower = joystick.joy2_y1 * 100 / 127;
     if ((nMotorEncoder[mDispArm] <= 10 && armPower < 0) ||
         (nMotorEncoder[mDispArm] >= DISPENSER_ARM_DEPLOYED_POS && armPower > 0))
         motor[mDispArm] = 0;
     else
-*/
         motor[mDispArm] = armPower;
 }
 
