@@ -1,6 +1,7 @@
 #pragma config(Hubs,  S1, HTMotor,  HTMotor,  HTMotor,  HTServo)
 #pragma config(Motor,  mtr_S1_C1_1,     mLTrack,       tmotorNormal, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C1_2,     mRTrack,       tmotorNormal, PIDControl, encoder)
+#pragma config(Motor,  mtr_S1_C2_1,     mBatonArm,     tmotorNormal, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C2_1,     mBatonArm,     tmotorNormal, PIDControl, encoder)
 #pragma config(Motor,  mtr_S1_C2_2,     mBridgeArm,    tmotorNormal, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C3_1,     mDispArm,      tmotorNormal, PIDControl, encoder)
@@ -116,7 +117,7 @@ const int BRIDGE_ARM_MOVE_POWER = 40;
 
 // XXX - How far to move the arm all the way out
 // const int DISPENSER_ARM_DEPLOYED_POS = 1440 * 2;
-    
+
 // The dispenser cup's center position at start
 const int DISPENSER_CUP_CENTER_POS = 0;
 
@@ -385,7 +386,7 @@ task BatonArmTask()
         case MOVE_IN:
             motor[mBatonArm] = calculateTetrixPower(
                 -BATON_ARM_MOVE_POWER, abs(armPos));
-            if (armPos <= BATON_ARM_DEPLOYED_POS / 4)
+            if (armPos <= ARM_POS_ZERO_SLOP / 4)
                 bState = BATON_PARKED;
             break;
 
