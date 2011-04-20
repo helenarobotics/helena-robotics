@@ -192,7 +192,7 @@ void initializeRobot()
     // attachments (arms, servos, etc..)
     StartTask(BatonArmTask);
     StartTask(BatonDropTask);
-    StartTask(BridgeArmTask);
+//    StartTask(BridgeArmTask);
     StartTask(RGLiftTask);
 
 }
