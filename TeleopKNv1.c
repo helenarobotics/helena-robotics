@@ -73,6 +73,8 @@
 *      Controls bridge lowering arm (left arm)
 * mDispArm
 *      Controls the dispensing arm (front/center arm)
+* mDispWrist
+*      Controls the dispensing arm wrist (front/center arm)
 * mRGLiftArm
 *      Controls the rolling goal lifting arm (rear/center arm)
 **************************************************
@@ -144,6 +146,12 @@ const int DISPENSER_ARM_SLOP = 50;
 // The dispenser cup's center position at start
 const int DISPENSER_CUP_CENTER_POS = 0;
 
+// Dispenser arm 'wrist'
+const int DISPENSER_WRIST_DEPLOYED_POS = 90;
+
+// Power to the dispenser arm
+const int DISPENSER_WRIST_MOVE_POWER = 40;
+
 //
 // Rolling Goal Arm constants (rear/center arm)
 //
@@ -188,6 +196,10 @@ task BridgeArmTask();
 
 void moveDispenserControls();
 task DispenserArmTask();
+
+void moveDispenserWrist();
+void toggleDispenserWrist();
+task DispenserWristTask();
 
 void moveRGLift();
 void toggleRGLift();
@@ -241,6 +253,7 @@ task main()
         // Move robot
         moveBridgeArm();
         moveDispenserControls();
+        moveDispenserWrist();
 
         moveBatonArm();
         moveBatonDrop();
@@ -388,6 +401,7 @@ task BatonArmTask()
 {
     // Reset the encoder.  Note, we assume the arm is tucked into the
     // robot at program start.
+    motor[mBatonArm] = 0;
     nMotorEncoder[mBatonArm] = 0;
     while (true) {
         long armPos = abs(nMotorEncoder[mBatonArm]);
@@ -523,6 +537,7 @@ task BridgeArmTask()
 {
     // Reset the encoder.  Note, we assume the arm is tucked into the
     // robot at program start.
+    motor[mBridgeArm] = 0;
     nMotorEncoder[mBridgeArm] = 0;
     while (true) {
         long armPos = nMotorEncoder[mBridgeArm];
@@ -680,6 +695,7 @@ task DispenserArmTask()
 
     // Reset the encoder.  Note, we assume the arm is tucked into the
     // robot at program start.
+    motor[mDispArm] = 0;
     nMotorEncoder[mDispArm] = 0;
     while (true) {
         long armPos = abs(nMotorEncoder[mDispArm]);
@@ -728,6 +744,77 @@ task DispenserArmTask()
                 else
                     motor[mDispArm] = -armPower;
             }
+        }
+        EndTimeSlice();
+    }
+}
+
+bool dispWristButtonWasPressed = false;
+void moveDispenserWrist()
+{
+    bool btnPress = joy2Btn(10);
+    if (!btnPress && dispWristButtonWasPressed)
+        toggleDispenserWrist();
+    dispWristButtonWasPressed = btnPress;
+}
+
+typedef enum {
+    WRIST_PARKED,
+    WRIST_DOWN,
+    WRIST_UP,
+    WRIST_DEPLOYED,
+} wristState;
+
+wristState wState = WRIST_PARKED;
+
+void toggleDispenserWrist()
+{
+    switch (wState) {
+    case WRIST_PARKED:
+    case WRIST_UP:
+        wState = WRIST_DOWN;
+        break;
+
+    case WRIST_DEPLOYED:
+    case WRIST_DOWN:
+        wState = WRIST_UP;
+        break;
+    }
+}
+
+task DispenserWristTask()
+{
+    // Reset the encoder.  Note, we assume the arm is tucked into the
+    // robot at program start.
+    motor[mDispWrist] = 0;
+    nMotorEncoder[mDispWrist] = 0;
+    while (true) {
+        long armPos = abs(nMotorEncoder[mDispWrist]);
+
+        switch (wState) {
+        case WRIST_PARKED:
+        case WRIST_DEPLOYED:
+            motor[mBatonArm] = 0;
+            break;
+
+        case WRIST_DOWN:
+            motor[mBatonArm] = calculateTetrixPower(
+                DISPENSER_WRIST_ARM_MOVE_POWER,
+                abs(DISPENSER_WRIST_DEPLOYED_POS - armPos));
+            if (armPos >= DISPENSER_WRIST_DEPLOYED_POS)
+                bState = WRIST_DEPLOYED;
+            break;
+
+        case WRIST_UP:
+            motor[mBatonArm] = calculateTetrixPower(
+                DISPENSER_WRIST_ARM_MOVE_POWER, abs(armPos));
+            // XXX - The slop is just a guess, but it seems to work.
+            if (armPos <= ARM_POS_ZERO_SLOP / 4)
+                wState = WRIST_PARKED;
+
+        default:
+            nxtDisplayString(3, "DISP WRIST ERROR %d", wState);
+            break;
         }
         EndTimeSlice();
     }
@@ -827,6 +914,7 @@ task RGLiftTask()
 {
     // Reset the encoder.  Note, we assume the arm is in the 'PARKED'
     // position at program start.
+    motor[mRGLiftArm] = 0;
     nMotorEncoder[mRGLiftArm] = 0;
     while (true) {
         long armPos = abs(nMotorEncoder[mRGLiftArm]);
