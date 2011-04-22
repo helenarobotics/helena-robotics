@@ -43,7 +43,8 @@
  *
  * Joystick 2:
  *   Left Analog
- *      Controls the bridge arm pos (mBridgeArm)
+ *      Controls the dispensing arm wrist pos (mDispWristL/R)
+ *
  *   L1 {Upper Back Left}
  *      Toggles between deploying and parking the bridge arm (mBridgeArm)
  *
@@ -178,7 +179,8 @@ const int DISPENSER_CUP_CENTER_POS = 128;
 const int DISPENSER_WRIST_DEPLOYED_POS = 90;
 
 // Power to the dispenser wrist
-const int DISPENSER_WRIST_MOVE_POWER = 40;
+const int DISPENSER_WRIST_MOVE_DOWN_POWER = 70;
+const int DISPENSER_WRIST_MOVE_UP_POWER = -20;
 
 //
 // Rolling Goal Arm constants (rear/center arm)
@@ -251,12 +253,19 @@ void initializeRobot()
     nMotorEncoder[mLTrack] = 0;
     nMotorEncoder[mRTrack] = 0;
 
+    // Dispenser arm setup.  Sync the left/right motors together, so
+    // we only have to control the left motor.
+    // 
+    // Turn off the motor and reset the encoder.
+    nSyncedMotors = synchAB;
+    motor[mDispWristL] = 0;
+    nMotorEncoder[mDispWristL] = 0;
+
     // Startup the routines that control the different robot
     // attachments (arms, servos, etc..)
     StartTask(BatonArmTask);
     StartTask(BatonDropTask);
     StartTask(DispenserArmTask);
-//    StartTask(DispenserWristTask);
     StartTask(RGLiftTask);
 }
 
@@ -284,7 +293,7 @@ task main()
         moveTracks();
         moveBridgeArm();
         moveDispenserControls();
-//        moveDispenserWrist();
+        moveDispenserWrist();
 
         moveBatonArm();
         moveBatonDrop();
@@ -671,79 +680,20 @@ task DispenserArmTask()
     }
 }
 
-bool dispWristButtonWasPressed = false;
 void moveDispenserWrist()
 {
-    bool btnPress = joy2Btn(10);
-    if (!btnPress && dispWristButtonWasPressed)
-        toggleDispenserWrist();
-    dispWristButtonWasPressed = btnPress;
-}
+    // Allow joystick movements.
+    int armPower = expoJoystick(joystick.joy2_y1);
+    int armPos = nMotorEncoder[mBridgeArm];
 
-typedef enum {
-    WRIST_PARKED,
-    WRIST_DOWN,
-    WRIST_UP,
-    WRIST_DEPLOYED,
-} wristState;
-
-wristState wState = WRIST_PARKED;
-
-void toggleDispenserWrist()
-{
-    switch (wState) {
-    case WRIST_PARKED:
-    case WRIST_UP:
-        wState = WRIST_DOWN;
-        break;
-
-    case WRIST_DEPLOYED:
-    case WRIST_DOWN:
-        wState = WRIST_UP;
-        break;
-    }
-}
-
-task DispenserWristTask()
-{
-    // Sync the left/right motors together, so we'll only control the
-    // left motor.
-    nSyncedMotors = synchAB;
-
-    // Turn off the motor and reset the encoder.  Note, we assume the
-    // arm is tucked into the robot at program start.
-    motor[mDispWristL] = 0;
-    nMotorEncoder[mDispWristL] = 0;
-
-    while (true) {
-        long armPos = abs(nMotorEncoder[mDispWristL]);
-
-        switch (wState) {
-        case WRIST_PARKED:
-        case WRIST_DEPLOYED:
-            motor[mDispWristL] = 0;
-            break;
-
-        case WRIST_DOWN:
-            motor[mDispWristL] = calculateTetrixPower(
-                DISPENSER_WRIST_MOVE_POWER,
-                abs(DISPENSER_WRIST_DEPLOYED_POS - armPos));
-            if (armPos >= DISPENSER_WRIST_DEPLOYED_POS)
-                wState = WRIST_DEPLOYED;
-            break;
-
-        case WRIST_UP:
-            motor[mDispWristL] = calculateTetrixPower(
-                -DISPENSER_WRIST_MOVE_POWER, abs(armPos));
-            if (armPos <= 10)
-                wState = WRIST_PARKED;
-
-        default:
-            nxtDisplayString(3, "DISP WRIST ERROR %d", wState);
-            break;
-        }
-        EndTimeSlice();
-    }
+    // Limit the amount of power allowed.
+    armPower = BOUND(armPower, DISPENSER_WRIST_MOVE_UP_POWER, 
+                     DISPENSER_WRIST_MOVE_DOWN_POWER);
+    if ((armPos < 5 && armPower < 0) ||
+        (armPos > BRIDGE_ARM_DEPLOYED_POS && armPower > 0))
+        motor[mWristL] = 0;
+    else
+        motor[mWristL] = armPower;
 }
 
 // Rolling Goal has two control buttons that affect each other.  One for
