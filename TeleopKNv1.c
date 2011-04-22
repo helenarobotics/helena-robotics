@@ -721,7 +721,7 @@ task DispenserWristTask()
         switch (wState) {
         case WRIST_PARKED:
         case WRIST_DEPLOYED:
-            motor[mBatonArm] = 0;
+            motor[mDispWristL] = 0;
             break;
 
         case WRIST_DOWN:
@@ -734,8 +734,8 @@ task DispenserWristTask()
 
         case WRIST_UP:
             motor[mDispWristL] = calculateTetrixPower(
-                DISPENSER_WRIST_MOVE_POWER, abs(armPos));
-            if (armPos <= ARM_POS_ZERO_SLOP)
+                -DISPENSER_WRIST_MOVE_POWER, abs(armPos));
+            if (armPos <= 10)
                 wState = WRIST_PARKED;
 
         default:
