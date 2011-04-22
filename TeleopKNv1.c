@@ -255,7 +255,7 @@ void initializeRobot()
 
     // Dispenser arm setup.  Sync the left/right motors together, so
     // we only have to control the left motor.
-    // 
+    //
     // Turn off the motor and reset the encoder.
     nSyncedMotors = synchAB;
     motor[mDispWristL] = 0;
@@ -773,13 +773,13 @@ void moveDispenserWrist()
     int armPos = nMotorEncoder[mBridgeArm];
 
     // Limit the amount of power allowed.
-    armPower = BOUND(armPower, DISPENSER_WRIST_MOVE_UP_POWER, 
+    armPower = BOUND(armPower, DISPENSER_WRIST_MOVE_UP_POWER,
                      DISPENSER_WRIST_MOVE_DOWN_POWER);
     if ((armPos < 5 && armPower < 0) ||
         (armPos > DISPENSER_WRIST_DEPLOYED_POS && armPower > 0))
-        motor[mWristL] = 0;
+        motor[mDispWristL] = 0;
     else
-        motor[mWristL] = armPower;
+        motor[mDispWristL] = armPower;
 }
 
 // Rolling Goal has two control buttons that affect each other.  One for
