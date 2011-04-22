@@ -145,10 +145,6 @@ const int BATON_DISPENSER_OPEN = 104;
 // How far to move the arm all the way out
 const int BRIDGE_ARM_DEPLOYED_POS = 1200;
 
-// The limits for the joystick control on the bridge arm
-const int BRIDGE_ARM_DEPLOYED_UPPER_LIMIT = BRIDGE_ARM_DEPLOYED_POS - 200;
-const int BRIDGE_ARM_DEPLOYED_LOWER_LIMIT = BRIDGE_ARM_DEPLOYED_POS;
-
 // Power to the bridge arm
 const int BRIDGE_ARM_MOVE_POWER = 40;
 
@@ -236,8 +232,6 @@ void moveDispenserControls();
 task DispenserArmTask();
 
 void moveDispenserWrist();
-void toggleDispenserWrist();
-task DispenserWristTask();
 
 void moveRGLift();
 void toggleRGLift();
@@ -562,7 +556,7 @@ task BridgeArmTask()
                 brState = BRIDGE_PARKED;
                 // Reverse the motor a bit to reduce slop, per a posting
                 // my Dick Swan (author or RobotC for NXT).
-                motor[mBridgeArm] = armPower;
+                motor[mBridgeArm] = 2;
             }
             // Fall through
         case BRIDGE_PARKED:
@@ -576,6 +570,7 @@ task BridgeArmTask()
                 brState = BRIDGE_DEPLOYED;
                 // Reverse the motor a bit to reduce slop, per a posting
                 // my Dick Swan (author or RobotC for NXT).
+                motor[mBridgeArm] = -2;
             }
             break;
 
@@ -781,7 +776,7 @@ void moveDispenserWrist()
     armPower = BOUND(armPower, DISPENSER_WRIST_MOVE_UP_POWER, 
                      DISPENSER_WRIST_MOVE_DOWN_POWER);
     if ((armPos < 5 && armPower < 0) ||
-        (armPos > BRIDGE_ARM_DEPLOYED_POS && armPower > 0))
+        (armPos > DISPENSER_WRIST_DEPLOYED_POS && armPower > 0))
         motor[mWristL] = 0;
     else
         motor[mWristL] = armPower;
