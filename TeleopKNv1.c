@@ -145,6 +145,10 @@ const int BATON_DISPENSER_OPEN = 104;
 // How far to move the arm all the way out
 const int BRIDGE_ARM_DEPLOYED_POS = 1200;
 
+// The limits for the joystick control on the bridge arm
+const int BRIDGE_ARM_DEPLOYED_UPPER_LIMIT = BRIDGE_ARM_DEPLOYED_POS - 200;
+const int BRIDGE_ARM_DEPLOYED_LOWER_LIMIT = BRIDGE_ARM_DEPLOYED_POS;
+
 // Power to the bridge arm
 const int BRIDGE_ARM_MOVE_POWER = 40;
 
@@ -225,6 +229,8 @@ void openBatonDrop();
 task BatonDropTask();
 
 void moveBridgeArm();
+void toggleBridgeArm();
+task BridgeArmTask();
 
 void moveDispenserControls();
 task DispenserArmTask();
@@ -265,6 +271,7 @@ void initializeRobot()
     // attachments (arms, servos, etc..)
     StartTask(BatonArmTask);
     StartTask(BatonDropTask);
+    StartTask(BridgeArmTask);
     StartTask(DispenserArmTask);
     StartTask(RGLiftTask);
 }
@@ -505,21 +512,105 @@ task BatonDropTask()
 //
 // Bridge Arm Controls (left arm)
 //
+typedef enum {
+    BRIDGE_PARKED,
+    BRIDGE_OUT,
+    BRIDGE_DEPLOYED,
+    BRIDGE_IN
+} bridgeState;
+
+bridgeState brState = BRIDGE_PARKED;
+
+bool bridgeArmButtonWasPressed = false;
 void moveBridgeArm()
 {
-    // Allow joystick movements.
-    int armPower = expoJoystick(joystick.joy2_y1);
+    // Check the bridge deployment button
+    bool btnPress = joy2Btn(5);
+    if (!btnPress && bridgeArmButtonWasPressed)
+        toggleBridgeArm();
+    bridgeArmButtonWasPressed = btnPress;
+}
 
-    // Apply power to move the arm.  Note, we disable power if the
-    // arm is already at the position limits.
-    int armPos = abs(nMotorEncoder[mBridgeArm]);
-    if ((armPos <= 10 && armPower < 0) ||
-        (armPos > BRIDGE_ARM_DEPLOYED_POS && armPower > 0))
-        motor[mBridgeArm] = 0;
-    else
-        // Limit the amount of power allowed.
-        motor[mBridgeArm] =
-            BOUND(armPower, -BRIDGE_ARM_MOVE_POWER, BRIDGE_ARM_MOVE_POWER);
+void toggleBridgeArm()
+{
+    switch (brState) {
+    case BRIDGE_PARKED:
+    case BRIDGE_IN:
+        brState = BRIDGE_OUT;
+        break;
+
+    case BRIDGE_OUT:
+    case BRIDGE_DEPLOYED:
+        brState = BRIDGE_IN;
+        break;
+    }
+}
+
+task BridgeArmTask()
+{
+    // Turn off the motor and reset the encoder.  Note, we assume the
+    // arm is tucked into the robot at program start.
+    motor[mBridgeArm] = 0;
+    nMotorEncoder[mBridgeArm] = 0;
+    while (true) {
+        long armPos = nMotorEncoder[mBridgeArm];
+        long targetPos = -1;
+
+        switch (brState) {
+        case BRIDGE_IN:
+            if (armPos <= ARM_POS_ZERO_SLOP) {
+                brState = BRIDGE_PARKED;
+                // Reverse the motor a bit to reduce slop, per a posting
+                // my Dick Swan (author or RobotC for NXT).
+                motor[mBridgeArm] = armPower;
+            }
+            // Fall through
+        case BRIDGE_PARKED:
+            // Keep the arm at the parked position!
+            targetPos = 0;
+            break;
+
+        case BRIDGE_OUT:
+            targetPos = BRIDGE_ARM_DEPLOYED_POS;
+            if (armPos >= BRIDGE_ARM_DEPLOYED_POS) {
+                brState = BRIDGE_DEPLOYED;
+                // Reverse the motor a bit to reduce slop, per a posting
+                // my Dick Swan (author or RobotC for NXT).
+            }
+            break;
+
+            // Fall through
+        case BRIDGE_DEPLOYED:
+            // We allow the users to move the bridge arm in the deployed
+            // position, so we can't set a target position and hold it
+            // here.
+            break;
+
+        default:
+            nxtDisplayString(3, "BRIDGE ARM ERROR %d", brState);
+            break;
+        }
+
+        // Do we need to move the arm?
+        if (targetPos >= 0) {
+            // No need to do anything if we're 'close enough' to the
+            // target.
+            if (abs(armPos - targetPos) <= ARM_POS_ZERO_SLOP) {
+                // Turn off the motor
+                motor[mBridgeArm] = 0;
+            } else {
+                // Gotta move to get there!
+                int armPower = calculateTetrixPower(
+                    BRIDGE_ARM_MOVE_POWER, abs(targetPos - armPos));
+                // XXX - Check if these are correct for this motor?
+                if (targetPos > armPos)
+                    motor[mBridgeArm] = armPower;
+                else
+                    motor[mBridgeArm] = -armPower;
+            }
+        }
+        EndTimeSlice();
+    }
 }
 
 //
