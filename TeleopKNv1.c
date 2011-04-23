@@ -465,7 +465,7 @@ task DispenserArmTask()
             } else {
                 // Gotta move to get there!
                 int armPower = calculateTetrixPower(
-                    DISPENSER_ARM_PRESET_MOVE_POWER, abs(targetPos - armPos));
+                    DISPENSER_ARM_PRESET_MOVE_POWER, targetPos - armPos);
                 if (targetPos > armPos)
                     // It takes more power to go up vs. down!
                     motor[mDispArm] = armPower + 4;
@@ -590,7 +590,8 @@ task RGLiftTask()
     motor[mRGLiftArm] = 0;
     nMotorEncoder[mRGLiftArm] = 0;
     while (true) {
-        long armPos = abs(nMotorEncoder[mRGLiftArm]);
+        // XXX - Check if this is correct
+        long armPos = nMotorEncoder[mRGLiftArm];
         nxtDisplayString(0,"%d (%d) %d", lState, armPos);
 
         switch (lState) {
@@ -602,7 +603,7 @@ task RGLiftTask()
 
         case DROP_ARM:
             motor[mRGLiftArm] = calculateTetrixPower(
-                RG_ARM_MOVE_POWER, abs(armPos - RG_ARM_DROP_POS));
+                RG_ARM_MOVE_POWER, armPos - RG_ARM_DROP_POS);
             // XXX - Give us a bit of slop when parking so we don't
             // overshoot and jam the arm.
             if (armPos >= RG_ARM_DROP_POS) {
@@ -613,7 +614,7 @@ task RGLiftTask()
 
         case RAISE_ARM:
             motor[mRGLiftArm] = calculateTetrixPower(
-                -RG_ARM_MOVE_POWER, abs(armPos));
+                -RG_ARM_MOVE_POWER, armPos);
             if (armPos <= ARM_POS_ZERO_SLOP) {
                 motor[mRGLiftArm] = 0;
                 lState = PARKED;
@@ -691,7 +692,7 @@ task RGLiftTask()
         case UNLOAD_GOAL:
             // Keep droping the arm until we get low enough
             motor[mRGLiftArm] = calculateTetrixPower(
-                RG_ARM_MOVE_POWER, abs(armPos - RG_ARM_DROP_POS));
+                RG_ARM_MOVE_POWER, armPos - RG_ARM_DROP_POS);
             if (armPos >= RG_ARM_DROP_POS) {
                 // Done lowering, so start moving the teeth back up
                 motor[mRGLiftArm] = 0;
