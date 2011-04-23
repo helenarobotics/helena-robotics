@@ -20,7 +20,7 @@
 #include "JoystickDriver.c"
 
 /**************************************************
- * Code for Autonomous
+ * Code for Autonomous Mode
  * By Bridger Howell
  * Team 4309
  **************************************************
