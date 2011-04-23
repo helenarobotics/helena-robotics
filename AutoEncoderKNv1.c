@@ -72,7 +72,7 @@ const long SYNC_CHECK_TIME = 250;
 
 // We allow the motors to be at most this many ticks out of sync until
 // we attempt to correct things by changing motor power.
-const long SYNC_TICK_ERROR = 100;
+const long SYNC_TICK_ERROR = 50;
 
 //
 // Power constants
@@ -330,8 +330,8 @@ task MoveTask()
                         } else {
                             lPow--;
                         }
-                    } else if (lPos < rPos) {
-                        if (lPos < lTargetPow) {
+                    } else {
+                        if (lPow < lTargetPow) {
                             lPow++;
                         } else {
                             rPow--;
