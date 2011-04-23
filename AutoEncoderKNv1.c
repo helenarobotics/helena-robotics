@@ -48,13 +48,13 @@
 // Encoder clicks for movement
 
 //
-// The diameter of the tracked wheel is ~2.5", so circum == pi * d
+// The diameter of the tracked wheel is ~2.8", so circum == pi * d
 // (~7.6"), so one foot ~1.53 revolutions.  One revolution of the Tetrix
 // motor == 1440 ticks, so 1.53 * 1440 = 2200.  (This result was
 // verified by manually running the robot 6' and measuring the number of
 // encoder ticks).
-// 1 foot in ticks = 1440 * 12" / (2.5" * pi);
-const int FOOT_STRAIGHT_TICKS = 2200;
+// 1 foot in ticks = 1440 * 12" / (2.8" * pi) (XXX - ChangeMe)
+const int FOOT_STRAIGHT_TICKS = 1990;
 
 // Because we are using tank tranks for moving the robot, turning
 // introduces a huge amount of track slippage.  Depending on how fast we
@@ -80,7 +80,7 @@ const long SYNC_TICK_ERROR = 50;
 
 // We've determined by experience that by setting both motors to full
 // power, it keeps them more in sync with one another.
-const int STRAIGHT_POWER = 100;
+const int STRAIGHT_POWER = 80;
 
 // Changing this will effect the FULL_TURN_TICKS value (determined
 // experimentally), so make sure to change both numbers in parallel.
@@ -308,7 +308,7 @@ task MoveTask()
                 // next time through this loop we'll stop the motors.
                 motor[mLTrack] = -lPow;
                 motor[mRTrack] = -rPow;
-//                wait1MSec(10);
+                wait1MSec(50);
 
                 // This makes sure that we safely set the mState so that
                 // other threads can read it.
