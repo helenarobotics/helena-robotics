@@ -59,10 +59,12 @@ const int FOOT_STRAIGHT_TICKS = 2200;
 // Because we are using tank tranks for moving the robot, turning
 // introduces a huge amount of track slippage.  Depending on how fast we
 // go, the slippage changes significantly, which makes it difficult to
-// calculate this number mathematically.  This value was determiend by
-// running a number of turning tests using a consistent power setting
-// and turning the robot through a circle and averaging the result.
-const int FULL_TURN_TICKS = 9000;
+// calculate this number mathematically.  This value was determined
+// emperically by running a number of turning tests using a consistent
+// power setting and turning the robot through a circle and averaging
+// the result.
+const int RIGHT_FULL_TURN_TICKS = 8800;
+const int LEFT_FULL_TURN_TICKS = 7800;
 
 // How often do we check the encoders to make sure they are mostly in
 // sync.
@@ -354,5 +356,8 @@ int calcMove(float dist)
 int calcTurn(float deg)
 {
     // How much of a a full turn are we doing here?
-    return abs((int)((float)FULL_TURN_TICKS * deg / 360.0));
+    if (deg < 0)
+        return abs((int)((float)LEFT_FULL_TURN_TICKS * deg / 360.0));
+    else
+        return abs((int)((float)RIGHT_FULL_TURN_TICKS * deg / 360.0));
 }
