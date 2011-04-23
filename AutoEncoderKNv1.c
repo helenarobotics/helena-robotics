@@ -209,7 +209,7 @@ void moveWait(cmdState cmd, float amt)
 
 task MoveTask()
 {
-    long nxtSyncTime = nPgmTime() + SYNC_CHECK_TIME;
+    long nxtSyncTime = nPgmTime + SYNC_CHECK_TIME;
     int lTargetPow, rTargetPow;
     int lPow, rPow;
 
@@ -234,7 +234,7 @@ task MoveTask()
             nMotorEncoder[mRTrack] = 0;
             lTargetPow = lPow = motorPower;
             rTargetPow = rPow = motorPower;
-            nxtSyncTime = nPgmTime() + SYNC_CHECK_TIME;
+            nxtSyncTime = nPgmTime + SYNC_CHECK_TIME;
             mState = MOVING;
             break;
 
@@ -244,7 +244,7 @@ task MoveTask()
             nMotorEncoder[mRTrack] = 0;
             lTargetPow = lPow = -motorPower;
             rTargetPow = rPow = -motorPower;
-            nxtSyncTime = nPgmTime() + SYNC_CHECK_TIME;
+            nxtSyncTime = nPgmTime + SYNC_CHECK_TIME;
             mState = MOVING;
             break;
 
@@ -254,7 +254,7 @@ task MoveTask()
             nMotorEncoder[mRTrack] = 0;
             lTargetPow = lPow = -motorPower;
             rTargetPow = rPow = motorPower;
-            nxtSyncTime = nPgmTime() + SYNC_CHECK_TIME;
+            nxtSyncTime = nPgmTime + SYNC_CHECK_TIME;
             mState = MOVING;
             break;
 
@@ -264,7 +264,7 @@ task MoveTask()
             nMotorEncoder[mRTrack] = 0;
             lTargetPow = lPow = motorPower;
             rTargetPow = rPow = -motorPower;
-            nxtSyncTime = nPgmTime() + SYNC_CHECK_TIME;
+            nxtSyncTime = nPgmTime + SYNC_CHECK_TIME;
             mState = MOVING;
             break;
 
@@ -290,12 +290,12 @@ task MoveTask()
                 hogCPU();
                 mState = STOP;
                 releaseCPU();
-            } else if (nPgmTime() >= nxtSyncTime) {
+            } else if (nPgmTime >= nxtSyncTime) {
                 // See if we're far enough 'out of sync' to attempts
                 // motor speed corrections.
                 int avg = lPos + rPos / 2;
                 if (abs(lPos - avg) > SYNC_TICK_ERROR ||
-                    abs(rPos - avg) > SYNC_TICK_ERRO) {
+                    abs(rPos - avg) > SYNC_TICK_ERROR) {
                     // We default to slowing down the motors.  The only
                     // time we speed up motors is if they have been
                     // previously slowed.
@@ -314,7 +314,7 @@ task MoveTask()
                     }
                 }
                 // Wait a bit before checking the encoder positions.
-                nxtSyncTime = nPgmTime() + SYNC_CHECK_TIME;
+                nxtSyncTime = nPgmTime + SYNC_CHECK_TIME;
             }
             break;
         }
