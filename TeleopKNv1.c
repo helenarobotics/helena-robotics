@@ -481,7 +481,7 @@ void moveDispenserWrist()
 {
     // Allow joystick movements.
     int armPower = -expoJoystick(joystick.joy2_y1);
-    int armPos = nMotorEncoder[mBridgeArm];
+    int armPos = nMotorEncoder[mDispWrist];
 
     // Limit the amount of power allowed.
     armPower = BOUND(armPower, DISPENSER_WRIST_MOVE_UP_POWER,
