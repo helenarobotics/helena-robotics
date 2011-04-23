@@ -157,14 +157,15 @@ void move(cmdState cmd, float amt)
         return;
     }
 
+    motorState nState;
     switch (cmd) {
     case STRAIGHT:
         motorTime = calcMove(abs(amt));
         motorPower = STRAIGHT_POWER;
         if (amt > 0)
-            mState = FORWARD;
+            nState = FORWARD;
         else
-            mState = BACKWARD;
+            nState = BACKWARD;
         break;
 
     case TURN:
@@ -176,11 +177,15 @@ void move(cmdState cmd, float amt)
         motorTime = calcTurn(abs(amt));
         motorPower = TURN_POWER;
         if (amt > 0)
-            mState = TURN_RIGHT;
+            nState = TURN_RIGHT;
         else
-            mState = TURN_LEFT;
+            nState = TURN_LEFT;
         break;
     }
+    // Safely update the state!
+    hogCPU();
+    mState = nState;
+    releaseCPU();
 }
 
 void moveWait(cmdState cmd, float amt)
@@ -192,7 +197,6 @@ void moveWait(cmdState cmd, float amt)
 
 task MoveTask()
 {
-    ClearTimer(T4);
     while (true) {
         switch (mState) {
         case STOP:
