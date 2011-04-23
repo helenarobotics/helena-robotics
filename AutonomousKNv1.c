@@ -55,6 +55,7 @@ void move(motorState nState, float amt);
 void moveWait(motorState nState, float amt);
 
 // Usability functions
+bool stillMoving();
 int calcMove(float dist);
 int calcTurn(float deg);
 
@@ -157,6 +158,13 @@ void move(cmdState cmd, float amt)
     }
 }
 
+void moveWait(cmdState cmd, float amt)
+{
+    move(cmd, amt);
+    while (stillMoving())
+        EndTimeSlice();
+}
+
 typedef enum {
     STOP,
     FORWARD,
@@ -168,13 +176,10 @@ typedef enum {
 
 motorState mState = STOP;
 
-void moveWait(cmdState cmd, float amt)
+bool stillMoving()
 {
-    move(cmd, amt);
-    while (mState != STOP)
-        EndTimeSlice();
+    return (mState != STOP);
 }
-
 
 task MoveTask()
 {
