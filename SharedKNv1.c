@@ -181,7 +181,7 @@ task BatonArmTask()
             } else {
                 // Gotta move to get there!
                 int armPower = calculateTetrixPower(
-                    BATON_ARM_MOVE_POWER, abs(targetPos - armPos));
+                    BATON_ARM_MOVE_POWER, targetPos - armPos);
                 // XXX - Check if these are correct for this motor?
                 if (targetPos > armPos)
                     motor[mBatonArm] = armPower;
@@ -349,7 +349,7 @@ task BridgeArmTask()
             } else {
                 // Gotta move to get there!
                 int armPower = calculateTetrixPower(
-                    BRIDGE_ARM_MOVE_POWER, abs(targetPos - armPos));
+                    BRIDGE_ARM_MOVE_POWER, targetPos - armPos);
                 // XXX - Check if these are correct for this motor?
                 if (targetPos > armPos)
                     motor[mBridgeArm] = armPower;
@@ -368,12 +368,12 @@ int calculateTetrixPower(int power, long remainDist)
 {
     // We only reduce power if the calculations if the request is for
     // more than MIN_POWER and that we have a 'bit of distance' to go.
-    if (abs(power) < MIN_POWER || remainDist > SLOW_START_DIST)
+    if (abs(power) < MIN_POWER || abs(remainDist) > SLOW_START_DIST)
         return power;
 
     // 50% linear reduction in power based on how far we have remaining.
     power -= (int)((float)power / 2.0 *
-                   (((float)SLOW_START_DIST - (float)remainDist) /
+                   (((float)SLOW_START_DIST - (float)abs(remainDist)) /
                     (float)SLOW_START_DIST));
 
     // Limit ourself to at least MIN_POWER.
