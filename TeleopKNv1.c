@@ -176,11 +176,11 @@ const int DISPENSER_ARM_PRESET_SLOP = 20;
 const int DISPENSER_CUP_CENTER_POS = 128;
 
 // Dispenser arm 'wrist'
-const int DISPENSER_WRIST_DEPLOYED_POS = 90;
+const int DISPENSER_WRIST_DEPLOYED_POS = 420;
 
 // Power to the dispenser wrist
-const int DISPENSER_WRIST_MOVE_DOWN_POWER = 70;
-const int DISPENSER_WRIST_MOVE_UP_POWER = -20;
+const int DISPENSER_WRIST_MOVE_UP_POWER = -40;
+const int DISPENSER_WRIST_MOVE_DOWN_POWER = 25;
 
 //
 // Rolling Goal Arm constants (rear/center arm)
@@ -769,14 +769,14 @@ task DispenserArmTask()
 void moveDispenserWrist()
 {
     // Allow joystick movements.
-    int armPower = expoJoystick(joystick.joy2_y1);
+    int armPower = -expoJoystick(joystick.joy2_y1);
     int armPos = nMotorEncoder[mBridgeArm];
 
     // Limit the amount of power allowed.
     armPower = BOUND(armPower, DISPENSER_WRIST_MOVE_UP_POWER,
                      DISPENSER_WRIST_MOVE_DOWN_POWER);
-    if ((armPos < 5 && armPower < 0) ||
-        (armPos > DISPENSER_WRIST_DEPLOYED_POS && armPower > 0))
+    if ((armPos <= 5 && armPower < 0) ||
+        (armPos >= DISPENSER_WRIST_DEPLOYED_POS && armPower > 0))
         motor[mDispWristL] = 0;
     else
         motor[mDispWristL] = armPower;
