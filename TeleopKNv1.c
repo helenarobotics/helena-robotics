@@ -213,18 +213,30 @@ const int RG_TEETH_RIGHT_DOWN = 200;
 void moveTracks();
 
 void moveBatonArm();
+///* unused
+void deployBatonArm();
+void parkBatonArm();
+void deployBatonArmWait();
+void parkBatonArmWait();
+//*/
 void toggleBatonArm();
 task BatonArmTask();
 
-void moveBatonDrop();
-void toggleBatonDrop();
-/* unused
-void closeBatonDrop();
-void openBatonDrop();
-*/
-task BatonDropTask();
+void moveBatonCup();
+///* unused
+void closeBatonCup();
+void openBatonCup();
+//*/
+void toggleBatonCup();
+task BatonCupTask();
 
 void moveBridgeArm();
+///* unused
+void deployBatonArm();
+void parkBatonArm();
+void deployBatonArmWait();
+void parkBatonArmWait();
+//*/
 void toggleBridgeArm();
 task BridgeArmTask();
 
@@ -263,7 +275,7 @@ void initializeRobot()
     // Startup the routines that control the different robot
     // attachments (arms, servos, etc..)
     StartTask(BatonArmTask);
-    StartTask(BatonDropTask);
+    StartTask(BatonCupTask);
     StartTask(BridgeArmTask);
     StartTask(DispenserArmTask);
     StartTask(RGLiftTask);
@@ -296,7 +308,7 @@ task main()
         moveDispenserWrist();
 
         moveBatonArm();
-        moveBatonDrop();
+        moveBatonCup();
         moveRGLift();
     }
 }
@@ -387,6 +399,30 @@ void moveBatonArm()
     batonArmButtonWasPressed = btnPress;
 }
 
+void deployBatonArm()
+{
+    bState = MOVE_OUT;
+}
+
+void parkBatonArm()
+{
+    bState = MOVE_IN;
+}
+
+void deployBatonArmWait()
+{
+    deployBatonArm();
+    while (bState != BATON_DEPLOYED)
+        EndTimeSlice();
+}
+
+void parkBatonArmWait()
+{
+    parkBatonArm();
+    while (bState != BATON_DEPLOYED)
+        EndTimeSlice();
+}
+    
 typedef enum {
     BATON_PARKED,
     MOVE_OUT,
@@ -465,35 +501,37 @@ task BatonArmTask()
 }
 
 // Baton dropper
-bool batonDropWasPressed = false;
-void moveBatonDrop()
+bool batonCupWasPressed = false;
+void moveBatonCup()
 {
     bool btnPress = joy2Btn(8);
-    if (!btnPress && batonDropWasPressed)
-        toggleBatonDrop();
-    batonDropWasPressed = btnPress;
+    if (!btnPress && batonCupWasPressed)
+        toggleBatonCup();
+    batonCupWasPressed = btnPress;
 }
 
-bool batonDropClosed = true;
-void toggleBatonDrop()
+bool batonCupClosed = true;
+void toggleBatonCup()
 {
-    batonDropClosed = !batonDropClosed;
-}
-/* unused
-void closeBatonDrop()
-{
-    batonDropClosed = true;
+    batonCupClosed = !batonCupClosed;
 }
 
-void openBatonDrop()
+///* unused
+void closeBatonCup()
 {
-    batonDropClosed = false;
+    batonDropCup = true;
 }
-*/
+
+void openBatonCup()
+{
+    batonDropCup = false;
+}
+//*/
+
 task BatonDropTask()
 {
     while (true) {
-        if (batonDropClosed)
+        if (batonCupClosed)
             servo[sBatonCup] = BATON_DISPENSER_CLOSE;
         else
             servo[sBatonCup] = BATON_DISPENSER_OPEN;
@@ -523,6 +561,30 @@ void moveBridgeArm()
     if (!btnPress && bridgeArmButtonWasPressed)
         toggleBridgeArm();
     bridgeArmButtonWasPressed = btnPress;
+}
+
+void deployBridgeArm()
+{
+    brState = BRIDGE_OUT;
+}
+
+void parkBridgeArm()
+{
+    brState = BRIDGE_IN;
+}
+
+void deployBridgeArmWait()
+{
+    deployBridgeArm();
+    while (brState != BRIDGE_DEPLOYED)
+        EndTimeSlice();
+}
+
+void parkBridgeArmWait()
+{
+    parkBrigeArm();
+    while (brState != BRIDGE_DEPLOYED)
+        EndTimeSlice();
 }
 
 void toggleBridgeArm()
