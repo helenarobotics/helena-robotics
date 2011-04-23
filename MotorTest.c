@@ -142,8 +142,6 @@ void moveTracks()
     rPow = BOUND(rPow, -100, 100);
 
     nxtDisplayString(1, "Pow L/R %d/%d", lPow, rPow);
-
-    // XXX - Check to make sure these are working.
     nxtDisplayString(2, "Enc L/R %d/%d",
                      nMotorEncoder[mLTrack], nMotorEncoder[mRTrack]);
 
