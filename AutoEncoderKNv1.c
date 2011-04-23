@@ -328,8 +328,8 @@ task MoveTask()
                         } else {
                             lPow--;
                         }
-                    } else if (lPow < rPos) {
-                        if (lPow < lTargetPow) {
+                    } else if (lPos < rPos) {
+                        if (lPos < lTargetPow) {
                             lPow++;
                         } else {
                             rPow--;
