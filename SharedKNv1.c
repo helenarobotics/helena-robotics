@@ -136,7 +136,7 @@ void deployBatonArmWait()
 void parkBatonArmWait()
 {
     parkBatonArm();
-    while (bState != BATON_DEPLOYED)
+    while (bState != BATON_PARKED)
         EndTimeSlice();
 }
 
@@ -274,7 +274,7 @@ void deployBridgeArmWait()
 void parkBridgeArmWait()
 {
     parkBridgeArm();
-    while (brState != BRIDGE_DEPLOYED)
+    while (brState != BRIDGE_PARKED)
         EndTimeSlice();
 }
 
