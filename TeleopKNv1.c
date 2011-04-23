@@ -313,7 +313,7 @@ void moveTracks()
 
     nxtDisplayString(1, "E L/R %d/%d",
                      nMotorEncoder[mLTrack], nMotorEncoder[mRTrack]);
-    nxtDisplayString(2, "P L/R %d/%d", lPow, rPow);
+//    nxtDisplayString(2, "P L/R %d/%d", lPow, rPow);
 
     motor[mLTrack] = lPow;
     motor[mRTrack] = rPow;
@@ -481,7 +481,7 @@ void moveDispenserWrist()
 {
     // Allow joystick movements.
     int armPower = -expoJoystick(joystick.joy2_y1);
-    int armPos = nMotorEncoder[mDispWrist];
+    int armPos = nMotorEncoder[mDispWristL];
 
     // Limit the amount of power allowed.
     armPower = BOUND(armPower, DISPENSER_WRIST_MOVE_UP_POWER,
