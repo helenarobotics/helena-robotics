@@ -590,7 +590,6 @@ task RGLiftTask()
     motor[mRGLiftArm] = 0;
     nMotorEncoder[mRGLiftArm] = 0;
     while (true) {
-        // XXX - Check if this is correct
         long armPos = nMotorEncoder[mRGLiftArm];
         nxtDisplayString(0,"%d (%d) %d", lState, armPos);
 
@@ -604,8 +603,6 @@ task RGLiftTask()
         case DROP_ARM:
             motor[mRGLiftArm] = calculateTetrixPower(
                 RG_ARM_MOVE_POWER, armPos - RG_ARM_DROP_POS);
-            // XXX - Give us a bit of slop when parking so we don't
-            // overshoot and jam the arm.
             if (armPos >= RG_ARM_DROP_POS) {
                 motor[mRGLiftArm] = 0;
                 lState = READY;
