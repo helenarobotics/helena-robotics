@@ -172,7 +172,7 @@ void move(cmdState cmd, float amt)
     switch (cmd) {
     case STRAIGHT:
         motorPower = STRAIGHT_POWER;
-        motorTicks = calcMove(abs(amt));
+        motorTicks = calcMove(amt);
         if (amt > 0)
             nState = FORWARD;
         else
@@ -186,7 +186,7 @@ void move(cmdState cmd, float amt)
         while (amt > 180)
             amt -= 360;
         motorPower = TURN_POWER;
-        motorTicks = calcTurn(abs(amt));
+        motorTicks = calcTurn(amt);
         if (amt > 0)
             nState = TURN_RIGHT;
         else
@@ -206,17 +206,21 @@ void moveWait(cmdState cmd, float amt)
         EndTimeSlice();
 }
 
-int lTargetPow, rTargetPow;
-int lCurrPow, rCurrPow;
 
 task MoveTask()
 {
     long nxtSyncTime = nPgmTime() + SYNC_CHECK_TIME;
+    int lTargetPow, rTargetPow;
+    int lPow, rPow;
+
+    // Make it so the display doesn't print out garbage.
+    lPow = 0;
+    rPow = 0;
 
     while (true) {
         int lPos = nMotorEncoder[mLTrack];
         int rPos = nMotorEncoder[mRTrack];
-        nxtDisplayString(4, "L/R %d/%d", lPos, rPos);
+        nxtDisplayString(2, "L/R %d/%d (%d/%d)", lPos, rPos, lPow, rPow);
         switch (mState) {
         case STOP:
             // Shutoff the motors
@@ -228,10 +232,8 @@ task MoveTask()
             // Both motors go forward
             nMotorEncoder[mLTrack] = 0;
             nMotorEncoder[mRTrack] = 0;
-            lTargetPow = motorPower;
-            rTargetPow = motorPower;
-            lPow = motorPower;
-            rPow = motorPower;
+            lTargetPow = lPow = motorPower;
+            rTargetPow = rPow = motorPower;
             nxtSyncTime = nPgmTime() + SYNC_CHECK_TIME;
             mState = MOVING;
             break;
@@ -276,12 +278,19 @@ task MoveTask()
 
             // Did we make it the full distance for both motors?
             if (lPos >= motorTicks && rPos >= motorTicks) {
+                // Full reverse on the motors for one cylce to stop us
+                // quickly.  Note, by changing the state to STOP, the
+                // next time through this loop we'll stop the motors.
+                motor[mLTrack] = -lPow;
+                motor[mRTrack] = -rPow;
+//                wait1MSec(10);
+
                 // This makes sure that we safely set the mState so that
                 // other threads can read it.
                 hogCPU();
                 mState = STOP;
                 releaseCPU();
-            } else if (nPgmTime() >= nxtSynctime) {
+            } else if (nPgmTime() >= nxtSyncTime) {
                 // See if we're far enough 'out of sync' to attempts
                 // motor speed corrections.
                 int avg = lPos + rPos / 2;
@@ -316,11 +325,11 @@ task MoveTask()
 
 int calcMove(float dist)
 {
-    return (int)(dist * (float)FOOT_TIME_TICKS);
+    return abs((int)(dist * (float)FOOT_TIME_TICKS));
 }
 
 int calcTurn(float deg)
 {
     // How much of a a full turn are we doing here?
-    return (int)((float)FULL_TURN_TICKS * deg / 360.0);
+    return abs((int)((float)FULL_TURN_TICKS * deg / 360.0));
 }
