@@ -519,16 +519,16 @@ void toggleBatonCup()
 ///* unused
 void closeBatonCup()
 {
-    batonDropCup = true;
+    batonCupClosed = true;
 }
 
 void openBatonCup()
 {
-    batonDropCup = false;
+    batonCupClosed = false;
 }
 //*/
 
-task BatonDropTask()
+task BatonCupTask()
 {
     while (true) {
         if (batonCupClosed)
