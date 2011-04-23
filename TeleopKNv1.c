@@ -363,6 +363,7 @@ void moveTracks()
         rPow /= 2;
     }
 
+    // Limit power to +-100
     lPow = BOUND(lPow, -100, 100);
     rPow = BOUND(rPow, -100, 100);
 
