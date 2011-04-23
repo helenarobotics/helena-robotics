@@ -243,8 +243,8 @@ task MoveTask()
     rPow = 0;
 
     while (true) {
-        int lPos = nMotorEncoder[mLTrack];
-        int rPos = nMotorEncoder[mRTrack];
+        int lPos = abs(nMotorEncoder[mLTrack]);
+        int rPos = abs(nMotorEncoder[mRTrack]);
         nxtDisplayString(2, "L/R %d/%d (%d/%d)", lPos, rPos, lPow, rPow);
         switch (mState) {
         case STOP:
