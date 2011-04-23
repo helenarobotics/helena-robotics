@@ -213,29 +213,29 @@ const int RG_TEETH_RIGHT_DOWN = 200;
 void moveTracks();
 
 void moveBatonArm();
+void toggleBatonArm();
 ///* unused
 void deployBatonArm();
 void parkBatonArm();
 void deployBatonArmWait();
 void parkBatonArmWait();
 //*/
-void toggleBatonArm();
 task BatonArmTask();
 
 void moveBatonCup();
+void toggleBatonCup();
 ///* unused
 void closeBatonCup();
 void openBatonCup();
 //*/
-void toggleBatonCup();
 task BatonCupTask();
 
 void moveBridgeArm();
 ///* unused
-void deployBatonArm();
-void parkBatonArm();
-void deployBatonArmWait();
-void parkBatonArmWait();
+void deployBridgeArm();
+void parkBridgeArm();
+void deployBridgeArmWait();
+void parkBridgeArmWait();
 //*/
 void toggleBridgeArm();
 task BridgeArmTask();
@@ -399,30 +399,6 @@ void moveBatonArm()
     batonArmButtonWasPressed = btnPress;
 }
 
-void deployBatonArm()
-{
-    bState = MOVE_OUT;
-}
-
-void parkBatonArm()
-{
-    bState = MOVE_IN;
-}
-
-void deployBatonArmWait()
-{
-    deployBatonArm();
-    while (bState != BATON_DEPLOYED)
-        EndTimeSlice();
-}
-
-void parkBatonArmWait()
-{
-    parkBatonArm();
-    while (bState != BATON_DEPLOYED)
-        EndTimeSlice();
-}
-    
 typedef enum {
     BATON_PARKED,
     MOVE_OUT,
@@ -445,6 +421,30 @@ void toggleBatonArm()
         bState = MOVE_IN;
         break;
     }
+}
+
+void deployBatonArm()
+{
+    bState = MOVE_OUT;
+}
+
+void parkBatonArm()
+{
+    bState = MOVE_IN;
+}
+
+void deployBatonArmWait()
+{
+    deployBatonArm();
+    while (bState != BATON_DEPLOYED)
+        EndTimeSlice();
+}
+
+void parkBatonArmWait()
+{
+    parkBatonArm();
+    while (bState != BATON_DEPLOYED)
+        EndTimeSlice();
 }
 
 task BatonArmTask()
@@ -582,7 +582,7 @@ void deployBridgeArmWait()
 
 void parkBridgeArmWait()
 {
-    parkBrigeArm();
+    parkBridgeArm();
     while (brState != BRIDGE_DEPLOYED)
         EndTimeSlice();
 }
