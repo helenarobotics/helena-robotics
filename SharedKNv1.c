@@ -35,10 +35,10 @@ const int ARM_POS_ZERO_SLOP = 25;
 //
 // Baton/Blocking Arm constants (right arm)
 //
-const int BATON_ARM_DEPLOYED_POS = 720;
+const int BATON_ARM_DEPLOYED_POS = 760;
 
 // Power to the baton arm
-const int BATON_ARM_MOVE_POWER = 40;
+const int BATON_ARM_MOVE_POWER = 30;
 
 // Baton dispenser open/close
 const int BATON_DISPENSER_CLOSE = 244;
@@ -49,7 +49,7 @@ const int BATON_DISPENSER_OPEN = 104;
 //
 
 // How far to move the arm all the way out
-const int BRIDGE_ARM_DEPLOYED_POS = 1200;
+const int BRIDGE_ARM_DEPLOYED_POS = 1320;
 
 // Power to the bridge arm
 const int BRIDGE_ARM_MOVE_POWER = 40;
@@ -318,20 +318,14 @@ task BridgeArmTask()
             break;
 
         case BRIDGE_OUT:
-            targetPos = BRIDGE_ARM_DEPLOYED_POS;
-            if (armPos >= BRIDGE_ARM_DEPLOYED_POS) {
+            if (armPos >= BRIDGE_ARM_DEPLOYED_POS)
                 brState = BRIDGE_DEPLOYED;
-                // Reverse the motor a bit to reduce slop, per a posting
-                // my Dick Swan (author or RobotC for NXT).
-                motor[mBridgeArm] = -2;
-            }
-            break;
-
             // Fall through
         case BRIDGE_DEPLOYED:
             // We allow the users to move the bridge arm in the deployed
             // position, so we can't set a target position and hold it
             // here.
+            targetPos = BRIDGE_ARM_DEPLOYED_POS;
             break;
 
         default:
@@ -350,7 +344,6 @@ task BridgeArmTask()
                 // Gotta move to get there!
                 int armPower = calculateTetrixPower(
                     BRIDGE_ARM_MOVE_POWER, targetPos - armPos);
-                // XXX - Check if these are correct for this motor?
                 if (targetPos > armPos)
                     motor[mBridgeArm] = armPower;
                 else
