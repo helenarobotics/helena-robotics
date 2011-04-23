@@ -163,8 +163,8 @@ void move(cmdState cmd, float amt)
     motorState nState;
     switch (cmd) {
     case STRAIGHT:
-        motorTime = calcMove(abs(amt));
         motorPower = STRAIGHT_POWER;
+        motorTime = calcMove(abs(amt));
         if (amt > 0)
             nState = FORWARD;
         else
@@ -177,8 +177,8 @@ void move(cmdState cmd, float amt)
             amt += 360;
         while (amt > 180)
             amt -= 360;
-        motorTime = calcTurn(abs(amt));
         motorPower = TURN_POWER;
+        motorTime = calcTurn(abs(amt));
         if (amt > 0)
             nState = TURN_RIGHT;
         else
