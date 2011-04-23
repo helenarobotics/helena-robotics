@@ -51,13 +51,19 @@ const int STRAIGHT_POWER = 100;
 const int TURN_POWER = 50;
 
 // Move the robot
-void move(motorState nState, float amt);
-void moveWait(motorState nState, float amt);
+typedef enum {
+    STRAIGHT,
+    TURN,
+} cmdState;
+
+void move(cmdState cmd, float amt);
+void moveWait(cmdState cmd, float amt);
 
 // Usability functions
 bool stillMoving();
 int calcMove(float dist);
 int calcTurn(float deg);
+task MoveTask();
 
 void initializeRobot()
 {
@@ -73,6 +79,7 @@ void initializeRobot()
     StartTask(BatonArmTask);
     StartTask(BatonCupTask);
     StartTask(BridgeArmTask);
+    StartTask(MoveTask);
 }
 
 //Autonomous code start
@@ -85,13 +92,13 @@ task main()
     waitForStart();
 
     // Do the autonomous thing
-    moveWait(2.5);
+    moveWait(STRAIGHT, 2.5);
 
     // Move forward up to the rolling goal
     deployBatonArmWait();
 
     // Turn 'left' to capture the goal
-    turnWait(-45);
+    moveWait(TURN, -45.0);
 
     // Knock the bridge down
     deployBridgeArmWait();
@@ -102,7 +109,7 @@ task main()
 
     // Move across the bridge far enough so the rolling goal falls to
     // the other side.
-    moveWait(3);
+    moveWait(STRAIGHT, 3.0);
 
     // Start the cleanup routines
     closeBatonCup();
@@ -110,15 +117,28 @@ task main()
     parkBridgeArm();
 
     // Backup to the center of the bridge.
-    moveWait(-1.5);
+    moveWait(STRAIGHT, -1.5);
 
     // Hopefully we're balanced on the bridge now
 }
 
 typedef enum {
-    STRAIGHT,
-    TURN,
-} cmdState;
+    STOP,
+    FORWARD,
+    MOVING,
+    BACKWARD,
+    TURN_LEFT,
+    TURN_RIGHT,
+} motorState;
+
+motorState mState = STOP;
+int motorTime;
+int motorPower;
+
+bool stillMoving()
+{
+    return (mState != STOP);
+}
 
 void move(cmdState cmd, float amt)
 {
@@ -127,12 +147,12 @@ void move(cmdState cmd, float amt)
         return;
 
     // Make sure we can safely move!
-    if (mState != STOP) {
+    if (stillMoving()) {
         nxtDisplayString(1, "%d", "Motor still moving");
         return;
     }
 
-    switch (nState) {
+    switch (cmd) {
     case STRAIGHT:
         motorTime = calcMove(abs(amt));
         motorPower = STRAIGHT_POWER;
@@ -141,7 +161,7 @@ void move(cmdState cmd, float amt)
         else
             mState = BACKWARD;
         break;
-        
+
     case TURN:
         // Normalize the output to -180 <- +180
         while (amt < -180)
@@ -163,22 +183,6 @@ void moveWait(cmdState cmd, float amt)
     move(cmd, amt);
     while (stillMoving())
         EndTimeSlice();
-}
-
-typedef enum {
-    STOP,
-    FORWARD,
-    MOVING,
-    BACKWARD,
-    TURN_LEFT,
-    TURN_RIGHT,
-} motorState;
-
-motorState mState = STOP;
-
-bool stillMoving()
-{
-    return (mState != STOP);
 }
 
 task MoveTask()
@@ -225,7 +229,7 @@ task MoveTask()
             break;
 
         case MOVING:
-            if (time1[T4] >= time)
+            if (time1[T4] >= motorTime)
                 mState = STOP;
             break;
         }
@@ -240,5 +244,5 @@ int calcMove(float dist)
 int calcTurn(float deg)
 {
     // How much of a a full turn are we doing here?
-    return (int)((float)FULL_TURN_TIME_MSG * deg / 360.0);
+    return (int)((float)FULL_TURN_TIME_MS * deg / 360.0);
 }
