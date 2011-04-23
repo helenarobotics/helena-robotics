@@ -52,10 +52,10 @@ void initializeRobot()
 {
     // The tracks are controlled via the joystick and have no background
     // tasks, so turn off the motors and initialize their encoders.
-//    motor[mLTrack] = 0;
-//    motor[mRTrack] = 0;
-//    nMotorEncoder[mLTrack] = 0;
-//    nMotorEncoder[mRTrack] = 0;
+    motor[mLTrack] = 0;
+    motor[mRTrack] = 0;
+    nMotorEncoder[mLTrack] = 0;
+    nMotorEncoder[mRTrack] = 0;
 }
 
 task main()
@@ -141,14 +141,14 @@ void moveTracks()
     lPow = BOUND(lPow, -100, 100);
     rPow = BOUND(rPow, -100, 100);
 
-    nxtDisplayString(1, "L/R %d/%d", lPow, rPow);
+    nxtDisplayString(1, "Pow L/R %d/%d", lPow, rPow);
 
     // XXX - Check to make sure these are working.
-//    nxtDisplayString(1, "L/R %d/%d",
-//                     nMotorEncoder[mLTrack], nMotorEncoder[mRTrack]);
+    nxtDisplayString(2, "Enc L/R %d/%d",
+                     nMotorEncoder[mLTrack], nMotorEncoder[mRTrack]);
 
-//    motor[mLTrack] = lPow;
-//    motor[mRTrack] = rPow;
+    motor[mLTrack] = lPow;
+    motor[mRTrack] = rPow;
 }
 
 // These give us a nice exponential band to make using the robots
