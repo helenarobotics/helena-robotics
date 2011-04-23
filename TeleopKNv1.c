@@ -124,7 +124,7 @@ const int DISPENSER_ARM_PRESET_MOVE_POWER = 10;
 
 // The three preset heights for the dispenser arm
 const int DISPENSER_ARM_HIGH_PRESET_POS = 3000;
-const int DISPENSER_ARM_MED_PRESET_POS = 2000;
+const int DISPENSER_ARM_MED_PRESET_POS = 1650;
 const int DISPENSER_ARM_LOW_PRESET_POS = 1000;
 
 // The maximum amount we can 'tweak' the preset heights.
@@ -136,21 +136,21 @@ const int DISPENSER_ARM_TWEAK_LIMIT =
 const int DISPENSER_ARM_PRESET_SLOP = 20;
 
 // The dispenser cup's center position at start
-const int DISPENSER_CUP_CENTER_POS = 128;
+const int DISPENSER_CUP_CENTER_POS = 216;
 
 // Dispenser arm 'wrist'
-const int DISPENSER_WRIST_DEPLOYED_POS = 420;
+const int DISPENSER_WRIST_DEPLOYED_POS = 550;
 
 // Power to the dispenser wrist
 const int DISPENSER_WRIST_MOVE_UP_POWER = -40;
-const int DISPENSER_WRIST_MOVE_DOWN_POWER = 25;
+const int DISPENSER_WRIST_MOVE_DOWN_POWER = 30;
 
 //
 // Rolling Goal Arm constants (rear/center arm)
 //
 
 // 2 full rotations down from park (~90 degrees)!
-const int RG_ARM_DROP_POS = 1440 * 2;
+const int RG_ARM_DROP_POS = 3000;
 
 // How far to move up to 'lift' the rolling goal
 const int RG_ARM_LIFT_AMT = 240;
@@ -313,7 +313,6 @@ void moveTracks()
 
     nxtDisplayString(1, "E L/R %d/%d",
                      nMotorEncoder[mLTrack], nMotorEncoder[mRTrack]);
-//    nxtDisplayString(2, "P L/R %d/%d", lPow, rPow);
 
     motor[mLTrack] = lPow;
     motor[mRTrack] = rPow;
