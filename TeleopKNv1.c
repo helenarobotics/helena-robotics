@@ -253,13 +253,12 @@ void initializeRobot()
     nMotorEncoder[mLTrack] = 0;
     nMotorEncoder[mRTrack] = 0;
 
-    // Dispenser arm setup.  Sync the left/right motors together, so
-    // we only have to control the left motor.
-    //
-    // Turn off the motor and reset the encoder.
-    nSyncedMotors = synchAB;
+    // Dispenser arm setup. Turn off the motor and reset the encoder,
+    // and then sync the left/right motors together, so we only have to
+    // control the left motor.
     motor[mDispWristL] = 0;
     nMotorEncoder[mDispWristL] = 0;
+    nSyncedMotors = synchAB;
 
     // Startup the routines that control the different robot
     // attachments (arms, servos, etc..)
