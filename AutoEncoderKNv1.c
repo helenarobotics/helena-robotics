@@ -46,10 +46,25 @@
  */
 
 // Encoder clicks for movement
-const int FOOT_TIME_TICKS = 2200;
-const int FULL_TURN_TICKS = 8000;
 
-// How often do we check the encoders to make sure we are mostly in
+//
+// The diameter of the tracked wheel is ~2.5", so circum == pi * d
+// (~7.6"), so one foot ~1.53 revolutions.  One revolution of the Tetrix
+// motor == 1440 ticks, so 1.53 * 1440 = 2200.  (This result was
+// verified by manually running the robot 6' and measuring the number of
+// encoder ticks).
+// 1 foot in ticks = 1440 * 12" / (2.5" * pi);
+const int FOOT_STRAIGHT_TICKS = 2200;
+
+// Because we are using tank tranks for moving the robot, turning
+// introduces a huge amount of track slippage.  Depending on how fast we
+// go, the slippage changes significantly, which makes it difficult to
+// calculate this number mathematically.  This value was determiend by
+// running a number of turning tests using a consistent power setting
+// and turning the robot through a circle and averaging the result.
+const int FULL_TURN_TICKS = 9000;
+
+// How often do we check the encoders to make sure they are mostly in
 // sync.
 const long SYNC_CHECK_TIME = 250;
 
@@ -57,11 +72,19 @@ const long SYNC_CHECK_TIME = 250;
 // we attempt to correct things by changing motor power.
 const long SYNC_TICK_ERROR = 100;
 
+//
 // Power constants
+//
+
+// We've determined by experience that by setting both motors to full
+// power, it keeps them more in sync with one another.
 const int STRAIGHT_POWER = 100;
+
+// Changing this will effect the FULL_TURN_TICKS value (determined
+// experimentally), so make sure to change both numbers in parallel.
 const int TURN_POWER = 50;
 
-// Move the robot
+// How can we move the robot?
 typedef enum {
     STRAIGHT,
     TURN,
@@ -325,7 +348,7 @@ task MoveTask()
 
 int calcMove(float dist)
 {
-    return abs((int)(dist * (float)FOOT_TIME_TICKS));
+    return abs((int)(dist * (float)FOOT_STRAIGHT_TICKS));
 }
 
 int calcTurn(float deg)
