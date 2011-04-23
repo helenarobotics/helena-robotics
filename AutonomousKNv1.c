@@ -137,7 +137,12 @@ int motorPower;
 
 bool stillMoving()
 {
-    return (mState != STOP);
+    // This makes sure that we can read the other thread's update to
+    // mState.
+    hogCPU();
+    bool result = (mState != STOP);
+    releaseCPU();
+    return result;
 }
 
 void move(cmdState cmd, float amt)
@@ -229,8 +234,13 @@ task MoveTask()
             break;
 
         case MOVING:
-            if (time1[T4] >= motorTime)
+            if (time1[T4] >= motorTime) {
+                // This makes sure that we safely set the mState so that
+                // other threads can read it.
+                hogCPU();
                 mState = STOP;
+                releaseCPU();
+            }
             break;
         }
     }
