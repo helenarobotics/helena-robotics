@@ -53,6 +53,10 @@ const int FULL_TURN_TICKS = 8000;
 // sync.
 const long SYNC_CHECK_TIME = 250;
 
+// We allow the motors to be at most this many ticks out of sync until
+// we attempt to correct things by changing motor power.
+const long SYNC_TICK_ERROR = 100;
+
 // Power constants
 const int STRAIGHT_POWER = 100;
 const int TURN_POWER = 50;
@@ -270,6 +274,7 @@ task MoveTask()
             if (rPos >= motorTicks)
                 rPow = 0;
 
+            // Did we make it the full distance for both motors?
             if (lPos >= motorTicks && rPos >= motorTicks) {
                 // This makes sure that we safely set the mState so that
                 // other threads can read it.
@@ -277,23 +282,28 @@ task MoveTask()
                 mState = STOP;
                 releaseCPU();
             } else if (nPgmTime() >= nxtSynctime) {
-                // We default to slowing down the motors if we have no
-                // other choice.  The only time we speed up motors is if
-                // they have been previously slowed.
-                if (rPos < lPos) {
-                    if (rPow < rTargetPow) {
-                        rPow++;
-                    } else {
-                        lPow--;
-                    }
-                } else if (lPow < rPos) {
-                    if (lPow < lTargetPow) {
-                        lPow++;
-                    } else {
-                        rPow--;
+                // See if we're far enough 'out of sync' to attempts
+                // motor speed corrections.
+                int avg = lPos + rPos / 2;
+                if (abs(lPos - avg) > SYNC_TICK_ERROR ||
+                    abs(rPos - avg) > SYNC_TICK_ERRO) {
+                    // We default to slowing down the motors.  The only
+                    // time we speed up motors is if they have been
+                    // previously slowed.
+                    if (rPos < lPos) {
+                        if (rPow < rTargetPow) {
+                            rPow++;
+                        } else {
+                            lPow--;
+                        }
+                    } else if (lPow < rPos) {
+                        if (lPow < lTargetPow) {
+                            lPow++;
+                        } else {
+                            rPow--;
+                        }
                     }
                 }
-
                 // Wait a bit before checking the encoder positions.
                 nxtSyncTime = nPgmTime() + SYNC_CHECK_TIME;
             }
