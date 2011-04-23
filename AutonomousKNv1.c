@@ -19,6 +19,9 @@
 // waitForStart() is undefined.
 #include "JoystickDriver.c"
 
+// Shared code that both Auto and Teleop use
+#include "SharedKNv1.c"
+
 /**************************************************
  * Code for Autonomous Mode
  * By Bridger Howell
