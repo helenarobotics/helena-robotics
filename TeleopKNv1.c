@@ -320,7 +320,8 @@ void moveDispenserControls()
                 // Limit the power.
                 motor[mDispArm] =
                     BOUND(armPower,
-                          -DISPENSER_ARM_MOVE_POWER , DISPENSER_ARM_MOVE_POWER);
+                          -(DISPENSER_ARM_MOVE_POWER - 10),
+                          DISPENSER_ARM_MOVE_POWER);
             }
         }
     }
@@ -484,7 +485,6 @@ task RGLiftTask()
     nMotorEncoder[mRGLiftArm] = 0;
     while (true) {
         long armPos = nMotorEncoder[mRGLiftArm];
-        nxtDisplayString(0,"%d (%d) %d", lState, armPos);
 
         switch (lState) {
         case PARKED:
