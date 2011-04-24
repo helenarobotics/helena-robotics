@@ -89,6 +89,7 @@ void initializeRobot()
     StartTask(BatonArmTask);
     StartTask(BatonCupTask);
     StartTask(BridgeArmTask);
+    StartTask(DispenserArmTask);
     StartTask(MoveTask);
 }
 
@@ -104,7 +105,7 @@ task main()
     //
     // Do the autonomous thing
     //
-    
+
     // Move the dispenser arm to the correct height.
     dispenserArmAutoWait();
 
