@@ -101,10 +101,17 @@ task main()
     // Start when the teleop phase begins.
     waitForStart();
 
+    //
     // Do the autonomous thing
-    moveWait(STRAIGHT, 2.5);
+    //
+    
+    // Move the dispenser arm to the correct height.
+    dispenserArmAutoWait();
 
     // Move forward up to the rolling goal
+    moveWait(STRAIGHT, 2.5);
+
+    // Move the baton arm to help guide the goal
     deployBatonArmWait();
 
     // Turn 'left' to capture the goal
