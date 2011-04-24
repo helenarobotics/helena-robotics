@@ -77,6 +77,13 @@ void initializeRobot()
     nMotorEncoder[mLTrack] = 0;
     nMotorEncoder[mRTrack] = 0;
 
+    // Set the dispenser cup to it's center position
+    servo[sDispCup] = DISPENSER_CUP_AUTO_POS;
+
+    // Lift up the rolling goal 'teeth'
+    servo[sRGTeethL] = RG_TEETH_LEFT_UP;
+    servo[sRGTeethR] = RG_TEETH_RIGHT_UP;
+
     // Startup the routines that control the different robot
     // attachments (arms, servos, etc..)
     StartTask(BatonArmTask);
