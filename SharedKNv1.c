@@ -54,6 +54,48 @@ const int BRIDGE_ARM_DEPLOYED_POS = 1320;
 // Power to the bridge arm
 const int BRIDGE_ARM_MOVE_POWER = 40;
 
+//
+// Dispenser Constants (front/center arm)
+//
+
+// How far to move the arm all the way up
+const int DISPENSER_ARM_HIGHEST_POS = 3500;
+
+// Power to the dispenser arm
+const int DISPENSER_ARM_MOVE_POWER = 30;
+const int DISPENSER_ARM_PRESET_MOVE_POWER = 10;
+
+// The dispenser arm height in autonomous mode
+const int DISPENSER_ARM_AUTO_PRESET_POS = 1650;
+
+// The three preset heights for the dispenser arm
+const int DISPENSER_ARM_HIGH_PRESET_POS = 3000;
+const int DISPENSER_ARM_MED_PRESET_POS = 2000;
+const int DISPENSER_ARM_LOW_PRESET_POS = 1000;
+
+// The maximum amount we can 'tweak' the preset heights.
+const int DISPENSER_ARM_TWEAK_LIMIT =
+    (DISPENSER_ARM_HIGH_PRESET_POS - DISPENSER_ARM_MED_PRESET_POS) / 2;
+
+// How close does the arm need to be to the setpoint to consider it
+// 'good enough'?
+const int DISPENSER_ARM_PRESET_SLOP = 20;
+
+// The dispenser cup's start position at auto and teleop
+const int DISPENSER_CUP_AUTO_POS = 64;
+const int DISPENSER_CUP_TELEOP_POS = 216;
+
+//
+// Rolling Goal Arm constants (rear/center arm)
+//
+
+// The servos that control the Rolling Goal are the 'teeth' the control
+// the goal at the top
+const int RG_TEETH_LEFT_UP = 220;
+const int RG_TEETH_LEFT_DOWN = 40;
+const int RG_TEETH_RIGHT_UP = 20;
+const int RG_TEETH_RIGHT_DOWN = 200;
+
 // Forward method declarations
 void moveBatonArm();
 void toggleBatonArm();
@@ -76,6 +118,13 @@ void deployBridgeArmWait();
 void parkBridgeArmWait();
 void toggleBridgeArm();
 task BridgeArmTask();
+
+void dispenserArmAuto();
+void dispenserArmAutoWait();
+
+void tweakDispArmDown();
+void tweakDispArmUp();
+task DispenserArmTask();
 
 // XXX - This should be doing PID calculations
 int calculateTetrixPower(int power, long remainDist);
@@ -348,6 +397,119 @@ task BridgeArmTask()
                     motor[mBridgeArm] = armPower;
                 else
                     motor[mBridgeArm] = -armPower;
+            }
+        }
+        EndTimeSlice();
+    }
+}
+
+//
+// Dispenser Arm Controls (front/center)
+//
+typedef enum {
+    DISPENSER_STOP,
+    DISPENSER_JOYSTICK,
+    DISPENSER_AUTO_PRESET,
+    DISPENSER_LOW_PRESET,
+    DISPENSER_MED_PRESET,
+    DISPENSER_HIGH_PRESET,
+} dispState;
+
+dispState dState = DISPENSER_STOP;
+
+void dispenserArmAuto()
+{
+    // Move Dispensing Arm to the preset height used in auto.
+    dState = DISPENSER_AUTO_PRESET;
+}
+
+void dispenserArmAutoWait()
+{
+    dispenserArmAuto();
+
+    // We assume that the previous position is parked (zero), so we wait
+    // until the arm gets there.
+    int armPos = nMotorEncoder[mDispArm];
+    while (armPos < DISPENSER_ARM_AUTO_PRESET_POS)
+        EndTimeSlice();
+}
+
+int tweakDispArmAmt = 0;
+
+void tweakDispArmDown()
+{
+    tweakDispArmAmt--;
+}
+
+void tweakDispArmUp()
+{
+    tweakDispArmAmt++;
+}
+
+task DispenserArmTask()
+{
+    // Turn off the motor and reset the encoder.  Note, we assume the
+    // arm is tucked into the robot at program start.
+    motor[mDispArm] = 0;
+    nMotorEncoder[mDispArm] = 0;
+    while (true) {
+        long targetPos = -1;
+
+        switch (dState) {
+        case DISPENSER_STOP:
+            // Nothing to do.
+            break;
+
+        case DISPENSER_JOYSTICK:
+            // The user is in control, so we don't have a target.
+            break;
+
+        case DISPENSER_AUTO_PRESET:
+            // Move to and hold the low arm position
+            targetPos = DISPENSER_ARM_AUTO_PRESET_POS;
+            break;
+
+        case DISPENSER_LOW_PRESET:
+            // Move to and hold the low arm position
+            targetPos = DISPENSER_ARM_LOW_PRESET_POS;
+            break;
+
+        case DISPENSER_MED_PRESET:
+            // Move to and hold the medium arm position
+            targetPos = DISPENSER_ARM_MED_PRESET_POS;
+            break;
+
+        case DISPENSER_HIGH_PRESET:
+            // Move to and hold the high arm position
+            targetPos = DISPENSER_ARM_HIGH_PRESET_POS;
+            break;
+        }
+
+        // If we're not doing joystick, then we're trying to set the
+        // position.
+        if (dState != DISPENSER_JOYSTICK) {
+            // Include any minor changes to the arm height
+            targetPos += tweakDispArmAmt;
+
+            // Ignore the command if the target is already at the bottom
+            // or top of the arm's range, or if we're 'close enough' to
+            // the target.  The targetPos can only be too big or too
+            // small if they user continually continues to tweak the
+            // height adjustment beyond a reasonable amount.
+            long armPos = nMotorEncoder[mDispArm];
+            if (targetPos <= 0 || targetPos >= DISPENSER_ARM_HIGHEST_POS ||
+                abs(armPos - targetPos) <= DISPENSER_ARM_PRESET_SLOP) {
+                // Turn off the motor
+                motor[mDispArm] = 0;
+            } else {
+                // Gotta move to get there!
+                int armPower = calculateTetrixPower(
+                    DISPENSER_ARM_PRESET_MOVE_POWER, targetPos - armPos);
+                if (targetPos > armPos)
+                    // It takes more power to go up vs. down!
+                    motor[mDispArm] = armPower + 4;
+                else
+                    motor[mDispArm] = -armPower;
             }
         }
         EndTimeSlice();

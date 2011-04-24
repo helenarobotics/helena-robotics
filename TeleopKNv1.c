@@ -106,39 +106,9 @@ const int DRIVE_ARCADE_TWOJOY = 2;
 
 int DRIVE_MODE = DRIVE_ARCADE_TWOJOY;
 
-// The arm motors overshoot a bit, so until we write useful PID
-// controllers for them, we consider 'zero' when moving back to a
-// position anything less than this.
-const int ARM_POS_ZERO_SLOP = 25;
-
 //
-// Dispenser Constants (front/center arm)
+// Dispenser Arm Wrist Constants (front/center arm)
 //
-
-// How far to move the arm all the way up
-const int DISPENSER_ARM_HIGHEST_POS = 3500;
-
-// Power to the dispenser arm
-const int DISPENSER_ARM_MOVE_POWER = 30;
-const int DISPENSER_ARM_PRESET_MOVE_POWER = 10;
-
-// The three preset heights for the dispenser arm
-const int DISPENSER_ARM_HIGH_PRESET_POS = 3000;
-const int DISPENSER_ARM_MED_PRESET_POS = 1650;
-const int DISPENSER_ARM_LOW_PRESET_POS = 1000;
-
-// The maximum amount we can 'tweak' the preset heights.
-const int DISPENSER_ARM_TWEAK_LIMIT =
-    (DISPENSER_ARM_HIGH_PRESET_POS - DISPENSER_ARM_MED_PRESET_POS) / 2;
-
-// How close does the arm need to be to the setpoint to consider it
-// 'good enough'?
-const int DISPENSER_ARM_PRESET_SLOP = 20;
-
-// The dispenser cup's center position at start
-const int DISPENSER_CUP_CENTER_POS = 216;
-
-// Dispenser arm 'wrist'
 const int DISPENSER_WRIST_DEPLOYED_POS = 550;
 
 // Power to the dispenser wrist
@@ -165,19 +135,10 @@ const int RG_ARM_LIFT_POWER = 100;
 // power.  If we can't get there, this avoids burning up the motors.
 const int RG_ARM_MAX_LIFT_TIME = 5 * 1000;
 
-// The servos that control the Rolling Goal are the 'teeth' the control
-// the goal at the top
-const int RG_TEETH_LEFT_UP = 220;
-const int RG_TEETH_LEFT_DOWN = 40;
-const int RG_TEETH_RIGHT_UP = 20;
-const int RG_TEETH_RIGHT_DOWN = 200;
-
 // Forward method declarations
 void moveTracks();
 
 void moveDispenserControls();
-task DispenserArmTask();
-
 void moveDispenserWrist();
 
 void moveRGLift();
@@ -203,6 +164,13 @@ void initializeRobot()
     motor[mDispWristL] = 0;
     nMotorEncoder[mDispWristL] = 0;
     nSyncedMotors = synchAB;
+
+    // Set the dispenser cup to it's center position
+    servo[sDispCup] = DISPENSER_CUP_TELEOP_POS;
+
+    // Lift up the rolling goal 'teeth'
+    servo[sRGTeethL] = RG_TEETH_LEFT_UP;
+    servo[sRGTeethR] = RG_TEETH_RIGHT_UP;
 
     // Startup the routines that control the different robot
     // attachments (arms, servos, etc..)
@@ -321,16 +289,6 @@ void moveTracks()
 //
 // Dispenser Arm Controls (front/center)
 //
-typedef enum {
-    DISPENSER_JOYSTICK,
-    DISPENSER_LOW_PRESET,
-    DISPENSER_MED_PRESET,
-    DISPENSER_HIGH_PRESET,
-} dispState;
-
-dispState dState = DISPENSER_JOYSTICK;
-int tweakDispArmAmt = 0;
-
 void moveDispenserControls()
 {
     // Move Dispensing Arm.
@@ -377,27 +335,27 @@ void moveDispenserControls()
     case 0:
         // Tweak the dispenser arm up if we're not in JOYSTICK mode
         if (dState != DISPENSER_JOYSTICK)
-            tweakDispArmAmt++;
+            tweakDispArmUp();
         break;
 
     case 4:
         // Tweak the dispenser arm down.
         if (dState != DISPENSER_JOYSTICK)
-            tweakDispArmAmt--;
+            tweakDispArmDown();
         break;
 
     case 1:
     case 2:
     case 3:
         // Rotate the cup counter-clockwise
-        servo[sDispCup] = ServoValue[sDispCup] - 5;
+        servo[sDispCup] = ServoValue[sDispCup] - 3;
         break;
 
     case 5:
     case 6:
     case 7:
         // Rotate the cup clockwise
-        servo[sDispCup] = ServoValue[sDispCup] + 5;
+        servo[sDispCup] = ServoValue[sDispCup] + 3;
         break;
 
     case -1:
@@ -410,70 +368,6 @@ void moveDispenserControls()
     tweakDispArmAmt =
         BOUND(tweakDispArmAmt,
               -DISPENSER_ARM_TWEAK_LIMIT, DISPENSER_ARM_TWEAK_LIMIT);
-}
-
-task DispenserArmTask()
-{
-    // Set the dispenser cup to it's center position
-    servo[sDispCup] = DISPENSER_CUP_CENTER_POS;
-
-    // Turn off the motor and reset the encoder.  Note, we assume the
-    // arm is tucked into the robot at program start.
-    motor[mDispArm] = 0;
-    nMotorEncoder[mDispArm] = 0;
-    while (true) {
-        long targetPos = -1;
-
-        switch (dState) {
-        case DISPENSER_JOYSTICK:
-            // The user is in control, so we don't have a target.
-            break;
-
-        case DISPENSER_LOW_PRESET:
-            // Move to and hold the low arm position
-            targetPos = DISPENSER_ARM_LOW_PRESET_POS;
-            break;
-
-        case DISPENSER_MED_PRESET:
-            // Move to and hold the medium arm position
-            targetPos = DISPENSER_ARM_MED_PRESET_POS;
-            break;
-
-        case DISPENSER_HIGH_PRESET:
-            // Move to and hold the high arm position
-            targetPos = DISPENSER_ARM_HIGH_PRESET_POS;
-            break;
-        }
-
-        // If we're not doing joystick, then we're trying to set the
-        // position.
-        if (dState != DISPENSER_JOYSTICK) {
-            // Include any minor changes to the arm height
-            targetPos += tweakDispArmAmt;
-
-            // Ignore the command if the target is already at the bottom
-            // or top of the arm's range, or if we're 'close enough' to
-            // the target.  The targetPos can only be too big or too
-            // small if they user continually continues to tweak the
-            // height adjustment beyond a reasonable amount.
-            long armPos = nMotorEncoder[mDispArm];
-            if (targetPos <= 0 || targetPos >= DISPENSER_ARM_HIGHEST_POS ||
-                abs(armPos - targetPos) <= DISPENSER_ARM_PRESET_SLOP) {
-                // Turn off the motor
-                motor[mDispArm] = 0;
-            } else {
-                // Gotta move to get there!
-                int armPower = calculateTetrixPower(
-                    DISPENSER_ARM_PRESET_MOVE_POWER, targetPos - armPos);
-                if (targetPos > armPos)
-                    // It takes more power to go up vs. down!
-                    motor[mDispArm] = armPower + 4;
-                else
-                    motor[mDispArm] = -armPower;
-            }
-        }
-        EndTimeSlice();
-    }
 }
 
 void moveDispenserWrist()
