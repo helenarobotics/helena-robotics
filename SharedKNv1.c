@@ -82,7 +82,7 @@ const int DISPENSER_ARM_TWEAK_LIMIT =
 const int DISPENSER_ARM_PRESET_SLOP = 20;
 
 // The dispenser cup's start position at auto and teleop
-const int DISPENSER_CUP_AUTO_POS = 64;
+const int DISPENSER_CUP_AUTO_POS = 0;
 const int DISPENSER_CUP_TELEOP_POS = 216;
 
 //
@@ -121,6 +121,7 @@ task BridgeArmTask();
 
 void dispenserArmAuto();
 void dispenserArmAutoWait();
+void dispenserArmAutoParkWait();
 
 void tweakDispArmDown();
 void tweakDispArmUp();
@@ -407,7 +408,7 @@ task BridgeArmTask()
 // Dispenser Arm Controls (front/center)
 //
 typedef enum {
-    DISPENSER_STOP,
+    DISPENSER_PARKED,
     DISPENSER_JOYSTICK,
     DISPENSER_AUTO_PRESET,
     DISPENSER_LOW_PRESET,
@@ -415,7 +416,7 @@ typedef enum {
     DISPENSER_HIGH_PRESET,
 } dispState;
 
-dispState dState = DISPENSER_STOP;
+dispState dState = DISPENSER_PARKED;
 
 void dispenserArmAuto()
 {
@@ -430,8 +431,24 @@ void dispenserArmAutoWait()
     // We assume that the previous position is parked (zero), so we wait
     // until the arm gets there.
     int armPos = nMotorEncoder[mDispArm];
-    while (armPos < DISPENSER_ARM_AUTO_PRESET_POS)
+    while (armPos < DISPENSER_ARM_AUTO_PRESET_POS) {
         EndTimeSlice();
+        armPos = nMotorEncoder[mDispArm];
+    }
+}
+
+void dispenserArmAutoParkWait()
+{
+    // Move Dispensing Arm to the parked position in preperation for the
+    // teleop phase.
+    dState = DISPENSER_PARKED;
+
+    // Wait until we get close to the zero position.
+    int armPos = nMotorEncoder[mDispArm];
+    while (armPos > 20) {
+        EndTimeSlice();
+        armPos = nMotorEncoder[mDispArm];
+    }
 }
 
 int tweakDispArmAmt = 0;
@@ -456,8 +473,9 @@ task DispenserArmTask()
         long targetPos = -1;
 
         switch (dState) {
-        case DISPENSER_STOP:
-            // Nothing to do.
+        case DISPENSER_PARKED:
+            // Get down!
+            targetPos = 0;
             break;
 
         case DISPENSER_JOYSTICK:
@@ -509,7 +527,7 @@ task DispenserArmTask()
                     // It takes more power to go up vs. down!
                     motor[mDispArm] = armPower + 4;
                 else
-                    motor[mDispArm] = -armPower;
+                    motor[mDispArm] = -(armPower - 2);
             }
         }
         EndTimeSlice();

@@ -169,7 +169,13 @@ task main()
     // Backup to the center of the bridge.
     moveWait(STRAIGHT, -1.5);
 
+    //
     // Hopefully we're balanced on the bridge now
+    //
+
+    // Make sure this is done everytime before the end of the auto
+    // phase.
+    dispenserArmAutoParkWait();
 }
 
 typedef enum {
