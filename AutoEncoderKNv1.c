@@ -49,11 +49,11 @@
 
 //
 // The diameter of the tracked wheel is ~2.8", so circum == pi * d
-// (~7.6"), so one foot ~1.53 revolutions.  One revolution of the Tetrix
-// motor == 1440 ticks, so 1.53 * 1440 = 2200.  (This result was
+// (~8.8"), so one foot ~1.36 revolutions.  One revolution of the Tetrix
+// motor == 1440 ticks, so 1.36 * 1440 = 1964.  (This result was
 // verified by manually running the robot 6' and measuring the number of
 // encoder ticks).
-// 1 foot in ticks = 1440 * 12" / (2.8" * pi) (XXX - ChangeMe)
+// 1 foot in ticks = 1440 * 12" / (2.8" * pi)
 const int FOOT_STRAIGHT_TICKS = 1990;
 
 // Because we are using tank tranks for moving the robot, turning
