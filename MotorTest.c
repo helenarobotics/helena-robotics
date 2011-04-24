@@ -44,6 +44,7 @@ int DRIVE_MODE = DRIVE_ARCADE_TWOJOY;
 
 // Forward method declarations
 void moveTracks();
+void spinTest();
 
 float Power(float num, int exp);
 int expoJoystick(int eJoy);
@@ -72,7 +73,7 @@ task main()
         getJoystickSettings(joystick);
 
         // Move robot
-        moveTracks();
+        spinTest();
     }
 }
 
@@ -141,8 +142,10 @@ void moveTracks()
     lPow = BOUND(lPow, -100, 100);
     rPow = BOUND(rPow, -100, 100);
 
-    nxtDisplayString(1, "Pow L/R %d/%d", lPow, rPow);
-    nxtDisplayString(2, "Enc L/R %d/%d",
+    nxtDisplayString(1, "L/R %d/%d", lPow, rPow);
+
+    // XXX - Check to make sure these are working.
+    nxtDisplayString(2, "L/R %d/%d",
                      nMotorEncoder[mLTrack], nMotorEncoder[mRTrack]);
 
     motor[mLTrack] = lPow;
@@ -176,4 +179,93 @@ int expoJoystick(int eJoy)
     // Convert the number back to a motor power, which is between -100
     // and 100.
     return (int)(100.0 * result);
+}
+
+bool buWasPressed = false;
+bool turning = false;
+int power = 100;
+bool leftDir = true;
+
+bool bu2wasPressed = false;
+bool moving = false;
+bool forwDir = false;
+
+void spinTest()
+{
+    bool buIsPressed = joy1Btn(2);
+    if(!buIsPressed && buWasPressed)
+    {
+        if(turning)
+        {
+            motor[mLTrack] = 0;
+            motor[mRTrack] = 0;
+            turning = false;
+        }
+        else
+        {
+            nMotorEncoder[mLTrack] = 0;
+            nMotorEncoder[mRTrack] = 0;
+            if(leftDir)
+            {
+	            motor[mLTrack] = power;
+	            motor[mRTrack] = -power;
+	            leftDir = false;
+	        }
+	        else
+	        {
+	            motor[mLTrack] = -power;
+	            motor[mRTrack] = power;
+	            leftDir = true;
+	        }
+	        turning = true;
+        }
+    }
+    nxtDisplayString(1,"%d %d",nMotorEncoder[mLTrack],nMotorEncoder[mRTrack]);
+    buWasPressed = buIsPressed;
+
+    bool bu2isPressed = joy1Btn(4);
+
+    if(!bu2isPressed && bu2wasPressed)
+    {
+        if(moving)
+        {
+            motor[mLTrack] = 0;
+            motor[mRTrack] = 0;
+            moving = false;
+        }
+        else
+        {
+            nMotorEncoder[mLTrack] = 0;
+            if(!forwDir)
+            {
+	            motor[mLTrack] = power;
+	            motor[mRTrack] = power;
+	            forwDir = true;
+	        }
+	        else
+	        {
+	            motor[mLTrack] = -power;
+	            motor[mRTrack] = -power;
+	            forwDir = false;
+	        }
+            moving = true;
+        }
+    }
+    else if(moving)
+    {
+        if(abs(nMotorEncoder[mLTrack]) >= 13200)
+        {
+            int revPow = 5;
+            if(forwDir)
+                revPow*= -1;
+            motor[mLTrack] = revPow;
+            motor[mRTrack] = revPow;
+            wait1Msec(10);
+            motor[mLTrack] = 0;
+            motor[mRTrack] = 0;
+            moving = false;
+        }
+    }
+
+    bu2wasPressed = bu2isPressed;
 }
