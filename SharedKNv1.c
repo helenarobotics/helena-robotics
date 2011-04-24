@@ -58,12 +58,12 @@ const int BRIDGE_ARM_MOVE_POWER = 40;
 // Dispenser Constants (front/center arm)
 //
 
-// How far to move the arm all the way up
-const int DISPENSER_ARM_HIGHEST_POS = 3500;
-
 // Power to the dispenser arm
 const int DISPENSER_ARM_MOVE_POWER = 30;
 const int DISPENSER_ARM_PRESET_MOVE_POWER = 10;
+
+// How far to move the arm all the way up
+const int DISPENSER_ARM_HIGHEST_POS = 3500;
 
 // The dispenser arm height in autonomous mode
 const int DISPENSER_ARM_AUTO_PRESET_POS = 1650;
@@ -515,7 +515,7 @@ task DispenserArmTask()
             // small if they user continually continues to tweak the
             // height adjustment beyond a reasonable amount.
             long armPos = nMotorEncoder[mDispArm];
-            if (targetPos <= 0 || targetPos >= DISPENSER_ARM_HIGHEST_POS ||
+            if (targetPos < 0 || targetPos >= DISPENSER_ARM_HIGHEST_POS ||
                 abs(armPos - targetPos) <= DISPENSER_ARM_PRESET_SLOP) {
                 // Turn off the motor
                 motor[mDispArm] = 0;
@@ -527,7 +527,7 @@ task DispenserArmTask()
                     // It takes more power to go up vs. down!
                     motor[mDispArm] = armPower + 4;
                 else
-                    motor[mDispArm] = -(armPower - 2);
+                    motor[mDispArm] = -armPower;
             }
         }
         EndTimeSlice();
