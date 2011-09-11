@@ -329,7 +329,7 @@ task MoveTask()
                 // next time through this loop we'll stop the motors.
                 motor[mLTrack] = -lPow;
                 motor[mRTrack] = -rPow;
-                wait1MSec(50);
+                wait1Msec(50);
 
                 // This makes sure that we safely set the mState so that
                 // other threads can read it.

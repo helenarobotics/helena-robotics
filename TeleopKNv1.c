@@ -7,7 +7,6 @@
 #pragma config(Motor,  mtr_S1_C2_2,     mBridgeArm,    tmotorNormal, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C3_1,     mDispArm,      tmotorNormal, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C3_2,     mRGLiftArm,    tmotorNormal, PIDControl, reversed, encoder)
-#pragma config(Servo,  srvo_S1_C4_1,    ,                     tServoStandard)
 #pragma config(Servo,  srvo_S1_C4_3,    sBatonCup,            tServoStandard)
 #pragma config(Servo,  srvo_S1_C4_4,    sRGTeethL,            tServoStandard)
 #pragma config(Servo,  srvo_S1_C4_5,    sRGTeethR,            tServoStandard)
