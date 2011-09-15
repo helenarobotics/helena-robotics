@@ -8,10 +8,8 @@
 #include "Autonomous.h"
 #include "TeleOp.h"
 
-task main()
-    {
-    if (InitializeMain(true, true))
-        {
+task main() {
+    if (InitializeMain(true, true)) {
         // Configure our telemetry
         TelemetryUse(true,false);       // Bluetooth, but no USB; change if necessary
         TelemetryEnable(false);         // *Note* disabled for now.
@@ -28,17 +26,13 @@ task main()
         fDisplayEopdFront = false;
 
         // Off to the races!
-        if (PROGRAM_FLAVOR_TELEOP == programFlavor)
-            {
+        if (PROGRAM_FLAVOR_TELEOP == programFlavor) {
             DoTeleOp();
-            }
-        else
-            {
+        } else {
             DoAutonomous();
-            }
         }
-    else
-        {
-        InfiniteIdleLoop(); // Just sit there and update the display
-        }
+    } else {
+        // Just sit there and update the display
+        InfiniteIdleLoop();
     }
+}

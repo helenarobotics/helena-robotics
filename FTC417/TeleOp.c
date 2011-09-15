@@ -9,25 +9,21 @@
 
 #include "TeleOp.h"
 
-task main()
-    {
-    if (InitializeMain(true, true))
-        {
-	    // Put feedback on the screen during initialization
-	    fDisplaySonic = true;
-	    fDisplayEopdFront = true;
+task main() {
+    if (InitializeMain(true, true)) {
+        // Put feedback on the screen during initialization
+        fDisplaySonic = true;
+        fDisplayEopdFront = true;
 
-	    // Wait until the FCS tells us to start autonomous
-	    waitForStart();
+        // Wait until the FCS tells us to start autonomous
+        waitForStart();
 
-	    // During game play avoid unecessary delays in reading sonic
-	    fDisplaySonic = false;
-	    fDisplayEopdFront = false;
+        // During game play avoid unecessary delays in reading sonic
+        fDisplaySonic = false;
+        fDisplayEopdFront = false;
 
-	    DoTeleOp();
-	    }
-	else
-	    {
-	    InfiniteIdleLoop();
-        }
+        DoTeleOp();
+    } else {
+        InfiniteIdleLoop();
     }
+}
