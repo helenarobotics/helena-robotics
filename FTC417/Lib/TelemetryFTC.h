@@ -43,7 +43,7 @@
 //      * over USB, with the USB cable connected to the PC
 //      * over USB, with the USB cable connected to a Samantha module
 //      (not yet fully functional)
-//      
+//
 // Telemetry is (due to RobotC limitations) configured by default so
 // that records can be transmitted only over USB; if Bluetooth
 // transmission is desired, then one must call
@@ -237,7 +237,7 @@ typedef struct {
     long serialNumber;          // a handy variable useful for programs,
                                 // perhaps in order to count telemetry
                                 // records as they are sent
-    
+
     int _isActive;              // internal use only
     int _recordOverflowed;      // internal use only
     int _useBluetooth;          // internal use only

@@ -204,7 +204,7 @@ DoDriveJoystick(int jyc) {
         disp = DISP_LOW;
     } else if (joyBtnOnce(jyc, JOYBTN_RIGHTTRIGGER_UPPER)) {
         // Toggle: deploy EOPD and position bot front-to-back / pack
-        // from EOPD 
+        // from EOPD
         int cm = ReadSonic_Main(sensSonicLeft, false);
         if (cmSonicNil != cm) {
             if (!fDispenserAtEOPD) {
