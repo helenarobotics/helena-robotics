@@ -6,8 +6,8 @@
 // Blackboard-related data
 //---------------------------------------------------------------------------------------
 
-int32         cBlackboardUpdate = 0;    // how many times has the blackboard been updated?
-int32         msBlackboardUpdate;       // time at which the last blackboard update occurred
+int32 cBlackboardUpdate = 0;    // how many times has the blackboard been updated?
+int32 msBlackboardUpdate;       // time at which the last blackboard update occurred
 
 //---------------------------------------------------------------------------------------
 // Reading the blackboard
@@ -60,30 +60,35 @@ void CALLED_WITH_BB_LOCK UpdateBlackboard();
     sensor.msLastRead = nSysTime;                                                           \
     }
 
-int CALLEDBY(iTaskMain) ReadSonic_Main(SONICSENSOR& sensor, BOOL fRequireFinite)
+int
+CALLEDBY(iTaskMain)
+ReadSonic_Main(SONICSENSOR & sensor, BOOL fRequireFinite)
 // We read until we get two readings in a row with basically the same value.
 // Note that this function can a very long time to complete.
 // Return cmSonicNil if there's no reading available; that will never happen
 // if fAllowInfinite is false (we'll spin until that doesn't happen).
-    {
+{
     LockBlackboard();
-    RawReadSonic(sensor); int cmCur = sensor.cm;
+    RawReadSonic(sensor);
+    int cmCur = sensor.cm;
     int cmPrev;
-    for (int iRetry=0; iRetry < 10 || (fRequireFinite && (cmSonicRawNil==cmCur || cmSonicRawNil==cmPrev)); iRetry++)
-        {
+    for (int iRetry = 0;
+        iRetry < 10 || (fRequireFinite && (cmSonicRawNil == cmCur
+                || cmSonicRawNil == cmPrev)); iRetry++) {
         cmPrev = cmCur;
         WaitForNewSonicReading(sensor);
         RawReadSonic(sensor);
-        cmCur  = sensor.cm;
-        if (fRequireFinite && (cmSonicRawNil==cmCur || cmSonicRawNil==cmPrev))
+        cmCur = sensor.cm;
+        if (fRequireFinite && (cmSonicRawNil == cmCur
+                || cmSonicRawNil == cmPrev))
             continue;
         if (Abs(cmCur - cmPrev) <= 1)
             break;
-        }
-    int result = cmCur==cmSonicRawNil ? cmSonicNil : cmCur;
+    }
+    int result = cmCur == cmSonicRawNil ? cmSonicNil : cmCur;
     ReleaseBlackboard();
     return result;
-    }
+}
 
 //---------------------------------------------------------------------------------------
 // Compass
@@ -92,27 +97,29 @@ int CALLEDBY(iTaskMain) ReadSonic_Main(SONICSENSOR& sensor, BOOL fRequireFinite)
 //---------------------------------------------------------------------------------------
 
 #if SensorIsDefined(sensnmCompass)
-ANGLE CALLEDBY(iTaskMain) ReadCompass()
+ANGLE
+CALLEDBY(iTaskMain)
+ReadCompass()
 // Access the compass value from the main task
-    {
+{
     LockBlackboard();
     ANGLE angle = sensCompass.value;
     ReleaseBlackboard();
     return angle;
-    }
+}
 #else
 #define ReadCompass()    (0.0)
 #endif
 
 #if SensorIsDefined(sensnmCompass)
-void ZeroCompass()
-    {
+void
+ZeroCompass() {
     LockBlackboard();
     sensCompass.valueZero = 0.0;
     ReadCompassSensor(sensCompass);
     sensCompass.valueZero = sensCompass.value;
     ReleaseBlackboard();
-    }
+}
 #else
 #define ZeroCompass()  {}
 #endif
@@ -122,9 +129,9 @@ void ZeroCompass()
 //---------------------------------------------------------------------------------------
 
 #if SensorIsDefined(sensnmCompass)
-    #define DetectCompass() { StartReadingCompassSensor(sensCompass); }
+#define DetectCompass() { StartReadingCompassSensor(sensCompass); }
 #else
-    #define DetectCompass() {}
+#define DetectCompass() {}
 #endif
 
 #define InitializeBlackboard()                            \
@@ -134,7 +141,8 @@ void ZeroCompass()
     ZeroCompass();                                        \
     }
 
-void CALLED_WITH_BB_LOCK UpdateBlackboard()
+void CALLED_WITH_BB_LOCK
+UpdateBlackboard()
 // Do the work of updating the blackboard. Note that (per Dave Schilling) we can't actually read
 // the compass (or any of the other sensors?) faster than 100Hz, so we enforce a throttle here.
 // That won't be significant when we're called from the BlackboardTask (it doesn't call that often),
@@ -142,9 +150,9 @@ void CALLED_WITH_BB_LOCK UpdateBlackboard()
 //
 // REVIEW: further research indicates that's probably hookum, esp. when sensor are on a mux.
 // But actual removal of that throttle needs more testing before it can be implemented.
-    {
-    const MILLI msBlackboardThrottle = 8;   // was 11
-    MILLI msNow = nSysTime;                 // read the current clock
+{
+    const MILLI msBlackboardThrottle = 8;       // was 11
+    MILLI msNow = nSysTime;     // read the current clock
     //
     // We do the gyro's every time through because they're really sensitive time-wise.
     //
@@ -155,8 +163,8 @@ void CALLED_WITH_BB_LOCK UpdateBlackboard()
     ReadGyroSensor(sensGyroVert, msNow);
 #endif
     //
-    if (0==cBlackboardUpdate || (msNow - msBlackboardUpdate) > msBlackboardThrottle)
-        {
+    if (0 == cBlackboardUpdate
+        || (msNow - msBlackboardUpdate) > msBlackboardThrottle) {
         msBlackboardUpdate = msNow;
         //
 #if SensorIsDefined(sensnmCompass)
@@ -194,15 +202,14 @@ void CALLED_WITH_BB_LOCK UpdateBlackboard()
         DoRotorTaskStallWork(msNow);
         //
         cBlackboardUpdate++;
-        }
     }
+}
 
-task BlackboardTask()
-    {
+task
+BlackboardTask() {
     // We just go round and round
     //
-    for (;;)
-        {
+    for (;;) {
         // Since we're going to update the state in the blackboard, make
         // sure that no one is reading it at the moment, and that no one
         // will do so while we do our updates
@@ -222,10 +229,8 @@ task BlackboardTask()
         // we'd always have it locked.
         //
         wait1Msec(msBlackboardPolling);
-        }
     }
-
-
+}
 
 //---------------------------------------------------------------------------------------
 // Startup

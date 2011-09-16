@@ -8,11 +8,12 @@
 #include "Autonomous.h"
 #include "TeleOp.h"
 
-task main() {
+task
+main() {
     if (InitializeMain(true, true)) {
         // Configure our telemetry
-        TelemetryUse(true,false);       // Bluetooth, but no USB; change if necessary
-        TelemetryEnable(false);         // *Note* disabled for now.
+        TelemetryUse(true, false);      // Bluetooth, but no USB; change if necessary
+        TelemetryEnable(false); // *Note* disabled for now.
 
         // Put feedback on the screen during initialization
         fDisplaySonic = true;

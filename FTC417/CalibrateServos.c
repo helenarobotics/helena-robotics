@@ -11,12 +11,13 @@
 #include "config\RobotConfig.h"
 #include "lib\MainPostlude.h"
 
-int         jyc                  = 1;               // which joystick controller
-int         dsvpos               = 5;               // increment by which we move servos
-DISPENSER   disp                 = DISP_HIGH;       // which dispenser do we calibrate to
-int         svposRotorRotorSpeed = svposRotorStop;  // speed of the rotor
+int jyc = 1;                    // which joystick controller
+int dsvpos = 5;                 // increment by which we move servos
+DISPENSER disp = DISP_HIGH;     // which dispenser do we calibrate to
+int svposRotorRotorSpeed = svposRotorStop;      // speed of the rotor
 
-int AdjustSvpos(int svpos, int dsvpos) {
+int
+AdjustSvpos(int svpos, int dsvpos) {
     // Holding the lower right button makes changes the movement calls
     // to move the servo to the extreme position in that direction.
     if (joyBtn(jyc, JOYBTN_RIGHTTRIGGER_LOWER)) {
@@ -32,15 +33,17 @@ int AdjustSvpos(int svpos, int dsvpos) {
 
 // Are we controlling the joysticks in the direct-drive-servo or
 // in the move-arm-tip mode or in the driving mode?
-typedef enum { JYC1_MODE_SVPOS, JYC1_MODE_ARMTIP, JYC1_MODE_DRIVING } JYC1_MODE;
+typedef enum { JYC1_MODE_SVPOS, JYC1_MODE_ARMTIP,
+               JYC1_MODE_DRIVING } JYC1_MODE;
 JYC1_MODE jyc1Mode = JYC1_MODE_SVPOS;
 
-void CheckJoy1ModeChange(int jyc) {
+void
+CheckJoy1ModeChange(int jyc) {
     if (joyBtnOnce(jyc, JOYBTN_TOP_LEFT)) {
-        Beep(NOTE_C,3);
+        Beep(NOTE_C, 3);
         jyc1Mode = JYC1_MODE_SVPOS;
     } else if (joyBtnOnce(jyc, JOYBTN_TOP_RIGHT)) {
-        Beep(NOTE_G,3);
+        Beep(NOTE_G, 3);
         if (JYC1_MODE_SVPOS == jyc1Mode) {
             TRACE(("mode arm tip"));
             jyc1Mode = JYC1_MODE_ARMTIP;
@@ -57,10 +60,11 @@ void CheckJoy1ModeChange(int jyc) {
 //-----------------------------------------------------------------------------
 // Common control
 //-----------------------------------------------------------------------------
-void DoCommonControl(int jyc, int cm) {
+void
+DoCommonControl(int jyc, int cm) {
     //--------------------------------------------------------------------
     // Adjust the dispenser arm increment with the right upper trigger
-    if (joyBtnOnce(jyc,JOYBTN_RIGHTTRIGGER_UPPER)) {
+    if (joyBtnOnce(jyc, JOYBTN_RIGHTTRIGGER_UPPER)) {
         if (1 == dsvpos) {
             dsvpos = 5;
             Beep(NOTE_E);
@@ -69,7 +73,6 @@ void DoCommonControl(int jyc, int cm) {
             Beep(NOTE_A);
         }
     }
-
 #if HAS_ARM_SERVOS
     //--------------------------------------------------------------------
     // L/R on the hat rotates the dispenser arm
@@ -86,22 +89,22 @@ void DoCommonControl(int jyc, int cm) {
 #if HAS_PRELOAD_SERVOS
     //--------------------------------------------------------------------
     // L/R on the left joystick controls the preload arm
-    if (joyFlick(jyc,JOY_LEFT,JOYDIR_RIGHT)) {
+    if (joyFlick(jyc, JOY_LEFT, JOYDIR_RIGHT)) {
         int svpos = AdjustSvpos(GetServoValue(svoPreloadArm), dsvpos);
         PositionPreloadArm(svpos);
     }
-    if (joyFlick(jyc,JOY_LEFT,JOYDIR_LEFT)) {
+    if (joyFlick(jyc, JOY_LEFT, JOYDIR_LEFT)) {
         int svpos = AdjustSvpos(GetServoValue(svoPreloadArm), -dsvpos);
         PositionPreloadArm(svpos);
     }
 #elif HAS_WRIST_SERVOS
     //--------------------------------------------------------------------
     // L/R on the left joystick controls the wrist
-    if (joyFlick(jyc,JOY_LEFT,JOYDIR_RIGHT)) {
+    if (joyFlick(jyc, JOY_LEFT, JOYDIR_RIGHT)) {
         int svpos = AdjustSvpos(GetServoValue(svoArmWrist), dsvpos);
         MoveServo(svoArmWrist, svpos);
     }
-    if (joyFlick(jyc,JOY_LEFT,JOYDIR_LEFT)) {
+    if (joyFlick(jyc, JOY_LEFT, JOYDIR_LEFT)) {
         int svpos = AdjustSvpos(GetServoValue(svoArmWrist), -dsvpos);
         MoveServo(svoArmWrist, svpos);
     }
@@ -121,7 +124,7 @@ void DoCommonControl(int jyc, int cm) {
     //--------------------------------------------------------------------
     // Canned dispenser things
 
-    if (joyBtnOnce(jyc,JOYBTN_LEFTTRIGGER_LOWER)) {
+    if (joyBtnOnce(jyc, JOYBTN_LEFTTRIGGER_LOWER)) {
         // toggle the dispenser at which we do our calculations
         if (DISP_HIGH == disp) {
             disp = DISP_LOW;
@@ -137,13 +140,14 @@ void DoCommonControl(int jyc, int cm) {
 //-----------------------------------------------------------------------------
 // SVPOS-based control
 //-----------------------------------------------------------------------------
-void DoPackingControl(int jyc, int cm) {
+void
+DoPackingControl(int jyc, int cm) {
     //--------------------------------------------------------------------
     // Numbered buttons do canned things, but they also have
     // sanity checks so that they are not invoked from the wrong positions.
-    BOOL fButton1 = joyBtnOnce(jyc,1);
-    BOOL fButton2 = joyBtnOnce(jyc,2);
-    BOOL fButton3 = joyBtnOnce(jyc,3);
+    BOOL fButton1 = joyBtnOnce(jyc, 1);
+    BOOL fButton2 = joyBtnOnce(jyc, 2);
+    BOOL fButton3 = joyBtnOnce(jyc, 3);
 
     if (fButton1) {
         // packed <-> intermediate
@@ -171,43 +175,44 @@ void DoPackingControl(int jyc, int cm) {
     }
 }
 
-void DoArmTipMovement(int jyc, int cm) {
+void
+DoArmTipMovement(int jyc, int cm) {
     if (0) {
     }
 #if HAS_ARM_SERVOS
-    else if (joyFlick(jyc,JOY_LEFT,JOYDIR_UP)) {
+    else if (joyFlick(jyc, JOY_LEFT, JOYDIR_UP)) {
         //--------------------------------------------------------------------
         // Up/down on the left joystick controls shoulder of dispenser arm
         int svpos = AdjustSvpos(GetServoValue(svoArmShoulder), dsvpos);
         MoveServo(svoArmShoulder, svpos);
-    } else if (joyFlick(jyc,JOY_LEFT,JOYDIR_DOWN)) {
+    } else if (joyFlick(jyc, JOY_LEFT, JOYDIR_DOWN)) {
         int svpos = AdjustSvpos(GetServoValue(svoArmShoulder), -dsvpos);
         MoveServo(svoArmShoulder, svpos);
-    }
-    else if (joyFlick(jyc,JOY_RIGHT,JOYDIR_UP)) {
+    } else if (joyFlick(jyc, JOY_RIGHT, JOYDIR_UP)) {
         //--------------------------------------------------------------------
         // Up/down on the right joystick controls elbow of dispenser arm
         int svpos = AdjustSvpos(GetServoValue(svoArmElbow), dsvpos);
         MoveServo(svoArmElbow, svpos);
-    } else if (joyFlick(jyc,JOY_RIGHT,JOYDIR_DOWN)) {
+    } else if (joyFlick(jyc, JOY_RIGHT, JOYDIR_DOWN)) {
         int svpos = AdjustSvpos(GetServoValue(svoArmElbow), -dsvpos);
         MoveServo(svoArmElbow, svpos);
     }
 #endif
 }
 
-void DoSvposControl(int jyc, int cm) {
+void
+DoSvposControl(int jyc, int cm) {
     DoPackingControl(jyc, cm);
     DoArmTipMovement(jyc, cm);
 
     if (0) {
     }
 #if HAS_ARM_SERVOS
-    else if (joyBtnOnce(jyc,4)) {
+    else if (joyBtnOnce(jyc, 4)) {
         //--------------------------------------------------------------------
         // Dispensing
 //        DispenseFromEOPDPosition(disp, cm);
-    } else if (joyBtnOnce(jyc,JOYBTN_LEFTTRIGGER_UPPER)) {
+    } else if (joyBtnOnce(jyc, JOYBTN_LEFTTRIGGER_UPPER)) {
         // start / stop the dispenser rotating
         int cBeep = 0;
         switch (svposRotorRotorSpeed) {
@@ -237,9 +242,10 @@ void DoSvposControl(int jyc, int cm) {
 //-----------------------------------------------------------------------------
 // Horizontal / vertical control
 //-----------------------------------------------------------------------------
-void DoHVControl(int jyc, int cm) {
+void
+DoHVControl(int jyc, int cm) {
     // ie: 1/2 cm or 5 cm
-    float cmMove = dsvpos * 1; // 0.5;
+    float cmMove = dsvpos * 1;  // 0.5;
     MOVEARMTIP mode = MOVEARMTIP_LINEAR;
 
     //--------------------------------------------------------------------
@@ -268,24 +274,23 @@ void DoHVControl(int jyc, int cm) {
             PlaySad();
         }
     }
-
     //--------------------------------------------------------------------
     // Scoring
 #if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
-    if (joyBtnOnce(jyc,1)) {
+    if (joyBtnOnce(jyc, 1)) {
         ScoreBatonsInRollingGoal(ROLLING_GOAL_1);
     }
-    if (joyBtnOnce(jyc,3)) {
+    if (joyBtnOnce(jyc, 3)) {
         ScoreBatonsInRollingGoal(ROLLING_GOAL_3);
     }
-    if (joyBtnOnce(jyc,4)) {
+    if (joyBtnOnce(jyc, 4)) {
         ScoreBatonsInRollingGoal(ROLLING_GOAL_4);
     }
 #endif
 
     //--------------------------------------------------------------------
     // Dispensing
-    if (joyBtnOnce(jyc,JOYBTN_LEFTTRIGGER_UPPER)) {
+    if (joyBtnOnce(jyc, JOYBTN_LEFTTRIGGER_UPPER)) {
         // execute the full unload-dispenser logic
         TRACE(("unloading dispenser"));
 //        UnloadDispenser();
@@ -296,13 +301,13 @@ void DoHVControl(int jyc, int cm) {
         // Note: rotational servos seem to be highly non-linear in speed.
         int ctlPower = joyLeftY(jyc);
         int sgnPower = Sign(ctlPower);
-        ctlPower     = Max(0, abs(ctlPower) - joyThrottleDeadZone);
-        ctlPower     = ctlPower * sgnPower;
-        float scale  = 128.0 / (128.0 - (float)joyThrottleDeadZone);
-        ctlPower     = Rounded((float)ctlPower * scale, int);
+        ctlPower = Max(0, abs(ctlPower) - joyThrottleDeadZone);
+        ctlPower = ctlPower * sgnPower;
+        float scale = 128.0 / (128.0 - (float)joyThrottleDeadZone);
+        ctlPower = Rounded((float)ctlPower * scale, int);
 
         // For rotation servos, 128 is the zero speed
-        ctlPower     = ctlPower + 128;
+        ctlPower = ctlPower + 128;
         SetRotorSpeed(ctlPower);
     }
 }
@@ -310,9 +315,10 @@ void DoHVControl(int jyc, int cm) {
 //-----------------------------------------------------------------------------
 // Logic for the main drive joystick
 //-----------------------------------------------------------------------------
-task main() {
+task
+main() {
     // will pack the servos
-    if (!InitializeMain(true,true))
+    if (!InitializeMain(true, true))
         return;
 
     waitForStart();
@@ -325,30 +331,31 @@ task main() {
     StartReadingMagneticSensor(sensMagRotor);
 #endif
 #if SensorIsDefined(sensnmAngleRotor)
-    StartReadingAngleSensor(sensAngleRotor,false);
+    StartReadingAngleSensor(sensAngleRotor, false);
 #endif
 #if SensorIsDefined(sensnmGyroHorz)
     StartReadingGyroSensor(sensGyroHorz);
 #endif
 
-    while(true) {
+    while (true) {
         // Wait for any servo motion to cease
         WaitForServos();
 
         int cmSonic = cmSonicNil;
 #if SensorIsDefined(sensnmSonicLeft)
-        cmSonic = ReadSonic_Main(sensSonicLeft,false);
+        cmSonic = ReadSonic_Main(sensSonicLeft, false);
 #endif
         // If we're far far away, pretend we're at the maximum
         // dispensing position; that way, the positioning logic
         // will at least DO something.
         int cmLeft = cmSonic;
         if (cmSonicNil == cmLeft || cmLeft >= CmDispenseMax(disp))
-            cmLeft = CmDispenseMax(disp)-1;
+            cmLeft = CmDispenseMax(disp) - 1;
 
-        int svposElbow = 0, svposShoulder = 0, svposRotation = 0, svposWrist = 0, svposPre = 0;
+        int svposElbow = 0, svposShoulder = 0, svposRotation = 0,
+            svposWrist = 0, svposPre = 0;
 #if HAS_ARM_SERVOS
-        svposElbow    = GetServoValue(svoArmElbow);
+        svposElbow = GetServoValue(svoArmElbow);
         svposShoulder = GetServoValue(svoArmShoulder);
         svposRotation = GetServoValue(svoArmRotation);
 #endif
@@ -356,7 +363,7 @@ task main() {
         svposWrist = GetServoValue(svoArmWrist);
 #endif
 #if HAS_PRELOAD_SERVOS
-        svposPre   = GetServoValue(svoPreloadArm);
+        svposPre = GetServoValue(svoPreloadArm);
 #endif
         if (!fDisplayEopdFront) {
             nxtDisplayTextLine(2, "cm=%d", cmSonic);
@@ -367,24 +374,27 @@ task main() {
 
             if (0) {
             } else if (JYC1_MODE_SVPOS == jyc1Mode) {
-                DoCommonControl(jyc,cmLeft);
-                nxtDisplayTextLine(3, "rot=%3d elb=%3d", svposRotation, svposElbow);
-                nxtDisplayTextLine(4, "sdr=%3d wst=%3d", svposShoulder, svposWrist);
+                DoCommonControl(jyc, cmLeft);
+                nxtDisplayTextLine(3, "rot=%3d elb=%3d", svposRotation,
+                                   svposElbow);
+                nxtDisplayTextLine(4, "sdr=%3d wst=%3d", svposShoulder,
+                                   svposWrist);
                 DoSvposControl(jyc, cmLeft);
             } else if (JYC1_MODE_ARMTIP == jyc1Mode) {
-                DoCommonControl(jyc,cmLeft);
+                DoCommonControl(jyc, cmLeft);
 
                 ARMTIPSTATE state;
                 state.svposShoulder = svposShoulder;
-                state.svposElbow    = svposElbow;
+                state.svposElbow = svposElbow;
                 ArmTipSvposToAngle(state);
                 ComputeArmTipLocation(state);
 
                 float degShoulder = radiansToDegrees(state.radShoulder);
-                float degElbow    = radiansToDegrees(state.radElbow);
+                float degElbow = radiansToDegrees(state.radElbow);
 
                 nxtDisplayTextLine(3, "s=%.1f e=%.1f", degShoulder, degElbow);
-                nxtDisplayTextLine(4, "x=%.2f y=%.2f", state.ptTip.x, state.ptTip.y);
+                nxtDisplayTextLine(4, "x=%.2f y=%.2f", state.ptTip.x,
+                                   state.ptTip.y);
 
                 DoHVControl(jyc, cmLeft);
             } else if (JYC1_MODE_DRIVING == jyc1Mode) {

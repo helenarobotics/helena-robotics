@@ -3,8 +3,8 @@
 //
 
 // typedefs to give is integers of known and easily named size
-typedef int   int16;
-typedef long  int32;
+typedef int int16;
+typedef long int32;
 
 // an integer big enough to hold a value of the system clock
 typedef int32 MILLI;
@@ -14,8 +14,8 @@ typedef int32 MILLI;
 //--------------------------------------------------------------------------------------
 
 // Document control of avoiding simultaneous function activations
-#define CALLEDBY(iTask)       // Documents functions that can be called only by particular tasks
-#define CALLED_WITH_BB_LOCK   // Documents functions that can be called by ANY task so long as the Blackboard is owned exclusively
+#define CALLEDBY(iTask)         // Documents functions that can be called only by particular tasks
+#define CALLED_WITH_BB_LOCK     // Documents functions that can be called by ANY task so long as the Blackboard is owned exclusively
 
 // Document the flow of data for function parameters
 #define IN
@@ -39,9 +39,9 @@ typedef int32 MILLI;
 //--------------------------------------------------------------------------------------
 
 #if 1
-    #define TRACE(x)  writeDebugStreamLine x
+#define TRACE(x)  writeDebugStreamLine x
 #else
-    #define TRACE(x)
+#define TRACE(x)
 #endif
 #define TRACE_ALWAYS(x) writeDebugStreamLine x
 
@@ -125,27 +125,25 @@ int cReportedInitFailures = 0;
     // as -2.5 rounds to -3. This is ideally what we want. However, we always end up evaluating
     // the argument x twice, and there's no way to avoid that in the macro (and using a function isn't
     // safely usable across tasks)
-    #define Rounded(x,type)           ((x) < 0 ? ((type)((float)(x) - 0.5)) : ((type)((float)(x) + 0.5)))
+#define Rounded(x,type)           ((x) < 0 ? ((type)((float)(x) - 0.5)) : ((type)((float)(x) + 0.5)))
 #else
     // This method of rounding avoids the multiple evaluation of the argument. The downside is that
     // the exact-half-negatives round up instead of down: -2.5 rounds to -2 (though -2.75 still rounds
     // to -3). We can live with the tradeoff. (Note that calling intrinsics is task-safe.)
-    #define Rounded(x,type)           ((type)(floor((float)(x) + 0.5)))
+#define Rounded(x,type)           ((type)(floor((float)(x) + 0.5)))
 #endif
 
 #define FloorDiv(x,d)                 floor((float)(x) / (float)(d))
 
-typedef union
-    {
+typedef union {
     float f;
-    struct
-        {
+    struct {
         unsigned char b3;
         unsigned char b2;
         unsigned char b1;
         unsigned char b0;
-        };
-    } FLOAT_LONG;
+    };
+} FLOAT_LONG;
 
 // Is this a finite IEEE floating point number?
 // See http://en.wikipedia.org/wiki/Single_precision_floating-point_format
@@ -163,15 +161,15 @@ typedef union
 
 typedef enum
 // Enumerate the various tasks in our system
-    {
+{
     iTaskMain,
     iTaskBlackboard,
     iTaskDisplay,
-    iTaskMax,           // not a real task
-    } ITASK;
+    iTaskMax,                   // not a real task
+} ITASK;
 
 // Constants controlling the speed of our various spin loops
-#define msBlackboardPolling 50      // was 100
+#define msBlackboardPolling 50  // was 100
 #define msDisplayPolling    750
 
 // Constants reflecting the range of the data type 'int' and 'int16'
@@ -179,22 +177,24 @@ typedef enum
 #define intLast   32767
 
 // Support for recording a target value and a desired comparison against same.
-typedef enum
-    {
+typedef enum {
     COMPARE_LT, COMPARE_GT, COMPARE_LE, COMPARE_GE
-    } COMPARISON;
+} COMPARISON;
 
-BOOL CALLED_WITH_BB_LOCK Compare(int cur, int target, COMPARISON comparison)
-    {
-    switch (comparison)
-        {
-    case COMPARE_LT:  return cur <  target;
-    case COMPARE_GT:  return cur >  target;
-    case COMPARE_LE:  return cur <= target;
-    case COMPARE_GE:  return cur >= target;
-        }
-    return false;
+BOOL CALLED_WITH_BB_LOCK
+Compare(int cur, int target, COMPARISON comparison) {
+    switch (comparison) {
+    case COMPARE_LT:
+        return cur < target;
+    case COMPARE_GT:
+        return cur > target;
+    case COMPARE_LE:
+        return cur <= target;
+    case COMPARE_GE:
+        return cur >= target;
     }
+    return false;
+}
 
 //--------------------------------------------------------------------------------------
 // Joystick modal waits - try to avoid using: use joyBtnOnce etc instead

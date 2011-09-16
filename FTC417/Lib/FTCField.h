@@ -29,39 +29,36 @@
 // Variables and defaults
 //-------------------------------------------------------------------------------------
 
-typedef enum
-    {
+typedef enum {
     PROGRAM_FLAVOR_TELEOP,
     PROGRAM_FLAVOR_AUTONOMOUS
-    } PROGRAM_FLAVOR;
+} PROGRAM_FLAVOR;
 
-typedef enum
-    {
+typedef enum {
     TEAM_COLOR_BLUE,
     TEAM_COLOR_RED,
-    } TEAM_COLOR;
+} TEAM_COLOR;
 
-typedef enum
-    {
+typedef enum {
     STARTING_SIDE_LEFT,
     STARTING_SIDE_RIGHT
-    } STARTING_SIDE;
+} STARTING_SIDE;
 
-string rgstrProgramFlavor[] = { "tele op",   "auto"     };
-string rgstrTeamColor[]     = { "blue team", "red team" };
-string rgstrStartingSide[]  = { "left",      "right"    };
+string rgstrProgramFlavor[] = { "tele op", "auto" };
+string rgstrTeamColor[] = { "blue team", "red team" };
+string rgstrStartingSide[] = { "left", "right" };
 
 // Teleop can optionally be excluded from the UI (it is included by default).
 // To do so, do a #define USE_TELEOP_UI 0 before including this file.
 #ifndef DEFAULT_PROGRAM_FLAVOR
-    #ifndef USE_TELEOP_UI
-        #define USE_TELEOP_UI 1
-    #endif
-    #if USE_TELEOP_UI
-        #define DEFAULT_PROGRAM_FLAVOR PROGRAM_FLAVOR_TELEOP
-    #else
-        #define DEFAULT_PROGRAM_FLAVOR PROGRAM_FLAVOR_AUTONOMOUS
-    #endif
+#ifndef USE_TELEOP_UI
+#define USE_TELEOP_UI 1
+#endif
+#if USE_TELEOP_UI
+#define DEFAULT_PROGRAM_FLAVOR PROGRAM_FLAVOR_TELEOP
+#else
+#define DEFAULT_PROGRAM_FLAVOR PROGRAM_FLAVOR_AUTONOMOUS
+#endif
 #endif
 
 #ifndef DEFAULT_TEAM_COLOR
@@ -78,10 +75,10 @@ string rgstrStartingSide[]  = { "left",      "right"    };
 
 // Examine these variables in your code determine the output of this user interface
 //
-PROGRAM_FLAVOR  programFlavor    = DEFAULT_PROGRAM_FLAVOR;      // are we to run teleop or autonomous mode once waitForStart returns?
-TEAM_COLOR      teamColor        = DEFAULT_TEAM_COLOR;          // are we playing as the red team or the blue team?
-STARTING_SIDE   startingSide     = DEFAULT_STARTING_SIDE;       // are starting on the left or right side of the field?
-BOOL            fUseProgramDemoMode = false;                    // are we to use our 'demo' mode (if we have one) or not?
+PROGRAM_FLAVOR programFlavor = DEFAULT_PROGRAM_FLAVOR;  // are we to run teleop or autonomous mode once waitForStart returns?
+TEAM_COLOR teamColor = DEFAULT_TEAM_COLOR;      // are we playing as the red team or the blue team?
+STARTING_SIDE startingSide = DEFAULT_STARTING_SIDE;     // are starting on the left or right side of the field?
+BOOL fUseProgramDemoMode = false;       // are we to use our 'demo' mode (if we have one) or not?
 
 //--------------------------------------------------------------------------------------
 // Team selection and field side selection

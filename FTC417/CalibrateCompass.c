@@ -5,8 +5,9 @@
 #include "config\RobotConfig.h"
 #include "lib\MainPostlude.h"
 
-task main() {
-    if (InitializeMain(false,true)) {
+task
+main() {
+    if (InitializeMain(false, true)) {
         BOOL fSuccess = true;
         I2CLINK link = I2CLINK_1;
 

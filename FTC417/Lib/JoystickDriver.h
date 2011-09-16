@@ -22,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if defined(NXT) || defined(TETRIX)
-    #pragma autoStartTasks        // Automatically start tasks (which ones?) when the main user program starts.
+#pragma autoStartTasks          // Automatically start tasks (which ones?) when the main user program starts.
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -42,50 +42,47 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Easy-to-remember names for the various buttons on a joystick controller
-typedef enum
-    {
-    JOYBTN_FIRST                =1,
-    JOYBTN_1                    =JOYBTN_FIRST,
-    JOYBTN_2                    =2,
-    JOYBTN_3                    =3,
-    JOYBTN_4                    =4,
-    JOYBTN_X                    =JOYBTN_1,
-    JOYBTN_Y                    =JOYBTN_4,
-    JOYBTN_A                    =JOYBTN_2,
-    JOYBTN_B                    =JOYBTN_3,
-    JOYBTN_LEFTTRIGGER_UPPER    =5,
-    JOYBTN_RIGHTTRIGGER_UPPER   =6,
-    JOYBTN_LEFTTRIGGER_LOWER    =7,
-    JOYBTN_RIGHTTRIGGER_LOWER   =8,
-    JOYBTN_TOP_LEFT             =9,
-    JOYBTN_TOP_RIGHT            =10,
-    JOYBTN_JOYSTICK_LEFT        =11,
-    JOYBTN_JOYSTICK_RIGHT       =12,
-    JOYBTN_LAST                 =JOYBTN_JOYSTICK_RIGHT,
-    } JOYBTN;
+typedef enum {
+    JOYBTN_FIRST = 1,
+    JOYBTN_1 = JOYBTN_FIRST,
+    JOYBTN_2 = 2,
+    JOYBTN_3 = 3,
+    JOYBTN_4 = 4,
+    JOYBTN_X = JOYBTN_1,
+    JOYBTN_Y = JOYBTN_4,
+    JOYBTN_A = JOYBTN_2,
+    JOYBTN_B = JOYBTN_3,
+    JOYBTN_LEFTTRIGGER_UPPER = 5,
+    JOYBTN_RIGHTTRIGGER_UPPER = 6,
+    JOYBTN_LEFTTRIGGER_LOWER = 7,
+    JOYBTN_RIGHTTRIGGER_LOWER = 8,
+    JOYBTN_TOP_LEFT = 9,
+    JOYBTN_TOP_RIGHT = 10,
+    JOYBTN_JOYSTICK_LEFT = 11,
+    JOYBTN_JOYSTICK_RIGHT = 12,
+    JOYBTN_LAST = JOYBTN_JOYSTICK_RIGHT,
+} JOYBTN;
 
 // Easy-to-remember names for the eight directions that the hat on a controller may be pushed
-typedef enum
-    {
-    JOYHAT_NONE      = -1,              // hat not pressed
-    JOYHAT_FIRST     = 0,
-    JOYHAT_UP        = JOYHAT_FIRST,    // hat pressed up
-    JOYHAT_UPRIGHT   = 1,               // hat pressed up and to the right
-    JOYHAT_RIGHT     = 2,               // etc...
+typedef enum {
+    JOYHAT_NONE = -1,           // hat not pressed
+    JOYHAT_FIRST = 0,
+    JOYHAT_UP = JOYHAT_FIRST,   // hat pressed up
+    JOYHAT_UPRIGHT = 1,         // hat pressed up and to the right
+    JOYHAT_RIGHT = 2,           // etc...
     JOYHAT_DOWNRIGHT = 3,
-    JOYHAT_DOWN      = 4,
-    JOYHAT_DOWNLEFT  = 5,
-    JOYHAT_LEFT      = 6,
-    JOYHAT_UPLEFT    = 7,
-    JOYHAT_LAST      = JOYHAT_UPLEFT,
-    } JOYHAT;
+    JOYHAT_DOWN = 4,
+    JOYHAT_DOWNLEFT = 5,
+    JOYHAT_LEFT = 6,
+    JOYHAT_UPLEFT = 7,
+    JOYHAT_LAST = JOYHAT_UPLEFT,
+} JOYHAT;
 
 // Easy-to-remember names for the two joysticks on each joystick controller
-typedef enum
-    {
-    JOY_LEFT=0,
-    JOY_RIGHT=1,
-    } IJOY;
+typedef enum {
+    JOY_LEFT = 0,
+    JOY_RIGHT = 1,
+} IJOY;
 
 // Names for the directions in which a joystick may be flicked. Note that
 // that these may be 'or'd together, as in the following example:
@@ -103,17 +100,16 @@ typedef enum
 //                }
 //            }
 //
-typedef enum
-    {
-    JOYDIR_UP    = 1,
-    JOYDIR_DOWN  = 2,
-    JOYDIR_LEFT  = 4,
+typedef enum {
+    JOYDIR_UP = 1,
+    JOYDIR_DOWN = 2,
+    JOYDIR_LEFT = 4,
     JOYDIR_RIGHT = 8,
-    } JOYDIR;
+} JOYDIR;
 
 // Value for size of the the neutral region of a joystick within which the
 // joystick is to be considered not to have moved.
-int joyFlickDeadZone    = 45;
+int joyFlickDeadZone = 45;
 int joyThrottleDeadZone = 15;
 
 #ifndef Max
@@ -131,44 +127,39 @@ int joyThrottleDeadZone = 15;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // State of one joystick (there are two of these per controller)
-typedef struct
-    {
-    short   x;                      // -128 to +127
-    short   y;                      // -128 to +127
-    } JOYMSG;
+typedef struct {
+    short x;                    // -128 to +127
+    short y;                    // -128 to +127
+} JOYMSG;
 
 // State of one joystick controller as messaged from the PC
-typedef struct
-    {
-    JOYMSG  rgjoy[2];
-    short   buttons;                // bitmap of values computed from JOYBTN
-    short   hat;                    // values are from JOYHAT
-    } JOYCNTMSG;
+typedef struct {
+    JOYMSG rgjoy[2];
+    short buttons;              // bitmap of values computed from JOYBTN
+    short hat;                  // values are from JOYHAT
+} JOYCNTMSG;
 
 // Auxiliary state we keep for each controller beyond that sent from the PC
-typedef struct
-    {
-    short   buttonsOnce;            // Bitmap for managing single button presses
-    short   hatOnce;                // Bitmap for managing single hat presses
-    short   rgflicks[2];            // Bit map for supporting 'flicks' with the two joysticks in this controller
-    } JOYCNTAUX;
+typedef struct {
+    short buttonsOnce;          // Bitmap for managing single button presses
+    short hatOnce;              // Bitmap for managing single hat presses
+    short rgflicks[2];          // Bit map for supporting 'flicks' with the two joysticks in this controller
+} JOYCNTAUX;
 
 // State of all the joystick controllers as updated from messages from the PC
-typedef struct
-    {
-    BOOL        fTeleOp;            // autonomous(false) vs tele-operated(true) mode.
-    BOOL        fWaitForStart;      // becomes false when the FTC Field Control System permits the program to proceed.
-    long        serialNumber;       // # of current msg used to set this state. Used to prevent replay of messages.
-    long        msReceived;         // time on the system clock (nSysTime) at which this message was received. Only updated when serialNumber is incremented.
-    JOYCNTMSG   rgcnt[2];
-    } JOYSTICKSMSG;
+typedef struct {
+    BOOL fTeleOp;               // autonomous(false) vs tele-operated(true) mode.
+    BOOL fWaitForStart;         // becomes false when the FTC Field Control System permits the program to proceed.
+    long serialNumber;          // # of current msg used to set this state. Used to prevent replay of messages.
+    long msReceived;            // time on the system clock (nSysTime) at which this message was received. Only updated when serialNumber is incremented.
+    JOYCNTMSG rgcnt[2];
+} JOYSTICKSMSG;
 
 // State of all the joystick controllers, both the state from the PC and the once-management state
-typedef struct
-    {
-    JOYSTICKSMSG    msg;            // as updated from the PC. This MUST come first in TJoystick
-    JOYCNTAUX       rgaux[2];       // auxiliary state we maintain for each controller beyond that sent from the PC
-    } TJoystick;
+typedef struct {
+    JOYSTICKSMSG msg;           // as updated from the PC. This MUST come first in TJoystick
+    JOYCNTAUX rgaux[2];         // auxiliary state we maintain for each controller beyond that sent from the PC
+} TJoystick;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -192,7 +183,7 @@ TJoystick joystick;
 // there's any new information about the joystick since the last time getJoystickSettings was called: if
 // 'false' is returned, you probably should avoid processing the joystick data as you likely did previously
 // when 'true' was returned.
-BOOL getJoystickSettings(TJoystick& joystickVar);
+BOOL getJoystickSettings(TJoystick & joystickVar);
 
 // Manually update the state of this joystick varaible to the 'nothing pressed state'.
 // Handy, but not perhaps as much as one might think.
@@ -211,7 +202,7 @@ BOOL getJoystickSettings(TJoystick& joystickVar);
 // What's a reasonable length of time beyond which we believe that the Field Control System
 // has just gone away.
 #ifndef MS_JOYSTICK_FCS_DISCONNECTED_THRESHOLD
-#define MS_JOYSTICK_FCS_DISCONNECTED_THRESHOLD  1000        // a reasonable value, but not exact by any means
+#define MS_JOYSTICK_FCS_DISCONNECTED_THRESHOLD  1000    // a reasonable value, but not exact by any means
 #endif
 
 // 'Functions' for accessing the various state of the two joystick controllers. Note that these *assume*
@@ -270,7 +261,6 @@ BOOL joyFlick(int jyc, int ijoy, int flick);
 #define joyRightX(jyc)  joyX(jyc,JOY_RIGHT)
 #define joyRightY(jyc)  joyY(jyc,JOY_RIGHT)
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Internals
@@ -320,15 +310,15 @@ JOYSTICKSMSG _joystickInternal;
 #define _getJoystickSettingsPrim(joystickVar)     memcpy(joystickVar, _joystickInternal, sizeof(_joystickInternal))
 
 // Update the joystick state. Answer whether there's anything new there to process.
-BOOL getJoystickSettings(TJoystick& joystickVar)
-    {
+BOOL
+getJoystickSettings(TJoystick & joystickVar) {
     long serialNumberPrev = joystickVar.msg.serialNumber;
     _getJoystickSettingsPrim(joystickVar);
     return joystickVar.msg.serialNumber != serialNumberPrev;
-    }
+}
 
 #define _joyBtnBit(btn)              (1 << (btn - 1))
-#define _joyHatBit(hat)              (1 << (hat))                        // 'hat' is from JOY_HAT. NB: don't use with '-1'
+#define _joyHatBit(hat)              (1 << (hat))       // 'hat' is from JOY_HAT. NB: don't use with '-1'
 #define _joyBtnState(jyc)            joystick.msg.rgcnt[jyc-1].buttons
 #define _joyHatState(jyc)            joystick.msg.rgcnt[jyc-1].hat
 
@@ -339,22 +329,26 @@ BOOL getJoystickSettings(TJoystick& joystickVar)
 #define _trueOf(expr)                ((expr) || 1)
 #define _falseOf(expr)               ((expr) && 0)
 
-BOOL joyBtnOnce(int jyc, int btn)
-    {
+BOOL
+joyBtnOnce(int jyc, int btn) {
     return _joyBtnOnce_(jyc, btn);
-    }
-BOOL joyHatOnce(int jyc, int hat)
-    {
+}
+
+BOOL
+joyHatOnce(int jyc, int hat) {
     return _joyHatOnce_(jyc, hat);
-    }
-BOOL joyFlickOnce(int jyc, int ijoy, int flick)
-    {
+}
+
+BOOL
+joyFlickOnce(int jyc, int ijoy, int flick) {
     return _joyFlickOnce_(jyc, ijoy, flick);
-    }
-BOOL joyFlick(int jyc, int ijoy, int flick)
-    {
+}
+
+BOOL
+joyFlick(int jyc, int ijoy, int flick) {
     return _joyFlick_(jyc, ijoy, flick);
-    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //                                        Receive Messages Task
@@ -380,42 +374,37 @@ BOOL joyFlick(int jyc, int ijoy, int flick)
 // Logically, _rgbJoyMsgT is a local variable to the readMsgFromPC task. However,
 // in RobotC 3.0, this needs to be truly global or a code-generation bug
 // (of as yet unknown nature) is tickled and the joystick no longer functions.
-const int _cbJoyMsgTMax = 19;       // 18 was good enough for RobotC 2.26, but ok if we always give more (and 3.0 needs 19 for some reason)
+const int _cbJoyMsgTMax = 19;   // 18 was good enough for RobotC 2.26, but ok if we always give more (and 3.0 needs 19 for some reason)
 sbyte _rgbJoyMsgT[_cbJoyMsgTMax];
 
-task readMsgFromPC()
-    {
+task
+readMsgFromPC() {
 
     // Initialize setting to default values in case communications with PC is broken.
     _InitializeJoystickGlobals_();
 
-    while (true)
-        {
+    while (true) {
 
         // Check to see if a message is available.
         BOOL fMsgFound = false;
-        while (true)
-            {
+        while (true) {
             // There may be more than one message in the queue. We want to get to the last received
             // message and discard the earlier "stale" messages. This loop simply discards all but
             // the last message.
             //
             int cbMessage = cCmdMessageGetSize(kJoystickQueueID);
-            if (cbMessage <= 0)
-                {
-                if (!fMsgFound)
-                    {
-                    wait1Msec(4);    // Give other tasks a chance to run
-                    continue;        // No message this time. Loop again
-                    }
+            if (cbMessage <= 0) {
+                if (!fMsgFound) {
+                    wait1Msec(4);       // Give other tasks a chance to run
+                    continue;   // No message this time. Loop again
+                }
                 //
                 // No more messages available and at least one message found. We simply discard earlier
                 // messages: each joystick message is self contained, representing the entire state of
                 // of the joysticks, so the earlier ones have no use.
                 //
                 break;
-                }
-
+            }
             // OK: there's at least one message there; read it!
             if (cbMessage > sizeof(_rgbJoyMsgT))
                 cbMessage = sizeof(_rgbJoyMsgT);
@@ -425,34 +414,37 @@ task readMsgFromPC()
             //      ioRsltEmptyMailbox if the message queue is empty (but we call cCmdMessageGetSize first above)
             //      ERR_INVALID_SIZE   if the buffer passed here is too small
             //      a few others
-            TFileIOResult nBTCmdRdErrorStatus = cCmdMessageRead((ubyte)_rgbJoyMsgT, cbMessage, kJoystickQueueID);
+            TFileIOResult nBTCmdRdErrorStatus =
+                cCmdMessageRead((ubyte) _rgbJoyMsgT, cbMessage,
+                kJoystickQueueID);
 
-            if (ioRsltSuccess == nBTCmdRdErrorStatus)
-                {
+            if (ioRsltSuccess == nBTCmdRdErrorStatus) {
                 // Repeat loop until there are no more messages in the queue. We only want to process the
                 // last message in the queue.
                 fMsgFound = true;
-                }
             }
+        }
 
-        hogCPU();   // grab CPU for duration of critical section
+        hogCPU();               // grab CPU for duration of critical section
 
-        _joystickInternal.fTeleOp                       = _rgbJoyMsgT[1];
-        _joystickInternal.fWaitForStart                 = _rgbJoyMsgT[2];
+        _joystickInternal.fTeleOp = _rgbJoyMsgT[1];
+        _joystickInternal.fWaitForStart = _rgbJoyMsgT[2];
 
-        _joystickInternal.rgcnt[0].rgjoy[JOY_LEFT].x    = _rgbJoyMsgT[3];
-        _joystickInternal.rgcnt[0].rgjoy[JOY_LEFT].y    = _rgbJoyMsgT[4];
-        _joystickInternal.rgcnt[0].rgjoy[JOY_RIGHT].x   = _rgbJoyMsgT[5];
-        _joystickInternal.rgcnt[0].rgjoy[JOY_RIGHT].y   = _rgbJoyMsgT[6];
-        _joystickInternal.rgcnt[0].buttons              = (_rgbJoyMsgT[7] & 0x00FF) | (_rgbJoyMsgT[8] << 8);
-        _joystickInternal.rgcnt[0].hat                  = _rgbJoyMsgT[9];
+        _joystickInternal.rgcnt[0].rgjoy[JOY_LEFT].x = _rgbJoyMsgT[3];
+        _joystickInternal.rgcnt[0].rgjoy[JOY_LEFT].y = _rgbJoyMsgT[4];
+        _joystickInternal.rgcnt[0].rgjoy[JOY_RIGHT].x = _rgbJoyMsgT[5];
+        _joystickInternal.rgcnt[0].rgjoy[JOY_RIGHT].y = _rgbJoyMsgT[6];
+        _joystickInternal.rgcnt[0].buttons =
+            (_rgbJoyMsgT[7] & 0x00FF) | (_rgbJoyMsgT[8] << 8);
+        _joystickInternal.rgcnt[0].hat = _rgbJoyMsgT[9];
 
-        _joystickInternal.rgcnt[1].rgjoy[JOY_LEFT].x    = _rgbJoyMsgT[10];
-        _joystickInternal.rgcnt[1].rgjoy[JOY_LEFT].y    = _rgbJoyMsgT[11];
-        _joystickInternal.rgcnt[1].rgjoy[JOY_RIGHT].x   = _rgbJoyMsgT[12];
-        _joystickInternal.rgcnt[1].rgjoy[JOY_RIGHT].y   = _rgbJoyMsgT[13];
-        _joystickInternal.rgcnt[1].buttons              = (_rgbJoyMsgT[14] & 0x00FF) | (_rgbJoyMsgT[15] << 8);
-        _joystickInternal.rgcnt[1].hat                  = _rgbJoyMsgT[16];
+        _joystickInternal.rgcnt[1].rgjoy[JOY_LEFT].x = _rgbJoyMsgT[10];
+        _joystickInternal.rgcnt[1].rgjoy[JOY_LEFT].y = _rgbJoyMsgT[11];
+        _joystickInternal.rgcnt[1].rgjoy[JOY_RIGHT].x = _rgbJoyMsgT[12];
+        _joystickInternal.rgcnt[1].rgjoy[JOY_RIGHT].y = _rgbJoyMsgT[13];
+        _joystickInternal.rgcnt[1].buttons =
+            (_rgbJoyMsgT[14] & 0x00FF) | (_rgbJoyMsgT[15] << 8);
+        _joystickInternal.rgcnt[1].hat = _rgbJoyMsgT[16];
 
         // If control is started with *no* joysticks attached (or at least none logically connected
         // to RobotC) then the message that arrives from the PC has *entirely* zero values for all joysticks.
@@ -461,21 +453,21 @@ task readMsgFromPC()
         // some action to be taken by the program, almost certainly in error. As a work around, we
         // refuse to process any received messages until we see at least one with the first joystick's
         // hat not seemingly in the 'up' position. So: hands off the hat at the start of your program!
-        if ((_joystickInternal.serialNumber != 0) || (_joystickInternal.rgcnt[0].hat != 0))
-            {
+        if ((_joystickInternal.serialNumber != 0)
+            || (_joystickInternal.rgcnt[0].hat != 0)) {
             _joystickInternal.serialNumber++;
             _joystickInternal.msReceived = nSysTime;
-            }
-
-        _joystickInternal.rgcnt[0].rgjoy[JOY_LEFT].y    = -_joystickInternal.rgcnt[0].rgjoy[JOY_LEFT].y;  // Negate to "natural" position
-        _joystickInternal.rgcnt[0].rgjoy[JOY_RIGHT].y   = -_joystickInternal.rgcnt[0].rgjoy[JOY_RIGHT].y; // Negate to "natural" position
-
-        _joystickInternal.rgcnt[1].rgjoy[JOY_LEFT].y    = -_joystickInternal.rgcnt[1].rgjoy[JOY_LEFT].y;  // Negate to "natural" position
-        _joystickInternal.rgcnt[1].rgjoy[JOY_RIGHT].y   = -_joystickInternal.rgcnt[1].rgjoy[JOY_RIGHT].y; // Negate to "natural" position
-
-        releaseCPU(); // end of critical section
         }
+
+        _joystickInternal.rgcnt[0].rgjoy[JOY_LEFT].y = -_joystickInternal.rgcnt[0].rgjoy[JOY_LEFT].y;   // Negate to "natural" position
+        _joystickInternal.rgcnt[0].rgjoy[JOY_RIGHT].y = -_joystickInternal.rgcnt[0].rgjoy[JOY_RIGHT].y; // Negate to "natural" position
+
+        _joystickInternal.rgcnt[1].rgjoy[JOY_LEFT].y = -_joystickInternal.rgcnt[1].rgjoy[JOY_LEFT].y;   // Negate to "natural" position
+        _joystickInternal.rgcnt[1].rgjoy[JOY_RIGHT].y = -_joystickInternal.rgcnt[1].rgjoy[JOY_RIGHT].y; // Negate to "natural" position
+
+        releaseCPU();           // end of critical section
     }
+}
 
 #if defined(TETRIX)
 
@@ -536,27 +528,25 @@ const string kConfigName = "FTCConfig.txt";
 #endif
 
 #if USE_DISPLAY_DIAGNOSTICS
-BOOL bDisplayDiagnostics = true;  // Set to false in user program to disable diagnostic display
+BOOL bDisplayDiagnostics = true;        // Set to false in user program to disable diagnostic display
 
 #define disableDiagnosticsDisplay()       \
     {                                     \
     bDisplayDiagnostics = false;          \
     }
 
-task displayDiagnostics()
-    {
+task
+displayDiagnostics() {
     string szFileName;
     getUserControlProgram(szFileName);
 
     bNxtLCDStatusDisplay = true;
-    while (true)
-        {
-        if (bDisplayDiagnostics)
-            {
+    while (true) {
+        if (bDisplayDiagnostics) {
             nxtDisplayTextLine(6, "Teleop FileName:");
             nxtDisplayTextLine(7, szFileName);
 
-            _getJoystickSettingsPrim(joystick);               // Update variables with current joystick values
+            _getJoystickSettingsPrim(joystick); // Update variables with current joystick values
 
             if (joystick.msg.fWaitForStart)
                 nxtDisplayCenteredTextLine(1, "Wait for Start");
@@ -565,21 +555,21 @@ task displayDiagnostics()
             else
                 nxtDisplayCenteredTextLine(1, "Auton Running");
 
-            if ( externalBatteryAvg < 0)
-                nxtDisplayTextLine(3, "Ext Batt: OFF");       //External battery is off or not connected
+            if (externalBatteryAvg < 0)
+                nxtDisplayTextLine(3, "Ext Batt: OFF"); //External battery is off or not connected
             else
-                nxtDisplayTextLine(3, "Ext Batt:%4.1f V", externalBatteryAvg / (float) 1000);
+                nxtDisplayTextLine(3, "Ext Batt:%4.1f V",
+                    externalBatteryAvg / (float)1000);
 
-            nxtDisplayTextLine(4, "NXT Batt:%4.1f V", nAvgBatteryLevel / (float) 1000);   // Display NXT Battery Voltage
+            nxtDisplayTextLine(4, "NXT Batt:%4.1f V", nAvgBatteryLevel / (float)1000);  // Display NXT Battery Voltage
 
             nxtDisplayTextLine(5, "FMS Msgs: %d", joystick.msg.serialNumber);   // Display Count of FMS messages
-            }
+        }
 
         wait1Msec(200);
-        }
     }
+}
 #endif
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //

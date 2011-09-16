@@ -9,7 +9,8 @@
 
 #include "TeleOp.h"
 
-task main() {
+task
+main() {
     if (InitializeMain(true, true)) {
         // Put feedback on the screen during initialization
         fDisplaySonic = true;

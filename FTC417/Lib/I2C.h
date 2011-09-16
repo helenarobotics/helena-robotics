@@ -21,8 +21,7 @@
 #define I2CLINK_4       3
 
 // A data structure defining a buffer used to send or receive I2C message packets
-typedef struct
-    {
+typedef struct {
     // In write requests,
     //      rgb[0] is message length
     //      rgb[1] is i2c address
@@ -35,8 +34,8 @@ typedef struct
     // In replies,
     //      reply data starts at rgb[0]
     //
-    ubyte rgb[3+16];    // 16 bytes is max message size + 3 bytes max overhead
-    } I2CBUFFER;
+    ubyte rgb[3 + 16];          // 16 bytes is max message size + 3 bytes max overhead
+} I2CBUFFER;
 
 // What's the destination address in an request packet
 #define i2cCbOf(req)                req.rgb[0]
@@ -59,7 +58,6 @@ typedef struct
 // Format a I2C message that requests data from a certain I2C address and offset
 #define FormatI2CReq(req, addr, ib)                                                 \
     FormatI2CPrim(req, addr, ib, 0)
-
 
 //-------------------------------------------------------------------------------------
 
@@ -135,45 +133,45 @@ typedef struct
         }                                                                           \
     }
 
-BOOL i2cSendSensor(I2CLINK link, I2CBUFFER& req, int cbReply)
-    {
+BOOL
+i2cSendSensor(I2CLINK link, I2CBUFFER & req, int cbReply) {
     CheckLockHeld(lockBlackboard);
     BOOL fSuccess;
     i2cSend(fSuccess, link, req, cbReply);
     return fSuccess;
-    }
-BOOL i2cSendDaisy(I2CLINK link, I2CBUFFER& req, int cbReply)
-    {
+}
+
+BOOL
+i2cSendDaisy(I2CLINK link, I2CBUFFER & req, int cbReply) {
     CheckLockHeld(lockDaisy);
     BOOL fSuccess;
     i2cSend(fSuccess, link, req, cbReply);
     return fSuccess;
-    }
+}
 
-BOOL i2cSendReceiveSensor(I2CLINK link, I2CBUFFER& req, I2CBUFFER& rep, int cbReply)
-    {
-    if (i2cSendSensor(link, req, cbReply))
-        {
+BOOL
+i2cSendReceiveSensor(I2CLINK link, I2CBUFFER & req, I2CBUFFER & rep,
+    int cbReply) {
+    if (i2cSendSensor(link, req, cbReply)) {
         // We needn't wait for the bus here, as i2cSend did that for us
         ZeroI2Buffer(rep);
-        readI2CReply((tSensors)link, rep.rgb[0], cbReply);
+        readI2CReply((tSensors) link, rep.rgb[0], cbReply);
         return true;
-        }
-    else
+    } else
         return false;
-    }
-BOOL i2cSendReceiveDaisy(I2CLINK link, I2CBUFFER& req, I2CBUFFER& rep, int cbReply)
-    {
-    if (i2cSendDaisy(link, req, cbReply))
-        {
+}
+
+BOOL
+i2cSendReceiveDaisy(I2CLINK link, I2CBUFFER & req, I2CBUFFER & rep,
+    int cbReply) {
+    if (i2cSendDaisy(link, req, cbReply)) {
         // We needn't wait for the bus here, as i2cSend did that for us
         ZeroI2Buffer(rep);
-        readI2CReply((tSensors)link, rep.rgb[0], cbReply);
+        readI2CReply((tSensors) link, rep.rgb[0], cbReply);
         return true;
-        }
-    else
+    } else
         return false;
-    }
+}
 
 //-------------------------------------------------------------------------------------
 

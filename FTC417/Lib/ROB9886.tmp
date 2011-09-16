@@ -63,7 +63,6 @@
 #define sensnmTouchPreload   SENSOR_NOT_PRESENT
 #endif
 
-
 #ifndef motorLeft
 #define motorLeft  rgmotor[0]
 #endif
@@ -81,20 +80,21 @@
 #define CM_WHEEL_CIRCUMFERENCE          (3.0 * 2.54 * PI)       // default: 3 inch wheels
 #endif
 #ifndef MOTOR_GEARING
-#define MOTOR_GEARING                   1.0                     // default: 1 to 1
+#define MOTOR_GEARING                   1.0     // default: 1 to 1
 #endif
 
-#define ENCODER_TICKS_PER_MOTOR_REV     1440                    // period, not overrideable
+#define ENCODER_TICKS_PER_MOTOR_REV     1440    // period, not overrideable
 
 //---------------------------------------------------------------------------
 // More definitions
 //---------------------------------------------------------------------------
 
 // Derived robot-related constants
-const float cmPerMotorRev              = CM_WHEEL_CIRCUMFERENCE * MOTOR_GEARING;
-const float crevMotorPerCm             = 1. / cmPerMotorRev;
-const float cmPerEncoderTick           = cmPerMotorRev / (float)ENCODER_TICKS_PER_MOTOR_REV;
-const float encoderTickPerCm           = 1. / cmPerEncoderTick;
+const float cmPerMotorRev = CM_WHEEL_CIRCUMFERENCE * MOTOR_GEARING;
+const float crevMotorPerCm = 1. / cmPerMotorRev;
+const float cmPerEncoderTick =
+    cmPerMotorRev / (float) ENCODER_TICKS_PER_MOTOR_REV;
+const float encoderTickPerCm = 1. / cmPerEncoderTick;
 
 #define RET_IF_FAIL(a, b)  { if (!(a)) { PlaySad(); /* DisplayMessage(b); */ return false; } }
 
@@ -115,8 +115,9 @@ const float encoderTickPerCm           = 1. / cmPerEncoderTick;
 // Initialization
 //---------------------------------------------------------------------------
 
-BOOL InitializeMain(BOOL fBackgroundTasks, BOOL fInitArmServos)
-    {
+BOOL
+InitializeMain(BOOL fBackgroundTasks, BOOL fInitArmServos)
+{
     // Ensure we can hear the bot
     nVolume = kMaxVolumeLevel;
 
@@ -131,11 +132,9 @@ BOOL InitializeMain(BOOL fBackgroundTasks, BOOL fInitArmServos)
     InitializeLock(lockBlackboard, "blackboard");
 
     // Start the display task so we can get error messages if we need to
-    if (fBackgroundTasks)
-        {
+    if (fBackgroundTasks) {
         StartDisplayTask();
-        }
-
+    }
     // Initialize our telemetry infrastructure
     TelemetryInitialize();
 
@@ -150,43 +149,38 @@ BOOL InitializeMain(BOOL fBackgroundTasks, BOOL fInitArmServos)
     InitializeSensors(fOverallSuccess);
 
     // Try to deal with the 'one-time after long power off sonic sensors report incorrect types on muxes' bug
-    if (!fOverallSuccess)
-        {
-        wait1Msec(500);          // No real reason, but it can only help.
+    if (!fOverallSuccess) {
+        wait1Msec(500);         // No real reason, but it can only help.
         //
         fOverallSuccess = true;
         InitializeSensorMuxes(fOverallSuccess);
         InitializeSensors(fOverallSuccess);
-        }
+    }
     //
     InitializeServos(fOverallSuccess);
     InitializeMotors(fOverallSuccess);
     //
-    if (fOverallSuccess)
-        {
+    if (fOverallSuccess) {
         // Initialize turning and driving related state
-        InitializeStopConditions(stop);                   // init the global variable
+        InitializeStopConditions(stop); // init the global variable
         // InitializeTurns();
 
-        if (fBackgroundTasks)
-            {
+        if (fBackgroundTasks) {
             // Start the blackboard task and make sure it updates at least once
             InitializeBlackboard();
             StartBlackboardTask();
-            wait1Msec(2*msBlackboardPolling);
+            wait1Msec(2 * msBlackboardPolling);
             //
             displayMode = DISPLAY_MODE_FULL;
-            }
+        }
 
         MoveServosToInitialPositions();
 
         // Remember the time elapsed after initialization
         msElapsedStart = nSysTime;
-        }
-    else
-        {
+    } else {
         PlaySad();
-        }
+    }
 
     return fOverallSuccess;
-    }
+}

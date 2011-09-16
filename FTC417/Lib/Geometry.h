@@ -7,11 +7,11 @@
 // Constants
 //---------------------------------------------------------------------------------------
 
-const float oneEightyOverPi = 180. / PI;  // multiply by this for radians to degrePI
-const float piByTwo         = PI * 0.5;
-const float twoPi           = PI * 2.0;
-const float piOverOneEighty = PI / 180.;  // multiply by this for degrees to radians
-const float sqrtTwo         = sqrt(2.0);
+const float oneEightyOverPi = 180. / PI;        // multiply by this for radians to degrePI
+const float piByTwo = PI * 0.5;
+const float twoPi = PI * 2.0;
+const float piOverOneEighty = PI / 180.;        // multiply by this for degrees to radians
+const float sqrtTwo = sqrt(2.0);
 
 typedef enum { LEFT_SIDE, RIGHT_SIDE } SIDE;
 
@@ -20,66 +20,56 @@ typedef enum { LEFT_SIDE, RIGHT_SIDE } SIDE;
 #define degreesToRadians(deg)   ((deg) * piOverOneEighty)
 #define radiansToDegrees(rad)   ((rad) * oneEightyOverPi)
 
-#if 0 // no-one actually needs this yet
+#if 0                           // no-one actually needs this yet
 // atan2 is a standard routine usually found in your C runtime library, but it is absent
 // from RobotC's library, so we recreate it here. You can read more about this in
 // http://en.wikipedia.org/wiki/Atan2, but in short, it returns the arctan of y/x but
 // (a) takes into account the actual quandrant in which the point (x,y) is found, and
 // (b) can correctly deal with the case where x is zero.
-float atan2(float y, float x)
-    {
-    if (0.0 == x)
-        {
+float
+atan2(float y, float x) {
+    if (0.0 == x) {
         if (y > 0.0)
             return piByTwo;
         else if (y == 0.0)
             return 0.0;
         else
             return -piByTwo;
-        }
+    }
 
     float ratio = y / x;
     float absRatio = abs(ratio);
 
-    if (ratio > 1.0 || ratio < -1.0)
-        {
+    if (ratio > 1.0 || ratio < -1.0) {
         // steep angle
         float rad = atan(1.0 / absRatio);
-        if (x >= 0.0)
-            {
+        if (x >= 0.0) {
             if (y >= 0.0)
                 return piByTwo - rad;   // quandrant I
             else
                 return -piByTwo + rad;  // quadrant IV
-            }
-        else
-            {
+        } else {
             if (y >= 0.0)
                 return piByTwo + rad;   // quadrant II
             else
                 return -piByTwo - rad;  // quandrant III
-            }
         }
-    else
-        {
+    } else {
         // shallow angle
         float rad = atan(absRatio);
-        if (x >= 0.0)
-            {
+        if (x >= 0.0) {
             if (y >= 0.0)
-                return rad;             // quadrant I
+                return rad;     // quadrant I
             else
-                return -rad;            // quadrant IV
-            }
-        else
-            {
+                return -rad;    // quadrant IV
+        } else {
             if (y >= 0.0)
                 return PI - rad;        // quandrant II
             else
                 return -PI + rad;       // quandrant III
-            }
         }
     }
+}
 #endif
 
 //---------------------------------------------------------------------------------------
@@ -104,11 +94,10 @@ typedef float ANGLE;
 // POINT type
 //---------------------------------------------------------------------------------------
 
-typedef struct
-    {
-    float   x;
-    float   y;
-    } POINT;
+typedef struct {
+    float x;
+    float y;
+} POINT;
 
 #define AssignPoint(ptTo, ptFrom)       \
     /* assign one point to another */   \
@@ -146,33 +135,40 @@ typedef struct
     pt.y += ptCenter.y;                                 \
     }
 
-void intersectLineCircle(OUT POINT& ptU, OUT POINT& ptV, IN const POINT& ptFrom, IN const POINT& ptTo, IN const POINT& ptC, IN float r)
+void
+intersectLineCircle(OUT POINT & ptU, OUT POINT & ptV, IN const POINT & ptFrom,
+    IN const POINT & ptTo, IN const POINT & ptC, IN float r)
 // Return the two points U & V which are the intersection of the line [ptFrom, ptTo] with
 // the circle centered at ptC with radius r
-    {
-	const float v00 = ptFrom.y - ptTo.y;
-	const float v01 = ptFrom.x - ptTo.x;
-	const float v02 = square(v00) + square(v01);
-	const float v03 = 1 / v02;
-	const float v04 = v00 * (ptTo.y - ptC.y) + v01 * (ptTo.x - ptC.x);
-	const float v05 = -timesTwo(v04);
-	const float v06 = sqrt(timesFour(square(v04)) - timesFour(v02 * (((square(ptC.x) + square(ptC.y) + square(ptTo.x) + square(ptTo.y)) - timesTwo(ptC.x * ptTo.x + ptC.y * ptTo.y)) - square(r))));
-	const float v07 = v05 + v06;
-	const float v08 = v05 - v06;
-	ptU.x = ptTo.x + 0.5 * v01 * v03 * v08;
-	ptU.y = ptTo.y + 0.5 * v00 * v03 * v08;
-	ptV.x = ptTo.x + 0.5 * v01 * v03 * v07;
-	ptV.y = ptTo.y + 0.5 * v00 * v03 * v07;
-    }
+{
+    const float v00 = ptFrom.y - ptTo.y;
+    const float v01 = ptFrom.x - ptTo.x;
+    const float v02 = square(v00) + square(v01);
+    const float v03 = 1 / v02;
+    const float v04 = v00 * (ptTo.y - ptC.y) + v01 * (ptTo.x - ptC.x);
+    const float v05 = -timesTwo(v04);
+    const float v06 =
+        sqrt(timesFour(square(v04)) - timesFour(v02 * (((square(ptC.x) +
+                        square(ptC.y) + square(ptTo.x) + square(ptTo.y)) -
+                    timesTwo(ptC.x * ptTo.x + ptC.y * ptTo.y)) - square(r))));
+    const float v07 = v05 + v06;
+    const float v08 = v05 - v06;
+    ptU.x = ptTo.x + 0.5 * v01 * v03 * v08;
+    ptU.y = ptTo.y + 0.5 * v00 * v03 * v08;
+    ptV.x = ptTo.x + 0.5 * v01 * v03 * v07;
+    ptV.y = ptTo.y + 0.5 * v00 * v03 * v07;
+}
 
-void linearOrder(OUT int& iCompare, const POINT& ptFrom, const POINT& ptTo, const POINT& ptProbe, float sqdFromTo)
+void
+linearOrder(OUT int &iCompare, const POINT & ptFrom, const POINT & ptTo,
+    const POINT & ptProbe, float sqdFromTo)
 // Given two points on a line, ptFrom and ptTo, answer <0, 0, or >0 according to how a third
 // point, ptProbe relates. Positive on the line is in the direction from ptFrom towards ptTo.
 // sqdFromTo is a cached calculation of the squared distance from ptFrom to ptTo
-    {
+{
 //        sqdFromTo    = sqdist(ptFrom, ptTo);
     float sqdProbeFrom = sqdist(ptProbe, ptFrom);
-    float sqdProbeTo   = sqdist(ptProbe, ptTo);
+    float sqdProbeTo = sqdist(ptProbe, ptTo);
 
     // If the longest distance is sqdFromTo, then the probe is in the middle
     if (sqdFromTo > sqdProbeFrom && sqdFromTo > sqdProbeTo)
@@ -185,7 +181,7 @@ void linearOrder(OUT int& iCompare, const POINT& ptFrom, const POINT& ptTo, cons
 
     else
         iCompare = 1;
-    }
+}
 
 // We are given two points, ptFrom and ptTo, on a circle. A third point, ptProbe, is
 // also on the circle. Collectively, the three points span less than 180 degrees. Then,

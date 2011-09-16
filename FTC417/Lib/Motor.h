@@ -11,8 +11,10 @@
 #define IsRightMotor(motor)                             (motor.imotor == motorRight.imotor && motorRight.fActive)
 #define DifferentMotorControllers(motorRed, motorBlue)  (motorRed.imotorctlr != motorBlue.imotorctlr)
 
-void InitializeMotor(IN OUT STICKYFAILURE& fOverallSuccess, MOTOR& motor, MOTORCONTROLLER& controllerParam, ubyte jmtr /*one based*/, string displayNameParam, int prop)
-    {
+void
+InitializeMotor(IN OUT STICKYFAILURE & fOverallSuccess, MOTOR & motor,
+    MOTORCONTROLLER & controllerParam, ubyte jmtr /*one based */ ,
+    string displayNameParam, int prop) {
     BOOL fSuccess = true;
     LockDaisy();
 
@@ -27,78 +29,74 @@ void InitializeMotor(IN OUT STICKYFAILURE& fOverallSuccess, MOTOR& motor, MOTORC
         i++;
     motor.imotor = i;
 
-    motor.imotorctlr    = controllerParam.imotorctlr;
-    motor.imtr          = jmtr-1;
-    motor.displayName   = displayNameParam;
-    motor.encStallPrev  = 0;
+    motor.imotorctlr = controllerParam.imotorctlr;
+    motor.imtr = jmtr - 1;
+    motor.displayName = displayNameParam;
+    motor.encStallPrev = 0;
     motor.msLastOkStall = 0;
     motor.msLastEncStall = 0;
-    MtrOf(motor).power  = 0;
-    motor.fReflected    = !!(MOTORPROP_REFLECTED & prop);
-    if (motor.fReflected)
-        {
+    MtrOf(motor).power = 0;
+    motor.fReflected = !!(MOTORPROP_REFLECTED & prop);
+    if (motor.fReflected) {
         MtrOf(motor).mode |= MOTORMODE_REFLECTED;
-        }
+    }
 
     motor.fActive = true;
     MtrOf(motor).fActive = true;
 
-    motor.fHasEncoder = !!(MOTORPROP_ENCODER & prop) || ControllerOfMotor(motor).fLegoController;
-    motor.fStallCheck = (motor.fHasEncoder && !(MOTORPROP_NOSTALLCHECK & prop));
-    if (motor.fHasEncoder)
-        {
-        if (IsLeftMotor(motor) || IsRightMotor(motor))
-            {
+    motor.fHasEncoder = !!(MOTORPROP_ENCODER & prop)
+        || ControllerOfMotor(motor).fLegoController;
+    motor.fStallCheck = (motor.fHasEncoder
+        && !(MOTORPROP_NOSTALLCHECK & prop));
+    if (motor.fHasEncoder) {
+        if (IsLeftMotor(motor) || IsRightMotor(motor)) {
             ControllerOfMotor(motor).fHasActiveEncoder = true;
-            }
         }
+    }
 
     SendMotorModePower(fSuccess, ControllerOfMotor(motor));
     waitForMotorControllerCommandCycle(ControllerOfMotor(motor));
 
     ReleaseDaisy();
-    if (fOverallSuccess) fOverallSuccess = fSuccess;
+    if (fOverallSuccess)
+        fOverallSuccess = fSuccess;
     TraceInitializationResult1("motor[%s]", displayNameParam, fOverallSuccess);
-    }
-
+}
 
 // Zero the values of the left and right motor encoders
 // REVIEW: do we need the blackboard lock for this guy?
-void ZeroEncoders()
-    {
+void
+ZeroEncoders() {
     LockDaisy();
     BOOL fSuccess = true;
-    /**/
-    MOTORMODE modePrevLeft, modePrevRight;
-    SetControllerMtrRunMode(modePrevLeft,  ControllerOfMotor(motorLeft),  motorLeft.imtr,   MOTORMODE_RESET_CURRENT_ENCODER);
-    SetControllerMtrRunMode(modePrevRight, ControllerOfMotor(motorRight), motorRight.imtr,  MOTORMODE_RESET_CURRENT_ENCODER);
-    /**/
-    SendMotorModePower(fSuccess, ControllerOfMotor(motorLeft));
-    if (DifferentMotorControllers(motorLeft, motorRight))
-        {
+     /**/ MOTORMODE modePrevLeft, modePrevRight;
+    SetControllerMtrRunMode(modePrevLeft, ControllerOfMotor(motorLeft),
+        motorLeft.imtr, MOTORMODE_RESET_CURRENT_ENCODER);
+    SetControllerMtrRunMode(modePrevRight, ControllerOfMotor(motorRight),
+        motorRight.imtr, MOTORMODE_RESET_CURRENT_ENCODER);
+     /**/ SendMotorModePower(fSuccess, ControllerOfMotor(motorLeft));
+    if (DifferentMotorControllers(motorLeft, motorRight)) {
         SendMotorModePower(fSuccess, ControllerOfMotor(motorRight));
-        }
-    waitForMotorControllerCommandCycle2(ControllerOfMotor(motorLeft),ControllerOfMotor(motorRight));
-    /**/
-    MtrOf(motorLeft).mode = modePrevLeft;
-    MtrOf(motorRight).mode = modePrevRight;
-    /**/
-    SendMotorModePower(fSuccess, ControllerOfMotor(motorLeft));
-    if (DifferentMotorControllers(motorLeft, motorRight))
-        {
-        SendMotorModePower(fSuccess, ControllerOfMotor(motorRight));
-        }
-    waitForMotorControllerCommandCycle2(ControllerOfMotor(motorLeft),ControllerOfMotor(motorRight));
-    /**/
-    ReleaseDaisy();
     }
+    waitForMotorControllerCommandCycle2(ControllerOfMotor(motorLeft),
+        ControllerOfMotor(motorRight));
+     /**/ MtrOf(motorLeft).mode = modePrevLeft;
+    MtrOf(motorRight).mode = modePrevRight;
+     /**/ SendMotorModePower(fSuccess, ControllerOfMotor(motorLeft));
+    if (DifferentMotorControllers(motorLeft, motorRight)) {
+        SendMotorModePower(fSuccess, ControllerOfMotor(motorRight));
+    }
+    waitForMotorControllerCommandCycle2(ControllerOfMotor(motorLeft),
+        ControllerOfMotor(motorRight));
+     /**/ ReleaseDaisy();
+}
 
 // Read the value of the left and right encoders into the indicated variables
 // You must own the daisy lock to call this function because otherwise
 // there's contention for the formal parameters. Normally, that is accomplished
 // within the macro ReadEncoders.
-void ReadEncodersInternal(OUT ENCOD& encLeft, OUT ENCOD& encRight)
-    {
+void
+ReadEncodersInternal(OUT ENCOD & encLeft, OUT ENCOD & encRight) {
     BOOL fSuccess = true;
     encLeft = encRight = 0;
     CheckLockHeld(lockDaisy);
@@ -106,51 +104,44 @@ void ReadEncodersInternal(OUT ENCOD& encLeft, OUT ENCOD& encRight)
     // Read the left encoder
     //
     BOOL fReadLeftController = false;
-    if (motorLeft.fActive && motorLeft.fHasEncoder)
-        {
-        while (true)
-            {
+    if (motorLeft.fActive && motorLeft.fHasEncoder) {
+        while (true) {
             ReadControllerEncoders(fSuccess, ControllerOfMotor(motorLeft));
-            if (fSuccess)
-                {
+            if (fSuccess) {
                 fReadLeftController = true;
                 encLeft = MtrOf(motorLeft).encoder;
                 break;
-                }
+            }
             //
             ReleaseDaisy();
             EndTimeSlice();
             LockDaisy();
-            }
         }
+    }
     //
     // Read the right encoder
     //
-    if (motorRight.fActive && motorRight.fHasEncoder)
-        {
-        if (!fReadLeftController || DifferentMotorControllers(motorLeft,motorRight))
-            {
-            while (true)
-                {
-                ReadControllerEncoders(fSuccess, ControllerOfMotor(motorRight));
-                if (fSuccess)
-                    {
+    if (motorRight.fActive && motorRight.fHasEncoder) {
+        if (!fReadLeftController
+            || DifferentMotorControllers(motorLeft, motorRight)) {
+            while (true) {
+                ReadControllerEncoders(fSuccess,
+                    ControllerOfMotor(motorRight));
+                if (fSuccess) {
                     encRight = MtrOf(motorRight).encoder;
                     break;
-                    }
+                }
                 //
                 ReleaseDaisy();
                 EndTimeSlice();
                 LockDaisy();
-                }
             }
-        else
-            {
+        } else {
             // We already have the info we need in the (shared) motor controller
             encRight = MtrOf(motorRight).encoder;
-            }
         }
     }
+}
 
 #define ReadEncoders(encLeft, encRight)                 \
     {                                                   \
@@ -170,7 +161,6 @@ void ReadEncodersInternal(OUT ENCOD& encLeft, OUT ENCOD& encRight)
 // reversing of the motor power and encoder values or whether we've managed
 // to get the motor controller to do that for us.
 #define InternalPowerForMotor(motor, power)     (power)
-
 
 // The documentation to the HiTechnic Motor Controller has the following to say about
 // how it interprets power levels:
@@ -224,22 +214,18 @@ float motorPowerScale = DEFAULT_MOTOR_POWER_SCALE;
 // Note that the blackboard lock is (currently) required for calling this function,
 // though that should reasonably change to be the daisy lock.
 //
-void SetMotorPower(MOTOR& motor, int powerArg)
-    {
+void
+SetMotorPower(MOTOR & motor, int powerArg) {
     short power_ = Rounded((float)powerArg * motorPowerScale, short);
     ClampVar(power_, -100, 100);
-    RecordMotorPower(
-            motor.imotorctlr,
-            motor.imtr,
-            InternalPowerForMotor(motor,power_));
-    if (motor.imotorPaired != -1)
-        {
-        RecordMotorPower(
-            rgmotor[motor.imotorPaired].imotorctlr,
+    RecordMotorPower(motor.imotorctlr,
+        motor.imtr, InternalPowerForMotor(motor, power_));
+    if (motor.imotorPaired != -1) {
+        RecordMotorPower(rgmotor[motor.imotorPaired].imotorctlr,
             rgmotor[motor.imotorPaired].imtr,
             InternalPowerForMotor(rgmotor[motor.imotorPaired], power_));
-        }
     }
+}
 
 // Send the current power levels to all the active controllers.
 #define SendMotorPowers()                                                       \
@@ -270,20 +256,17 @@ void SetMotorPower(MOTOR& motor, int powerArg)
 BOOL fHaltProgramOnMotorStall = true;
 
 // We've hit a stall. Deal with it according to how the current app wishes.
-void AbortDueToMotorStall(MOTOR& motor, MILLI ms)
-    {
-    hogCpuNestable();  /* paranoia: we don't want another task to restart the motors after we turn them off */
+void
+AbortDueToMotorStall(MOTOR & motor, MILLI ms) {
+    hogCpuNestable();           /* paranoia: we don't want another task to restart the motors after we turn them off */
     SetMotorPower(motorLeft, 0);
     SetMotorPower(motorRight, 0);
     SendMotorPowers();
     PlayFifthNoWait();
     TRACE(("stall: %dms %s", ms, motor.displayName));
-    if (fHaltProgramOnMotorStall)
-        {
+    if (fHaltProgramOnMotorStall) {
         StopAllTasks();
-        }
-    else
-        {
+    } else {
         wait1Msec(300);
 
         // Reinit the motors after the stall in an attempt to diagnose odd
@@ -291,9 +274,9 @@ void AbortDueToMotorStall(MOTOR& motor, MILLI ms)
         // and so, e.,g, we don't know which motors are to be reversed.
         STICKYFAILURE fOverallSuccess = true;
         InitializeMotors(fOverallSuccess);
-        }
-    releaseCpuNestable();
     }
+    releaseCpuNestable();
+}
 
 MILLI msLastMotorStallCheck = 0;
 MILLI msLastMotorControllerTickle = 0;

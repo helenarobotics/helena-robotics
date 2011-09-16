@@ -9,7 +9,8 @@
 #include "config\RobotConfig.h"
 #include "lib\MainPostlude.h"
 
-task main() {
+task
+main() {
     if (InitializeMain(true, true)) {
         int power = 50;
         MILLI msDuration = 3000;
@@ -30,7 +31,7 @@ task main() {
 
         for (;;) {
             MILLI msNow = nSysTime;
-            MILLI dms   = msNow - msStart;
+            MILLI dms = msNow - msStart;
 
             if (dms > msDuration)
                 break;
@@ -49,6 +50,6 @@ task main() {
 
         StopRobot();
     } else {
-        InfiniteIdleLoop(); // Just sit there and update the display
+        InfiniteIdleLoop();     // Just sit there and update the display
     }
 }

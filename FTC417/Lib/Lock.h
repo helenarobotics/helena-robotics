@@ -29,12 +29,11 @@ int _cHogCPU = 0;
 // LOCK definition and initialization
 //---------------------------------------------------------------------------------------
 
-typedef struct
-    {
-    int     owningTask;     // value of nCurrentTask for task which owns the lock, or -1 if no owner
-    int     cRecursion;     // how many times owning task owns
-    string  displayName;    // name of the lock for use in tracing messages
-    } LOCK;
+typedef struct {
+    int owningTask;             // value of nCurrentTask for task which owns the lock, or -1 if no owner
+    int cRecursion;             // how many times owning task owns
+    string displayName;         // name of the lock for use in tracing messages
+} LOCK;
 
 // Call InitializeLock for each of the locks you use in your program. Usually this is
 // done in the initialization logic in task main() which precedes the call to waitForStart().
@@ -78,14 +77,14 @@ typedef struct
         if (-1 != lock.owningTask)                                                          \
             {                                                                               \
             /* yes, some other task owns. this task must wait until it releases it */       \
-	        do                                                                              \
-	            {                                                                           \
-	            releaseCpuNestable();                                                       \
-	            SleepWaitingForLock();                                                      \
-	            hogCpuNestable();                                                           \
-	            }                                                                           \
-	        while (-1 != lock.owningTask);                                                  \
-	        }                                                                               \
+            do                                                                              \
+                {                                                                           \
+                releaseCpuNestable();                                                       \
+                SleepWaitingForLock();                                                      \
+                hogCpuNestable();                                                           \
+                }                                                                           \
+            while (-1 != lock.owningTask);                                                  \
+            }                                                                               \
         /* by here, no task owns the lock. so we can just take it */                        \
         lock.owningTask = nCurrentTask;                                                     \
         lock.cRecursion = 1;                                                                \
@@ -111,8 +110,8 @@ typedef struct
 // Locks used in the Three Task Architecture
 //---------------------------------------------------------------------------------------
 
-LOCK    lockBlackboard;           // must own to read or write the blackboard (and more: to be elaborated)
-LOCK    lockDaisy;
+LOCK lockBlackboard;            // must own to read or write the blackboard (and more: to be elaborated)
+LOCK lockDaisy;
 // NOTE: If you are going to grab BOTH lockDaisy and lockBlackboard, you MUST
 //       acquire lockBlackboard FIRST; otherwise, deadlock may occur between tasks.
 
@@ -120,22 +119,24 @@ LOCK    lockDaisy;
 // Optional space-saving acquire/release functions for defined locks
 //---------------------------------------------------------------------------------------
 
-void LockBlackboard()
-    {
+void
+LockBlackboard() {
     LockExclusive(lockBlackboard);
-    }
-void ReleaseBlackboard()
-    {
+}
+
+void
+ReleaseBlackboard() {
     ReleaseLock(lockBlackboard);
-    }
+}
 
 //--------------------------------------------------------------------------
 
-void LockDaisy()
-    {
+void
+LockDaisy() {
     LockExclusive(lockDaisy);
-    }
-void ReleaseDaisy()
-    {
+}
+
+void
+ReleaseDaisy() {
     ReleaseLock(lockDaisy);
-    }
+}
