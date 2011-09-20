@@ -110,12 +110,9 @@ typedef struct {
 
 // Initialize an individual SERVO.
 void
-InitializeServo(IN OUT STICKYFAILURE &fOverallSuccess, SERVO &svo,
-                string displayName, SVOCTLR &controllerMain,
-                int jsvcMain, /* one based */
-                SVOCTLR &controllerPaired,
-                int jsvcPaired, /* one based */
-                SVOKIND kind, int fActive, float degPhysicalServoRange = 195.0) {
+InitializeServo(IN OUT STICKYFAILURE &fOverallSuccess, SERVO &svo, string displayName, SVOCTLR &controllerMain, int jsvcMain,        /* one based */
+    SVOCTLR &controllerPaired, int jsvcPaired, /* one based */
+    SVOKIND kind, int fActive, float degPhysicalServoRange = 195.0) {
     BOOL fSuccess = true;
     svo.fActive = !!fActive;
 
@@ -220,12 +217,12 @@ WaitForServos(MILLI msMinWait = 0, BOOL fBeep = true) {
         do {
             fAllComplete = true;
             for (int isvoctlr = 0; fAllComplete && isvoctlr < isvoctlrMax;
-                 isvoctlr++) {
+                isvoctlr++) {
                 if (rgsvoctlr[isvoctlr].fActive) {
                     fSuccess = true;
                     BOOL fComplete;
                     QueryServoMovementComplete(fSuccess, rgsvoctlr[isvoctlr],
-                                               fComplete);
+                        fComplete);
                     if (fSuccess) {
                         fAllComplete = fAllComplete && fComplete;
                     } else
@@ -266,14 +263,14 @@ WaitForServos(MILLI msMinWait = 0, BOOL fBeep = true) {
 // expanded often inside one function. So now we expand it just once, inside
 // the GetServoValue *function*, which everyone else then calls.
 int
-GetServoValue(SERVO & svo) {
+GetServoValue(SERVO &svo) {
     return GetServoValue_(svo);
 }
 
 // Start the servo moving to a new location, and figure out when it's
 // going to get there.
 BOOL
-MoveServo(SERVO & svo, int svposNew, BOOL fMoveImmediately = false) {
+MoveServo(SERVO &svo, int svposNew, BOOL fMoveImmediately = false) {
     BOOL fSuccess = true;
     if (svo.fActive) {
         // svposNew and the svo.svposLower etc positions in svo are in
@@ -370,7 +367,7 @@ MoveServo(SERVO & svo, int svposNew, BOOL fMoveImmediately = false) {
             svposTripped += svo.dsvposTripped;
             ClampVar(svposTripped, 0, svposLast);
             RecordSvoPosition(svo.isvoctlrTripped, svo.isvcTripped,
-                              svposTripped);
+                svposTripped);
         }
         // Deal with the Quad servo
         if (HasQuadServo(svo)) {

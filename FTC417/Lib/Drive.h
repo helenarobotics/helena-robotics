@@ -130,7 +130,7 @@ typedef struct
 
 void
 CALLEDBY(iTaskMain)
-RampDrivePower(DRIVESTATE & state, float fraction) {
+RampDrivePower(DRIVESTATE &state, float fraction) {
     // Compute the power level as the fraction of the driving power
     int16 power = Rounded((float)(state.powerDrive) * fraction, int16);
 
@@ -164,7 +164,7 @@ RampDrivePower(DRIVESTATE & state, float fraction) {
 
 void
 CALLEDBY(iTaskMain)
-RampDrivePower(DRIVESTATE & state) {
+RampDrivePower(DRIVESTATE &state) {
     if (state.absdenc > DRIVE_RAMP_THRESHOLD || !USE_DRIVE_RAMP)
         RampDrivePower(state, 1.0);
     else {
@@ -193,7 +193,7 @@ RampDrivePower(DRIVESTATE & state) {
 
 BOOL
 CALLEDBY(iTaskMain)
-DriveForwards(float cmDistance, STOPCONDITIONS & stop, int16 power)
+DriveForwards(float cmDistance, STOPCONDITIONS &stop, int16 power)
 // Drive the indicated distance. Return success or failure.
 // NB: Thus function can at times WRITE to the stop conditions.
 {

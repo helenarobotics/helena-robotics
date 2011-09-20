@@ -11,23 +11,27 @@
 
 GYROSENSOR sensGyroHorz;
 
-void InitializeMotors(IN OUT STICKYFAILURE& fOverallSuccess)    {}
-void InitializeServos(IN OUT STICKYFAILURE& fOverallSuccess)    {}
-void InitializeSensors(IN OUT STICKYFAILURE& fOverallSuccess)
-    {
-    InitializeGyroSensor(fOverallSuccess, "gyro", sensGyroHorz, sensnmGyroHorz, 2000, 0);
-    }
+void
+InitializeMotors(IN OUT STICKYFAILURE &fOverallSuccess) {
+}
+void
+InitializeServos(IN OUT STICKYFAILURE &fOverallSuccess) {
+}
+void
+InitializeSensors(IN OUT STICKYFAILURE &fOverallSuccess) {
+    InitializeGyroSensor(fOverallSuccess, "gyro", sensGyroHorz, sensnmGyroHorz,
+        2000, 0);
+}
 
 #include "..\lib\MainPostlude.h"
 
 
-void DoGyroDisplay()
-    {
+void
+DoGyroDisplay() {
     eraseDisplay();
 
     StartReadingGyroSensor(sensGyroHorz);
-    for (;;)
-        {
+    for (;;) {
         LockBlackboard();
         float deg = sensGyroHorz.deg;
         ReleaseBlackboard();
@@ -35,11 +39,11 @@ void DoGyroDisplay()
         nxtDisplayTextLine(3, "gyro=%.2f", deg);
         //
         EndTimeSlice();
-        }
     }
+}
 
-void DoGyroTelemetry()
-    {
+void
+DoGyroTelemetry() {
     SuspendBlackboard();
     SuspendDisplayTask();
 
@@ -62,13 +66,12 @@ void DoGyroTelemetry()
 
     // Emit the data
     MILLI msStart = nSysTime;
-    for (;;)
-        {
+    for (;;) {
         LockBlackboard();
         MILLI msNow = nSysTime;
         ReadGyroSensor(sensGyroHorz, msNow);
         float degCWPerS = sensGyroHorz.degCWPerS;
-        float deg       = sensGyroHorz.deg;
+        float deg = sensGyroHorz.deg;
         ReleaseBlackboard();
 
         TelemetryAddInt32(telemetry.serialNumber);
@@ -80,11 +83,12 @@ void DoGyroTelemetry()
         telemetry.serialNumber++;
 
         EndTimeSlice();
-        }
     }
+}
 
-task main()
-    {
-    if (!InitializeMain(true, true)) return;
+task
+main() {
+    if (!InitializeMain(true, true))
+        return;
     DoGyroTelemetry();
-    }
+}

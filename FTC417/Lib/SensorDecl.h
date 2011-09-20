@@ -20,7 +20,8 @@
     string displayName;
 
 // 'Base class' for all the various kinds of sensors
-typedef struct { COMMON_SENSOR_DATA } SENSOR;
+typedef struct {
+COMMON_SENSOR_DATA} SENSOR;
 
 // Macros for naming sensor connections.
 // Note: both mux and channel in SensorOnMux and SensorDirect are
@@ -28,12 +29,12 @@ typedef struct { COMMON_SENSOR_DATA } SENSOR;
 #define SensorOnMux(mux,channel)    (((((mux) - 1) * 4 + (channel) - 1)) | 0x8000)
 #define SensorDirect(channel)       ((channel) - 1)
 #define sensnmNone                  0x7FFF
-#define SensorIsDefined(sensnm)     (((sensnm) & sensnmNone) != sensnmNone)
+#define SensorIsDefined(sensnm)     (((sensnm) &sensnmNone) != sensnmNone)
 
 // We remember if the sensor is on a mux or not
 #define FMux(sensor)        FMuxSensnm(sensor.sensnm)
 #define FDirect(sensor)     (!FMux(sensor))
-#define FMuxSensnm(sensnm)  (((sensnm) & 0x8000) != 0)
+#define FMuxSensnm(sensnm)  (((sensnm) &0x8000) != 0)
 
 // Macros for accessing the id of the sensor (SID) in mux and direct versions
 #define SID_MUX(sensor)    ((SENSORONMUX)(sensor.sensnm))       // given that FMux(sensor) is true, return the identifier used for talking to that sensor on that mux
@@ -44,8 +45,8 @@ typedef struct { COMMON_SENSOR_DATA } SENSOR;
 #define LINK_MUX(sensor)     LINK_SID(sensor.sensnm)    // given that FMux(sensor) is true, return the I2CLINK on which to talk to its mux
 #define CHANNEL_MUX(sensor)  CHANNEL_SID(sensor.sensnm) // given that FMux(sensor) is true, return the (zero-based) channel on which it lives on its mux
 
-#define LINK_SID(sid)       ((I2CLINK)(((sid) & 0x7FFF) / 4))
-#define CHANNEL_SID(sid)    (((sid) & 0x7FFF) % 4)
+#define LINK_SID(sid)       ((I2CLINK)(((sid) &0x7FFF) / 4))
+#define CHANNEL_SID(sid)    (((sid) &0x7FFF) % 4)
 
 // The actual InitializeSensor() work is done in a function to save space.
 // The parameter to that function needs to see a sensor structure of
@@ -55,7 +56,7 @@ typedef struct { COMMON_SENSOR_DATA } SENSOR;
     InitializeSensor_(fOverallSuccess, nm, BASE_CAST(SENSOR, sensor), sensnmVal, type)
 
 void InitializeSensor_(IN OUT STICKYFAILURE &fOverallSuccess, string nm,
-                       SENSOR &sensor, int sensnmVal, MUXSENST type);
+    SENSOR &sensor, int sensnmVal, MUXSENST type);
 
 #define TraceSensorInitializationResult(nm, fValue)     TraceInitializationResult1("sensor[%s]", nm, fValue)
 
@@ -127,7 +128,7 @@ typedef struct {
 //-----------------------------------------------------------------------------
 typedef struct {
     COMMON_SENSOR_DATA ANGLE value;     // current reading of the compass
-    ANGLE bias;                         // value to subtract from raw readings to get value
+    ANGLE bias;                 // value to subtract from raw readings to get value
 } COMPASSSENSOR;
 
 #define InitializeCompassSensor(fOverallSuccess, nm, sensor, sensnmVal) \
@@ -155,9 +156,8 @@ typedef struct {
 } EOPDSENSOR;
 
 void InitializeEopdSensor(STICKYFAILURE &fOverallSuccess, string nm,
-                          EOPDSENSOR &sensor, int sensnmVal,
-                          EOPD_CONFIG processed,
-                          EOPD_RANGE range);
+    EOPDSENSOR &sensor, int sensnmVal,
+    EOPD_CONFIG processed, EOPD_RANGE range);
 
 //-----------------------------------------------------------------------------
 // Gryo sensor
@@ -182,7 +182,7 @@ typedef struct {
 } GYROSENSOR;
 
 void InitializeGyroSensor(STICKYFAILURE &fOverallSuccess, string nm,
-                          GYROSENSOR &sensor, int sensnmVal, int cSample = 300, MILLI msWait = 10);
+    GYROSENSOR &sensor, int sensnmVal, int cSample = 300, MILLI msWait = 10);
 
 //-----------------------------------------------------------------------------
 // Magnetic sensor
@@ -211,7 +211,7 @@ typedef struct {
 } MAGNETICSENSOR;
 
 void InitializeMagneticSensor(STICKYFAILURE &fOverallSuccess, string nm,
-                              MAGNETICSENSOR &sensor, int sensnmVal);
+    MAGNETICSENSOR &sensor, int sensnmVal);
 
 //-----------------------------------------------------------------------------
 // (Ultra)Sonic sensor

@@ -123,7 +123,7 @@ AdjustLaterallyUsingAngle(float dcm, ANGLE degAngle) {
 #if ROBOT_NAME==ROBOT_NAME_OMNI_BOT
 
 void
-DoManualDrivingControl(int joy, TJoystick & joystick) {
+DoManualDrivingControl(int joy, TJoystick &joystick) {
     int ctlMoveX = joyLeftX(joy);
     int ctlMoveY = joyLeftY(joy);       // -128 to  127
     int ctlTurn = -joyRightX(joy);      //  128 to -127
@@ -163,7 +163,7 @@ DoManualDrivingControl(int joy, TJoystick & joystick) {
 #else
 
 void
-DoManualDrivingControl(int joy, TJoystick & joystick)
+DoManualDrivingControl(int joy, TJoystick &joystick)
 // Interpret the joysticks and manually drive the bot
 {
     // Extract values from the joysticks that we find useful

@@ -134,61 +134,61 @@ int rgsvposRotation[] = {
 
 #if HAS_ARM_SERVOS
 int rgsvposHighDispenser[][SVOJNT_MAX * ARMPOS_MAX] = { // 23
-    { ElbAdj(158), SdrAdj(23), 0,
-      ElbAdj(80), SdrAdj(73), 0,
-      ElbAdj(200), SdrAdj(93), 0 },
+    {ElbAdj(158), SdrAdj(23), 0,
+            ElbAdj(80), SdrAdj(73), 0,
+        ElbAdj(200), SdrAdj(93), 0},
 
     // 24
-    { ElbAdj(180), SdrAdj(43), 0,
-      ElbAdj(91), SdrAdj(93), 0,
-      ElbAdj(211), SdrAdj(103), 0 },
+    {ElbAdj(180), SdrAdj(43), 0,
+            ElbAdj(91), SdrAdj(93), 0,
+        ElbAdj(211), SdrAdj(103), 0},
 
     // 25
-    { ElbAdj(195), SdrAdj(50), 0,
-      ElbAdj(135), SdrAdj(128), 0,
-      ElbAdj(245), SdrAdj(118), 0 },
+    {ElbAdj(195), SdrAdj(50), 0,
+            ElbAdj(135), SdrAdj(128), 0,
+        ElbAdj(245), SdrAdj(118), 0},
 
     // 26
-    { ElbAdj(204), SdrAdj(64), 0,
-      ElbAdj(128), SdrAdj(90), 0,
-      ElbAdj(255), SdrAdj(120), 0 },
+    {ElbAdj(204), SdrAdj(64), 0,
+            ElbAdj(128), SdrAdj(90), 0,
+        ElbAdj(255), SdrAdj(120), 0},
 };
 
 int rgsvposLowDispenser[][SVOJNT_MAX * ARMPOS_MAX] = {
     // 17
-    { ElbAdj(85), SdrAdj(20), 0,
-      ElbAdj(145), SdrAdj(160), 1,        // fBottomBeforeTop
-      ElbAdj(225), SdrAdj(200), 0 },
+    {ElbAdj(85), SdrAdj(20), 0,
+            ElbAdj(145), SdrAdj(160), 1,        // fBottomBeforeTop
+        ElbAdj(225), SdrAdj(200), 0},
 
     // 18
-    { ElbAdj(85), SdrAdj(20), 0,
-      ElbAdj(145), SdrAdj(160), 0,
-      ElbAdj(225), SdrAdj(200), 0 },
+    {ElbAdj(85), SdrAdj(20), 0,
+            ElbAdj(145), SdrAdj(160), 0,
+        ElbAdj(225), SdrAdj(200), 0},
 
     // 19
-    { ElbAdj(85), SdrAdj(15), 0,
-      ElbAdj(135), SdrAdj(155), 0,
-      ElbAdj(205), SdrAdj(185), 0 },
+    {ElbAdj(85), SdrAdj(15), 0,
+            ElbAdj(135), SdrAdj(155), 0,
+        ElbAdj(205), SdrAdj(185), 0},
 
     // 20
-    { ElbAdj(105), SdrAdj(10), 0,
-      ElbAdj(135), SdrAdj(140), 0,
-      ElbAdj(235), SdrAdj(200), 0 },
+    {ElbAdj(105), SdrAdj(10), 0,
+            ElbAdj(135), SdrAdj(140), 0,
+        ElbAdj(235), SdrAdj(200), 0},
 
     // 21
-    { ElbAdj(115), SdrAdj(25), 0,
-      ElbAdj(145), SdrAdj(145), 0,
-      ElbAdj(215), SdrAdj(183), 0 },
+    {ElbAdj(115), SdrAdj(25), 0,
+            ElbAdj(145), SdrAdj(145), 0,
+        ElbAdj(215), SdrAdj(183), 0},
 
     // 22
-    { ElbAdj(154), SdrAdj(8), 0,
-      ElbAdj(136), SdrAdj(140), 0,
-      ElbAdj(245), SdrAdj(200), 0 },
+    {ElbAdj(154), SdrAdj(8), 0,
+            ElbAdj(136), SdrAdj(140), 0,
+        ElbAdj(245), SdrAdj(200), 0},
 
     // 23
-    { ElbAdj(173), SdrAdj(36), 0,
-      ElbAdj(113), SdrAdj(150), 0,
-      ElbAdj(233), SdrAdj(196), 0 },   // iffy dispensing
+    {ElbAdj(173), SdrAdj(36), 0,
+            ElbAdj(113), SdrAdj(150), 0,
+        ElbAdj(233), SdrAdj(196), 0},   // iffy dispensing
 };
 #endif
 
@@ -209,7 +209,7 @@ int rgcmUnpackSwingTopHighMax[3] = { 27, 255, 28 };     // at this distance or g
 
 BOOL
 LookupServoPositions(DISPENSER disp, int cm, ARMPOS armPos, int &svposRotation,
-                     int &svposElbow, int &svposShoulder) {
+    int &svposElbow, int &svposShoulder) {
     // Return the svpos for the indicated arm position of the servos at
     // the indicated dispenser, given that the left ultrasound reads
     // cm. If the parameters are out of bounds, return a negative number
@@ -251,7 +251,7 @@ LookupServoPosition(DISPENSER disp, int cm, ARMPOS armPos, SVOJNT svojnt) {
     int svposElbow;
     int svposShoulder;
     if (LookupServoPositions(disp, cm, armPos, OUT svposRotation,
-                             OUT svposElbow, OUT svposShoulder)) {
+            OUT svposElbow, OUT svposShoulder)) {
         switch (svojnt) {
         case SVOJNT_ROTATION:
             return svposRotation;
@@ -444,7 +444,7 @@ PackDispenserArmFromEOPD(DISPENSER disp, int cm, SIDE side) {
     MoveServo(svoArmRotation, svposIntRotation);
     WaitForServosOld(250);
 
-    // Set top & bottom to intermediate positions
+    // Set top &bottom to intermediate positions
     MoveDispenserArm(svposIntRotation, svposIntElbow, svposIntShoulder);
     WaitForServosOld(250);
 
@@ -535,8 +535,8 @@ typedef struct {
 // take to get there.  It is assumed here that the EOPD and dispensing
 // positions have the same rotational component.
 BOOL
-MoveFromEOPDToDispensing(OUT DISPENSINGPATH & path, DISPENSER disp, int cm,
-                         BOOL fRotate) {
+MoveFromEOPDToDispensing(OUT DISPENSINGPATH &path, DISPENSER disp, int cm,
+    BOOL fRotate) {
     BOOL fSuccess = HAS_ARM_SERVOS;
 #if HAS_ARM_SERVOS
     ComputeDispensingPath(fSuccess, path, disp, cm);
@@ -568,13 +568,13 @@ BOOL
 FRotationAt(ISVPOSROTATION isvposRotation) {
     int svposLowThreshold =
         (0 == isvposRotation ? 0
-         : (rgsvposRotation[isvposRotation] + rgsvposRotation[isvposRotation -
-                                                              1]) / 2);
+        : (rgsvposRotation[isvposRotation] + rgsvposRotation[isvposRotation -
+                1]) / 2);
 
     int svposHighThreshold =
         (isvposRotationMax - 1 == isvposRotation ? svposLast
-         : (rgsvposRotation[isvposRotation] + rgsvposRotation[isvposRotation +
-                                                              1]) / 2);
+        : (rgsvposRotation[isvposRotation] + rgsvposRotation[isvposRotation +
+                1]) / 2);
 
     int svpos = GetServoValue(svoArmRotation);
 

@@ -150,7 +150,7 @@ typedef union {
 #define IsFinite(fSuccess, pair, floatVal)                                       \
     {                                                                           \
     pair.f = floatVal;                                                          \
-    fSuccess = !((pair.b0 & 0x7F) == 0x7F && (pair.b1 & 0x80) == 0x80);          \
+    fSuccess = !((pair.b0 &0x7F) == 0x7F && (pair.b1 &0x80) == 0x80);          \
     }
 
 //--------------------------------------------------------------------------------------

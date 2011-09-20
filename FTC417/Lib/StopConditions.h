@@ -14,10 +14,10 @@ typedef struct {
     BOOL fStopOnGyroVert;
 
     BOOL fRequireStop;          // if true, then turning and driving
-                                // fail unless the stop condition is hit
+    // fail unless the stop condition is hit
 
     float cmAdditional;         // for driving: an additional distance
-                                // to travel after stop
+    // to travel after stop
 
     BOOL fStopConditionReached;
     float fractionRemaining;

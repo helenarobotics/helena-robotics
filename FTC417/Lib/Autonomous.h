@@ -208,7 +208,7 @@ DoAutonomous() {
 #elif ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
 
 BOOL
-DoAutonomousPreloads(OUT ANGLE & angleCur)
+DoAutonomousPreloads(OUT ANGLE &angleCur)
 // From the starting position, navigate to the rolling goal and dump our preloads.
 // Return through the angleCur OUT parameter the angle we believe we have turned
 // through in the process.

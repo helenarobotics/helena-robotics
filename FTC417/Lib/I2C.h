@@ -134,7 +134,7 @@ typedef struct {
     }
 
 BOOL
-i2cSendSensor(I2CLINK link, I2CBUFFER & req, int cbReply) {
+i2cSendSensor(I2CLINK link, I2CBUFFER &req, int cbReply) {
     CheckLockHeld(lockBlackboard);
     BOOL fSuccess;
     i2cSend(fSuccess, link, req, cbReply);
@@ -142,7 +142,7 @@ i2cSendSensor(I2CLINK link, I2CBUFFER & req, int cbReply) {
 }
 
 BOOL
-i2cSendDaisy(I2CLINK link, I2CBUFFER & req, int cbReply) {
+i2cSendDaisy(I2CLINK link, I2CBUFFER &req, int cbReply) {
     CheckLockHeld(lockDaisy);
     BOOL fSuccess;
     i2cSend(fSuccess, link, req, cbReply);
@@ -150,7 +150,7 @@ i2cSendDaisy(I2CLINK link, I2CBUFFER & req, int cbReply) {
 }
 
 BOOL
-i2cSendReceiveSensor(I2CLINK link, I2CBUFFER & req, I2CBUFFER & rep,
+i2cSendReceiveSensor(I2CLINK link, I2CBUFFER &req, I2CBUFFER &rep,
     int cbReply) {
     if (i2cSendSensor(link, req, cbReply)) {
         // We needn't wait for the bus here, as i2cSend did that for us
@@ -162,7 +162,7 @@ i2cSendReceiveSensor(I2CLINK link, I2CBUFFER & req, I2CBUFFER & rep,
 }
 
 BOOL
-i2cSendReceiveDaisy(I2CLINK link, I2CBUFFER & req, I2CBUFFER & rep,
+i2cSendReceiveDaisy(I2CLINK link, I2CBUFFER &req, I2CBUFFER &rep,
     int cbReply) {
     if (i2cSendDaisy(link, req, cbReply)) {
         // We needn't wait for the bus here, as i2cSend did that for us
@@ -202,8 +202,8 @@ i2cSendReceiveDaisy(I2CLINK link, I2CBUFFER & req, I2CBUFFER & rep,
 #define PackLong(rgb, ib, valParam)                 \
     {                                               \
     long value = (long)(valParam);                  \
-    rgb[(ib)]   = ((( value ) >> 24) & 0xff);       \
-    rgb[(ib)+1] = ((( value ) >> 16) & 0xff);       \
-    rgb[(ib)+2] = ((( value ) >>  8) & 0xff);       \
-    rgb[(ib)+3] = ((( value )      ) & 0xff);       \
+    rgb[(ib)]   = ((( value ) >> 24) &0xff);       \
+    rgb[(ib)+1] = ((( value ) >> 16) &0xff);       \
+    rgb[(ib)+2] = ((( value ) >>  8) &0xff);       \
+    rgb[(ib)+3] = ((( value )      ) &0xff);       \
     }

@@ -55,7 +55,8 @@ int cRotorStallCheckRequests = 0;
         PlaySadNoWait();                                                \
         TRACE(("rotor stall"));                                         \
         /*
-         * if we've just stalled, give outer layer a chance to deal     \
+*if we
+    've just stalled, give outer layer a chance to deal     \
          * with it, but otherwise we tell it to stop things.            \
          */                                                             \
         switch (rotorStallState) {                                      \
@@ -182,8 +183,7 @@ BOOL fDoRotorTaskWork = false;
 
 // If we have a magnetic sensor, then turn on its detection whenever the
 // rotor is spinning. Also keep track of the angle too, as we need to
-// count it's rotations.
-
+// count it' s rotations.
 #if SensorIsDefined(sensnmMagRotor) && !SensorIsDefined(sensnmMagRotorAux)
 #define DetectMagOnRotorStart()     { StartDetectingMagneticSensor(sensMagRotor); }
 #define DetectMagOnRotorStop()      { StopDetectingMagneticSensor(sensMagRotor);  }
@@ -194,7 +194,6 @@ BOOL fDoRotorTaskWork = false;
 #define DetectMagOnRotorStart()
 #define DetectMagOnRotorStop()
 #endif
-
 #if SensorIsDefined(sensnmAngleRotor)
 #define ReadAngleOnRotorStart()   StartReadingAngleSensor(sensAngleRotor,true)
 #define ReadAngleOnRotorStop()    { StopReadingAngleSensor(sensAngleRotor); }
@@ -202,11 +201,10 @@ BOOL fDoRotorTaskWork = false;
 #define ReadAngleOnRotorStart()   0
 #define ReadAngleOnRotorStop()
 #endif
-
 // Change the rotor speed, being sure to set up / tear down whatever
 // monitoring may be necessary.
-void
-SetRotorSpeed(int svposSpeed) {
+        void
+      SetRotorSpeed(int svposSpeed) {
     int svposCurSpeed = GetServoValue(svoRotor);
     if (svposCurSpeed == svposRotorStop && (svposSpeed) != svposRotorStop) {
         /* the rotor is about to start */
@@ -237,7 +235,7 @@ SetRotorSpeed(int svposSpeed) {
         ReadAngleOnRotorStop();
         rotorStallState = ROTOR_STALL_STATE_OK;
     }
-}
+    }
 
 //-----------------------------------------------------------------------------
 // User-level APIs

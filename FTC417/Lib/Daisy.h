@@ -135,9 +135,9 @@ I2CBUFFER reqSpecial;
         {                                                               \
         int mode = (controller.rgmtr[imtr].mode | MOTORMODE_FORCE);     \
                                                                         \
-        bMotorReflected[imtr] = !!(mode & MOTORMODE_REFLECTED);         \
+        bMotorReflected[imtr] = !!(mode &MOTORMODE_REFLECTED);         \
                                                                         \
-        switch (mode & 0x03)                                            \
+        switch (mode &0x03)                                            \
             {                                                           \
         case MOTORMODE_RUN_WITH_CONSTANT_SPEED:                         \
             nMotorPIDSpeedCtrl[imtr] = mtrSpeedReg;                     \
@@ -158,7 +158,7 @@ I2CBUFFER reqSpecial;
 
 // Update the target encoder settings, the motor modes, and the motor power levels in this controller
 void
-SendMotorTargetModePower(OUT BOOL & fSuccess, MOTORCONTROLLER & controller) {
+SendMotorTargetModePower(OUT BOOL &fSuccess, MOTORCONTROLLER &controller) {
     fSuccess = controller.fActive;
     if (fSuccess) {
         if (controller.fLegoController) {
@@ -201,7 +201,7 @@ SendMotorTargetModePower(OUT BOOL & fSuccess, MOTORCONTROLLER & controller) {
 
 // Update the motor modes and the motor power levels in this controller
 void
-SendMotorModePower(OUT BOOL & fSuccess, MOTORCONTROLLER & controller) {
+SendMotorModePower(OUT BOOL &fSuccess, MOTORCONTROLLER &controller) {
     fSuccess = controller.fActive;
     if (fSuccess) {
         if (controller.fLegoController) {
@@ -234,7 +234,7 @@ SendMotorModePower(OUT BOOL & fSuccess, MOTORCONTROLLER & controller) {
 // Update the motor power levels in this controller, but only if
 // we know we've got something dirty there.
 void
-SendMotorPower(OUT BOOL & fSuccess, MOTORCONTROLLER & controller) {
+SendMotorPower(OUT BOOL &fSuccess, MOTORCONTROLLER &controller) {
     fSuccess = controller.fActive;
     if (fSuccess && controller.fDirtyPower) {
         if (controller.fLegoController) {
@@ -275,8 +275,8 @@ SendMotorPower(OUT BOOL & fSuccess, MOTORCONTROLLER & controller) {
 float vExternalBattery = 0.0;
 
 void
-ReadLegoEncoder(MOTORCONTROLLER & controller, int imtr) {
-    /* We mult lego encoders values by 4 so all encoders (Tetrix & Lego) are in 1440 ticks per rev */
+ReadLegoEncoder(MOTORCONTROLLER &controller, int imtr) {
+    /* We mult lego encoders values by 4 so all encoders (Tetrix &Lego) are in 1440 ticks per rev */
     if (controller.rgmtr[imtr].fActive) {
         /* Read the lego motor encoder. Its value may have wrapped, and what we do to
          * deal with that (ie: to unwrap the value) depends on whether we were going
@@ -349,7 +349,7 @@ ReadLegoEncoder(MOTORCONTROLLER & controller, int imtr) {
     }
 
 void
-ReadControllerPid(OUT BOOL & fSuccess, MOTORCONTROLLER & controller) {
+ReadControllerPid(OUT BOOL &fSuccess, MOTORCONTROLLER &controller) {
     fSuccess = controller.fActive;
     if (fSuccess) {
         if (controller.fLegoController) {
@@ -386,7 +386,7 @@ ReadControllerPid(OUT BOOL & fSuccess, MOTORCONTROLLER & controller) {
     }
 
 void
-SendControllerPid(OUT BOOL & fSuccess, MOTORCONTROLLER & controller) {
+SendControllerPid(OUT BOOL &fSuccess, MOTORCONTROLLER &controller) {
     fSuccess = controller.fActive;
     if (fSuccess) {
         if (controller.fLegoController) {
@@ -410,7 +410,7 @@ SendControllerPid(OUT BOOL & fSuccess, MOTORCONTROLLER & controller) {
 #define SetControllerMtrRunMode(modePrev, controller, imtr, sel)                    \
     {                                                                               \
     modePrev = controller.rgmtr[imtr].mode;                                         \
-    controller.rgmtr[imtr].mode = ((modePrev & ~0x03) | ((sel) & 0x03));            \
+    controller.rgmtr[imtr].mode = ((modePrev &~0x03) | ((sel) &0x03));            \
     }
 
 // From what we understand, the motor controller only updates its state on a tick
@@ -441,8 +441,8 @@ SendControllerPid(OUT BOOL & fSuccess, MOTORCONTROLLER & controller) {
     }
 
 void
-InitializeMotorController(IN OUT STICKYFAILURE & fOverallSuccess,
-    MOTORCONTROLLER & controller, I2CLINK link,
+InitializeMotorController(IN OUT STICKYFAILURE &fOverallSuccess,
+    MOTORCONTROLLER &controller, I2CLINK link,
     short jController /*one-based */ ) {
     BOOL fSuccess = true;
     LockDaisy();
@@ -603,7 +603,7 @@ SVOCTLR rgsvoctlr[isvoctlrMax];
 
 // If the controller doesn't yet know about any of the requested servo positions, then tell it.
 void
-SendServoPositions(OUT BOOL & fSuccess, SVOCTLR & controller, BOOL fArm = true) {
+SendServoPositions(OUT BOOL &fSuccess, SVOCTLR &controller, BOOL fArm = true) {
     fSuccess = controller.fActive;
     if (fSuccess && controller.fDirty) {
         if (fArm && controller.pwmMode == SVOPWM_DISABLE) {
@@ -630,8 +630,8 @@ SendServoPositions(OUT BOOL & fSuccess, SVOCTLR & controller, BOOL fArm = true) 
 
 // Have the servos on this controller stopped moving?
 void
-QueryServoMovementComplete(OUT BOOL & fSuccess, SVOCTLR & controller,
-    OUT BOOL & fComplete) {
+QueryServoMovementComplete(OUT BOOL &fSuccess, SVOCTLR &controller,
+    OUT BOOL &fComplete) {
     fSuccess = controller.fActive;
     if (fSuccess) {
         FormatI2CReq(reqDaisy, controller.i2cAddr, 0x40);
@@ -672,8 +672,8 @@ int32 msTickleServosPrev = 0;
     }
 
 void
-InitializeServoController(IN OUT STICKYFAILURE & fOverallSuccess,
-    SVOCTLR & controller, I2CLINK link, short jController) {
+InitializeServoController(IN OUT STICKYFAILURE &fOverallSuccess,
+    SVOCTLR &controller, I2CLINK link, short jController) {
     BOOL fSuccess = true;
     LockDaisy();
 

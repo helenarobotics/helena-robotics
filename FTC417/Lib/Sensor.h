@@ -15,7 +15,7 @@
 //-----------------------------------------------------------------------------
 void
 InitializeSensor_(IN OUT STICKYFAILURE &fOverallSuccess, string nm,
-                  SENSOR &sensor, int sensnmVal, MUXSENST type) {
+    SENSOR &sensor, int sensnmVal, MUXSENST type) {
     BOOL fSuccess = true;
     sensor.cDetectRequest = 0;
     sensor.cReadRequest = 0;
@@ -31,7 +31,7 @@ InitializeSensor_(IN OUT STICKYFAILURE &fOverallSuccess, string nm,
             fSuccess = CheckSensorTypeMux(SID_MUX(sensor), type);
             if (!fSuccess) {
                 TRACE(("%s: type is:%d want:%d", sensor.displayName,
-                       GetSensorTypeMux(SID_MUX(sensor)), type));
+                        GetSensorTypeMux(SID_MUX(sensor)), type));
             }
         }
     } else {
@@ -400,8 +400,8 @@ StartReadingAngleSensor(ANGLESENSOR &sensor, BOOL fForceRead) {
 
 void
 InitializeEopdSensor(STICKYFAILURE &fOverallSuccess, string nm,
-                     EOPDSENSOR &sensor, int sensnmVal, EOPD_CONFIG processed,
-                     EOPD_RANGE range) {
+    EOPDSENSOR &sensor, int sensnmVal, EOPD_CONFIG processed,
+    EOPD_RANGE range) {
     InitializeSensor(fOverallSuccess, nm, sensor, sensnmVal, MUXSENST_ANALOG);
     sensor.fReadProcessed = (processed == EOPD_PROCESSED);
     InitializeEopdStopConditions(sensor);
@@ -545,7 +545,7 @@ ReadGyroSensor(GYROSENSOR &sensor, MILLI msNow) {
                 /* constant in half to 0.0005 */
                 float delta =
                     (float)(dt) * (sensor.degCWPerS +
-                                   sensor.degCWPerSPrev) * -0.0005;
+                    sensor.degCWPerSPrev) * -0.0005;
                 sensor.deg += delta;
             }
         }
@@ -570,7 +570,7 @@ ReadGyroSensor(GYROSENSOR &sensor, MILLI msNow) {
 
 void
 InitializeGyroSensor(STICKYFAILURE &fOverallSuccess, string nm,
-                     GYROSENSOR &sensor, int sensnmVal, int cSample, MILLI msWait)
+    GYROSENSOR &sensor, int sensnmVal, int cSample, MILLI msWait)
 // This routine samples the gyro cSample times in order to get a bearing on it's zero-point bias.
 // Having an accurate assessment of this reading is extraordinarily important to getting good
 // integrated angular measurements from the device. See the declaration of InitializeGyroSensor
@@ -615,7 +615,7 @@ InitializeGyroSensor(STICKYFAILURE &fOverallSuccess, string nm,
     sensor.comparison = COMPARE_GT;
     if (fOverallSuccess) {
         TRACE(("gyro bias=%.3f band=%.3f %.3f", sensor.bias,
-               sensor.deadbandMax, sensor.deadbandMin));
+                sensor.deadbandMax, sensor.deadbandMin));
     }
     TraceSensorInitializationResult(nm, fOverallSuccess);
 }
@@ -705,11 +705,10 @@ ReadMagneticSensor(MAGNETICSENSOR &sensor) {
                     /* Remember the angle in the next avaialable slot */
                     ANGLE deg =
                         AngleSensorFromIndex(isensangleAssociated, deg);
-                    sensor.
-                        rgdegDetectionRecord[sensor.idegDetectionRecordNext] =
-                        deg;
-                    sensor.
-                        rgfDetectionRecordValid[sensor.idegDetectionRecordNext]
+                    sensor.rgdegDetectionRecord[sensor.
+                        idegDetectionRecordNext] = deg;
+                    sensor.rgfDetectionRecordValid[sensor.
+                        idegDetectionRecordNext]
                         = true;
                     sensor.idegDetectionRecordNext++;
 
@@ -741,7 +740,7 @@ ReadMagneticSensor(MAGNETICSENSOR &sensor) {
 
 void
 InitializeMagneticSensor(STICKYFAILURE &fOverallSuccess, string nm,
-                         MAGNETICSENSOR &sensor, int sensnmVal) {
+    MAGNETICSENSOR &sensor, int sensnmVal) {
     InitializeSensor(fOverallSuccess, nm, sensor, sensnmVal, MUXSENST_ANALOG);
     ResetMagneticSensorDetection(sensor);
     sensor.isensangleAssociated = -1;
@@ -829,7 +828,7 @@ RawReadSonic(SONICSENSOR &sensor) {
         FormatI2CReq(i2cSensorReq, LEGOUS_I2C_ADDR, LEGOUS_REG_DATA);
         fSuccess =
             i2cSendReceiveSensor(LINK_DIRECT(sensor), i2cSensorReq,
-                                 i2cSensorRep, 1);
+            i2cSensorRep, 1);
     }
     if (fSuccess)
         sensor.cm = i2cSensorRep.rgb[0];
@@ -838,7 +837,7 @@ RawReadSonic(SONICSENSOR &sensor) {
 // Forward declarations: see Blackboard.h
 int
 CALLEDBY(iTaskMain)
-  ReadSonic_Main(SONICSENSOR &sensor, BOOL fRequireFinite);
+ReadSonic_Main(SONICSENSOR &sensor, BOOL fRequireFinite);
 
 // REVIEW: for the sonic sensor, these don't currently have any significance
 #define StartDetectingSonicSensor(sensor)     StartDetectingSensor_(sensor)

@@ -34,15 +34,15 @@ JYC2_MODE jyc2Mode = JYC2_MODE_ARM;
 }
 
 #define CheckJoy1ModeChange(jyc,joystick)
-{                                                               \
+{
 #if USE_JOYSTICK_CONTROLLER_MODES
-    if (joyBtnOnce(jyc, JOYBTN_TOP_LEFT)) {                     \
-        Beep(NOTE_C,30);                                        \
-        SetJoy1Mode(JYC1_MODE_DRIVE);                           \
-    } else if (joyBtnOnce(jyc, JOYBTN_TOP_RIGHT)) {             \
-        Beep(NOTE_G,30);                                        \
-        SetJoy1Mode(JYC1_MODE_ARM);                             \
-    }                                                           \
+    if (joyBtnOnce(jyc, JOYBTN_TOP_LEFT)) {
+        Beep(NOTE_C, 30);
+        SetJoy1Mode(JYC1_MODE_DRIVE);
+    } else if (joyBtnOnce(jyc, JOYBTN_TOP_RIGHT)) {
+        Beep(NOTE_G, 30);
+        SetJoy1Mode(JYC1_MODE_ARM);
+    }
 #endif
 }
 
@@ -291,7 +291,6 @@ DoArmJoystick(int jyc) {
         MoveServo(svoArmShoulder, svpos);
         WaitForServos();
     }
-
     //--------------------------------------------------------------------
     // Up/down on the right joystick controls elbow of dispenser arm
     if (joyFlick(jyc, JOY_RIGHT, JOYDIR_UP)) {
@@ -304,7 +303,6 @@ DoArmJoystick(int jyc) {
         MoveServo(svoArmElbow, svpos);
         WaitForServos();
     }
-
     //--------------------------------------------------------------------
     // L/R on the hat rotates the dispenser arm
     if (joyHat(jyc, JOYHAT_LEFT)) {
@@ -317,7 +315,6 @@ DoArmJoystick(int jyc) {
         MoveServo(svoArmRotation, svpos);
         WaitForServos();
     }
-
     //--------------------------------------------------------------------
     // L/R on the left joystick controls the wrist
     if (joyFlick(jyc, JOY_LEFT, JOYDIR_RIGHT)) {
@@ -330,7 +327,6 @@ DoArmJoystick(int jyc) {
         MoveServo(svoArmWrist, svpos);
         WaitForServos();
     }
-
     //--------------------------------------------------------------------
     // Left upper button dispenses; left lower packs thereafter
     if (joyBtnOnce(jyc, JOYBTN_LEFTTRIGGER_UPPER)) {

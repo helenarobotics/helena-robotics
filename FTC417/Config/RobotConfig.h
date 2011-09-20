@@ -30,7 +30,7 @@
 #define ROBOT_NAME_TWO_MOTORS_WITH_ENCODERS     3
 #define ROBOT_NAME_OMNI_BOT                     4
 #define ROBOT_NAME_TWO_LEGO_MOTORS              5
-#define ROBOT_NAME_FTC417_2010_V11              6   // obsolete, only historical
+#define ROBOT_NAME_FTC417_2010_V11              6       // obsolete, only historical
 #define ROBOT_NAME_FTC417_2010_V12              7
 
 
@@ -42,15 +42,18 @@
 #error("RobotConfig.h: ROBOT_NAME is not defined")
 #elif ROBOT_NAME==ROBOT_NAME_NULL_BOT
 #ifndef InitializeMotors
-void InitializeMotors(IN OUT STICKYFAILURE &fOverallSuccess) {
+void
+InitializeMotors(IN OUT STICKYFAILURE &fOverallSuccess) {
 }
 #endif
 #ifndef InitializeSensors
-void InitializeSensors(IN OUT STICKYFAILURE &fOverallSuccess) {
+void
+InitializeSensors(IN OUT STICKYFAILURE &fOverallSuccess) {
 }
 #endif
 #ifndef InitializeServos
-void InitializeServos(IN OUT STICKYFAILURE &fOverallSuccess) {
+void
+InitializeServos(IN OUT STICKYFAILURE &fOverallSuccess) {
 }
 #endif
 

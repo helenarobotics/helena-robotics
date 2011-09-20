@@ -131,7 +131,7 @@ int musicRobotDance[] = {
 };
 
 void
-_PlayMusic_(MUSIC & rgNote, int cNote,  // the array of notes to play, along with its size
+_PlayMusic_(MUSIC &rgNote, int cNote,  // the array of notes to play, along with its size
     int beatsPerMinute,         // the number of beats per minute
     int cTickBeat,              // number of music tick units that should be one beat
     BOOL fWait                  // whether we should wait until the music is finished or not before
@@ -145,13 +145,13 @@ _PlayMusic_(MUSIC & rgNote, int cNote,  // the array of notes to play, along wit
         long ctickDuration = rgNote[iNote * 2 + 1];
         BOOL fTie = false;
         //
-        if (ctickDuration & NOTE_TIE) {
-            ctickDuration = ctickDuration & ~NOTE_TIE & 0xFFFF;
+        if (ctickDuration &NOTE_TIE) {
+            ctickDuration = ctickDuration &~NOTE_TIE &0xFFFF;
             fTie = true;
         }
         //
-        if (ctickDuration & NOTE_DOT) {
-            ctickDuration = (ctickDuration & ~NOTE_DOT & 0xFFFF);
+        if (ctickDuration &NOTE_DOT) {
+            ctickDuration = (ctickDuration &~NOTE_DOT &0xFFFF);
             ctickDuration = ctickDuration + (ctickDuration >> 1);
         }
         //

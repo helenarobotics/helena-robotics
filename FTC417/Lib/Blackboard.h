@@ -62,7 +62,7 @@ void CALLED_WITH_BB_LOCK UpdateBlackboard();
 
 int
 CALLEDBY(iTaskMain)
-ReadSonic_Main(SONICSENSOR & sensor, BOOL fRequireFinite)
+ReadSonic_Main(SONICSENSOR &sensor, BOOL fRequireFinite)
 // We read until we get two readings in a row with basically the same value.
 // Note that this function can a very long time to complete.
 // Return cmSonicNil if there's no reading available; that will never happen
@@ -238,7 +238,7 @@ BlackboardTask() {
 
 #define StartBlackboardTask()   { StartTask(BlackboardTask);    }
 
-// We'd like to just 'suspendTask' & 'resumeTask', but apparently those functions aren't functional in RobotC
+// We'd like to just 'suspendTask' &'resumeTask', but apparently those functions aren't functional in RobotC
 #define SuspendBlackboard()                                                 \
     {                                                                       \
     /* get the lock to ensure that the task isn't anywhere important */     \

@@ -33,6 +33,6 @@ typedef struct {
 
 MOTOR rgmotor[8];
 
-void InitializeMotor(IN OUT STICKYFAILURE & fOverallSuccess, MOTOR & motor,
-    MOTORCONTROLLER & controllerParam, ubyte jmtr /*one based */ ,
+void InitializeMotor(IN OUT STICKYFAILURE &fOverallSuccess, MOTOR &motor,
+    MOTORCONTROLLER &controllerParam, ubyte jmtr /*one based */ ,
     string displayNameParam, int prop);

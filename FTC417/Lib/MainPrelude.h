@@ -59,11 +59,11 @@
 //---------------------------------------------------------------------------
 
 #ifndef InitializeMotors
-void InitializeMotors(IN OUT STICKYFAILURE & fOverallSuccess);
+void InitializeMotors(IN OUT STICKYFAILURE &fOverallSuccess);
 #endif
 #ifndef InitializeSensors
-void InitializeSensors(IN OUT STICKYFAILURE & fOverallSuccess);
+void InitializeSensors(IN OUT STICKYFAILURE &fOverallSuccess);
 #endif
 #ifndef InitializeServos
-void InitializeServos(IN OUT STICKYFAILURE & fOverallSuccess);
+void InitializeServos(IN OUT STICKYFAILURE &fOverallSuccess);
 #endif

@@ -136,9 +136,9 @@ typedef struct {
     }
 
 void
-intersectLineCircle(OUT POINT & ptU, OUT POINT & ptV, IN const POINT & ptFrom,
-    IN const POINT & ptTo, IN const POINT & ptC, IN float r)
-// Return the two points U & V which are the intersection of the line [ptFrom, ptTo] with
+intersectLineCircle(OUT POINT &ptU, OUT POINT &ptV, IN const POINT &ptFrom,
+    IN const POINT &ptTo, IN const POINT &ptC, IN float r)
+// Return the two points U &V which are the intersection of the line [ptFrom, ptTo] with
 // the circle centered at ptC with radius r
 {
     const float v00 = ptFrom.y - ptTo.y;
@@ -160,8 +160,8 @@ intersectLineCircle(OUT POINT & ptU, OUT POINT & ptV, IN const POINT & ptFrom,
 }
 
 void
-linearOrder(OUT int &iCompare, const POINT & ptFrom, const POINT & ptTo,
-    const POINT & ptProbe, float sqdFromTo)
+linearOrder(OUT int &iCompare, const POINT &ptFrom, const POINT &ptTo,
+    const POINT &ptProbe, float sqdFromTo)
 // Given two points on a line, ptFrom and ptTo, answer <0, 0, or >0 according to how a third
 // point, ptProbe relates. Positive on the line is in the direction from ptFrom towards ptTo.
 // sqdFromTo is a cached calculation of the squared distance from ptFrom to ptTo

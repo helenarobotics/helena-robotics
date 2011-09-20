@@ -28,49 +28,39 @@
 #define HTSMUX_BF_ENTRY_SIZE    0x10    /*!< Number of registers per buffer */
 
 typedef enumWord {
-    SMUXCMD_HALT = 0x00,
-    SMUXCMD_AUTODETECT = 0x01,
-    SMUXCMD_RUN = 0x02,
-} SMUXCMD;
+SMUXCMD_HALT = 0x00, SMUXCMD_AUTODETECT = 0x01, SMUXCMD_RUN = 0x02,} SMUXCMD;
 
 /* nb: actually a bit field. careful! */
 typedef enumWord {
     SMUXSTAT_NORMAL = 0x00,
-    SMUXSTAT_BATT = 0x01,
-    SMUXSTAT_BUSY = 0x02,
-    SMUXSTAT_HALT = 0x04,
-    SMUXSTAT_ERROR = 0x08,
-    /*!< Status hasn't really been set yet */
-    SMUXSTAT_NOTHING = 0xFF,
-} SMUXSTAT;
+        SMUXSTAT_BATT = 0x01,
+        SMUXSTAT_BUSY = 0x02, SMUXSTAT_HALT = 0x04, SMUXSTAT_ERROR = 0x08,
+        /*!< Status hasn't really been set yet */
+SMUXSTAT_NOTHING = 0xFF,} SMUXSTAT;
 
 // Channel modes
 typedef enumWord {
-    SMUXCHMODE_NONE = 0,
-    SMUXCHMODE_I2C = 0x01,  /*!< I2C channel present channel mode */
-    SMUXCHMODE_9V = 0x02,   /*!< Enable 9v supply on analogue pin channel mode */
-    SMUXCHMODE_DIG0_HIGH = 0x04,    /*!< Drive pin 0 high channel mode */
-    SMUXCHMODE_DIG1_HIGH = 0x08,    /*!< Drive pin 1 high channel mode */
-    SMUXCHMODE_I2C_SLOW = 0x10,     /*!< Set slow I2C rate channel mode */
+    SMUXCHMODE_NONE = 0, SMUXCHMODE_I2C = 0x01, /*!< I2C channel present channel mode */
+        SMUXCHMODE_9V = 0x02,   /*!< Enable 9v supply on analogue pin channel mode */
+        SMUXCHMODE_DIG0_HIGH = 0x04,    /*!< Drive pin 0 high channel mode */
+        SMUXCHMODE_DIG1_HIGH = 0x08,    /*!< Drive pin 1 high channel mode */
+        SMUXCHMODE_I2C_SLOW = 0x10,     /*!< Set slow I2C rate channel mode */
 } SMUXCHMODE;
 
 // Constants denoting the type of attached sensors
 // as reported by a sensor mux
 typedef enumWord {
     MUXSENST_ANALOG = 0,
-    MUXSENST_SONIC = 1,
-    MUXSENST_COMPASS = 2,
-    MUXSENST_COLOROLD = 3,
-    MUXSENST_ACCEL = 4,
-    MUXSENST_IRSEEKOLD = 5,
-    MUXSENST_PROTO = 6,
-    MUXSENST_COLOR = 7,
-    MUXSENST_ANGLE = 8,
-    MUXSENST_IRSEEK = 9,
-    // never reported by sensor mux (?); we use internally to denote
-    // absense of sensor
-    MUXSENST_NONE = 0xFF,
-} MUXSENST;
+        MUXSENST_SONIC = 1,
+        MUXSENST_COMPASS = 2,
+        MUXSENST_COLOROLD = 3,
+        MUXSENST_ACCEL = 4,
+        MUXSENST_IRSEEKOLD = 5,
+        MUXSENST_PROTO = 6,
+        MUXSENST_COLOR = 7, MUXSENST_ANGLE = 8, MUXSENST_IRSEEK = 9,
+        // never reported by sensor mux (?); we use internally to denote
+        // absense of sensor
+MUXSENST_NONE = 0xFF,} MUXSENST;
 
 typedef enum {
     SENSORONMUX_DUMMY,
@@ -167,8 +157,8 @@ SMUXsendCommand(I2CLINK link, SMUXCMD command) {
 // halted to do so if necessary, but we'll return it to it's previous
 // state on exit.
 void
-SMUXsetModeChannel(OUT BOOL & fSuccess, I2CLINK link, byte channel,
-                   SMUXCHMODE mode) {
+SMUXsetModeChannel(OUT BOOL &fSuccess, I2CLINK link, byte channel,
+    SMUXCHMODE mode) {
     // Can't do mode changes when we're in the middle of a scan
     SMUXSTAT statusOnEntry = rgsensormux[link].status;
     fSuccess = (statusOnEntry != SMUXSTAT_BUSY);
@@ -180,8 +170,8 @@ SMUXsetModeChannel(OUT BOOL & fSuccess, I2CLINK link, byte channel,
         if (fSuccess) {
             // Set the channel's mode as requested
             FormatI2CCmd(i2cSmuxReq, HTSMUX_I2C_ADDR,
-                         HTSMUX_CH_OFFSET + HTSMUX_MODE +
-                         (HTSMUX_CH_ENTRY_SIZE * channel), mode);
+                HTSMUX_CH_OFFSET + HTSMUX_MODE +
+                (HTSMUX_CH_ENTRY_SIZE * channel), mode);
             fSuccess = i2cSendSensor(link, i2cSmuxReq, 0);
 
             // Restore the mode of the mux
@@ -194,12 +184,12 @@ SMUXsetModeChannel(OUT BOOL & fSuccess, I2CLINK link, byte channel,
 }
 
 BOOL
-SMUXreadPortChannel(I2CLINK link, byte channel, I2CBUFFER & result, int cb,
-                    int dib) {
+SMUXreadPortChannel(I2CLINK link, byte channel, I2CBUFFER &result, int cb,
+    int dib) {
     BOOL fSuccess = false;
     if (FSMUXrun(link)) {
         FormatI2CReq(i2cSensorReq, HTSMUX_I2C_ADDR,
-                     HTSMUX_I2C_BUF + (HTSMUX_BF_ENTRY_SIZE * channel) + dib);
+            HTSMUX_I2C_BUF + (HTSMUX_BF_ENTRY_SIZE * channel) + dib);
         if (i2cSendReceiveSensor(link, i2cSensorReq, i2cSensorRep, cb))
             fSuccess = true;
     }
@@ -219,7 +209,7 @@ SMUXreadAnalogChannel(I2CLINK link, byte channel, int &result) {
     result = -1;
     if (FSMUXrun(link)) {
         FormatI2CReq(i2cSensorReq, HTSMUX_I2C_ADDR,
-                     HTSMUX_ANALOG + (HTSMUX_AN_ENTRY_SIZE * channel));
+            HTSMUX_ANALOG + (HTSMUX_AN_ENTRY_SIZE * channel));
         if (i2cSendReceiveSensor(link, i2cSensorReq, i2cSensorRep, 2)) {
             // The analog value is 10 bits. The upper 8 bits are in the
             // first byte and the lower two bits are in the second byte.

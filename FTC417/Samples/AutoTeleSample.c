@@ -30,97 +30,95 @@
 // use the 'Motors and Sensors Setup' wizard if you like, or manually edit the #pragma's
 // if you know what's what.
 //
-#define USE_DISPLAY_DIAGNOSTICS 0   // turn off the diagnostic display found in JoystickDriver.h
+#define USE_DISPLAY_DIAGNOSTICS 0       // turn off the diagnostic display found in JoystickDriver.h
 
 #include "..\lib\FTCField.h"
 #include "..\lib\JoystickDriver.h"
 #include "..\lib\Music.h"
 
-void InitializeMain()
-    {
+void
+InitializeMain() {
     // Put any necessary initialization code here
-    }
+}
 
-void DoManualDrivingControl(int jyc)
+void
+DoManualDrivingControl(int jyc)
 // Interpret the joysticks and manually drive the bot. This implements
 // a tank-like drive, where the Y value of the left joystick is forward
 // and back, and the X value of the right joystick is steering.
-    {
+{
     // Extract values from the joysticks that we find useful
-    int ctlPower    =  joyY(jyc, JOY_LEFT);      // -128 to  127
-    int ctlSteering = -joyX(jyc, JOY_RIGHT);     //  128 to -127
+    int ctlPower = joyY(jyc, JOY_LEFT); // -128 to  127
+    int ctlSteering = -joyX(jyc, JOY_RIGHT);    //  128 to -127
 
     // Remove sensitivity in the middle of the controls.
     // At the same time, avoid a big control jump at the
     // edge of the dead zone.
     const int sensitivityThreshold = joyThrottleDeadZone;
-    const int sgnPower    = (ctlPower    < 0 ? -1 : 1);
+    const int sgnPower = (ctlPower < 0 ? -1 : 1);
     const int sgnSteering = (ctlSteering < 0 ? -1 : 1);
 
-    ctlPower    = Max(0, abs(ctlPower)    - sensitivityThreshold);
+    ctlPower = Max(0, abs(ctlPower) - sensitivityThreshold);
     ctlSteering = Max(0, abs(ctlSteering) - sensitivityThreshold);
 
-    ctlPower    = ctlPower    * sgnPower;
+    ctlPower = ctlPower * sgnPower;
     ctlSteering = ctlSteering * sgnSteering;
 
     // Convert the signals from the joystick range of values
     // to the motor range of values
-    const int motorRange    = 100;
+    const int motorRange = 100;
     const int joystickRange = 128 - sensitivityThreshold;
-    ctlPower    = ctlPower    * motorRange / joystickRange;
+    ctlPower = ctlPower * motorRange / joystickRange;
     ctlSteering = ctlSteering * motorRange / joystickRange;
 
     // Combine the power and steering sections.
-    const int powerLeft  = ctlPower - ctlSteering;
+    const int powerLeft = ctlPower - ctlSteering;
     const int powerRight = ctlPower + ctlSteering;
 
     // Actually change the motor power.
-    motor[motorLeft]  = powerLeft;
+    motor[motorLeft] = powerLeft;
     motor[motorRight] = powerRight;
-    }
+}
 
-void DoTeleOp(int jyc)
+void
+DoTeleOp(int jyc)
 // jyc is the joystick controller we are to examine
-    {
-    while (true)
-        {
-        if (getJoystickSettings(joystick))
-            {
+{
+    while (true) {
+        if (getJoystickSettings(joystick)) {
             // Examine the button and hat state to determine if there's something
             // useful to do. Here, as a demonstration, we play a tune if the left
             // upper trigger is pressed. You, of course, would instead do your own
             // thing, presumably a more useful one.
             //
-            if (joyBtnOnce(jyc, JOYBTN_LEFTTRIGGER_UPPER))
-                {
+            if (joyBtnOnce(jyc, JOYBTN_LEFTTRIGGER_UPPER)) {
                 PlayHappy();
-                }
-
+            }
             // Use the joysticks to manually drive the robot
             DoManualDrivingControl(jyc);
-            }
-        else if (joyMessageCount() > 0 && nSysTime - joyMessageTime() > MS_JOYSTICK_FCS_DISCONNECTED_THRESHOLD)
-            {
+        } else if (joyMessageCount() > 0
+            && nSysTime - joyMessageTime() >
+            MS_JOYSTICK_FCS_DISCONNECTED_THRESHOLD) {
             /* We've seen some joystick messages in the past, but we haven't   */
             /* a message in a long time. So we have to consider that we've     */
             /* the connection with the Field Control System>. We take steps to */
             /* reign in a possibly runaway robot.                              */
-            motor[motorLeft]  = 0;
+            motor[motorLeft] = 0;
             motor[motorRight] = 0;
 
             /* And we play play an audible alarm. */
             Beep(NOTE_E);
-            }
         }
     }
+}
 
-void DoAutonomous()
-    {
+void
+DoAutonomous() {
     // Implement your autonomous logic here
-    }
+}
 
-task main()
-    {
+task
+main() {
     // Perform any necessary initialization
     InitializeMain();
 
@@ -128,18 +126,14 @@ task main()
     waitForStart();
 
     // Run teleop or autonomous as indicated by the user interface
-    if (PROGRAM_FLAVOR_TELEOP == programFlavor)
-        {
+    if (PROGRAM_FLAVOR_TELEOP == programFlavor) {
         DoTeleOp(1);
-        }
-    else if (PROGRAM_FLAVOR_AUTONOMOUS == programFlavor)
-        {
+    } else if (PROGRAM_FLAVOR_AUTONOMOUS == programFlavor) {
         DoAutonomous();
-        }
-
+    }
     // As the main task is exiting, so should all others; this will
     // allow the program to gracefully and fully terminate (without this
     // call, the readMsgFromPC() task, e.g., in joystickDriver.h will
     // keep the program alive).
     StopAllTasks();
-    }
+}

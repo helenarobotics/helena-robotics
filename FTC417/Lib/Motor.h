@@ -12,8 +12,8 @@
 #define DifferentMotorControllers(motorRed, motorBlue)  (motorRed.imotorctlr != motorBlue.imotorctlr)
 
 void
-InitializeMotor(IN OUT STICKYFAILURE & fOverallSuccess, MOTOR & motor,
-    MOTORCONTROLLER & controllerParam, ubyte jmtr /*one based */ ,
+InitializeMotor(IN OUT STICKYFAILURE &fOverallSuccess, MOTOR &motor,
+    MOTORCONTROLLER &controllerParam, ubyte jmtr /*one based */ ,
     string displayNameParam, int prop) {
     BOOL fSuccess = true;
     LockDaisy();
@@ -36,7 +36,7 @@ InitializeMotor(IN OUT STICKYFAILURE & fOverallSuccess, MOTOR & motor,
     motor.msLastOkStall = 0;
     motor.msLastEncStall = 0;
     MtrOf(motor).power = 0;
-    motor.fReflected = !!(MOTORPROP_REFLECTED & prop);
+    motor.fReflected = !!(MOTORPROP_REFLECTED &prop);
     if (motor.fReflected) {
         MtrOf(motor).mode |= MOTORMODE_REFLECTED;
     }
@@ -44,10 +44,10 @@ InitializeMotor(IN OUT STICKYFAILURE & fOverallSuccess, MOTOR & motor,
     motor.fActive = true;
     MtrOf(motor).fActive = true;
 
-    motor.fHasEncoder = !!(MOTORPROP_ENCODER & prop)
+    motor.fHasEncoder = !!(MOTORPROP_ENCODER &prop)
         || ControllerOfMotor(motor).fLegoController;
     motor.fStallCheck = (motor.fHasEncoder
-        && !(MOTORPROP_NOSTALLCHECK & prop));
+        && !(MOTORPROP_NOSTALLCHECK &prop));
     if (motor.fHasEncoder) {
         if (IsLeftMotor(motor) || IsRightMotor(motor)) {
             ControllerOfMotor(motor).fHasActiveEncoder = true;
@@ -96,7 +96,7 @@ ZeroEncoders() {
 // there's contention for the formal parameters. Normally, that is accomplished
 // within the macro ReadEncoders.
 void
-ReadEncodersInternal(OUT ENCOD & encLeft, OUT ENCOD & encRight) {
+ReadEncodersInternal(OUT ENCOD &encLeft, OUT ENCOD &encRight) {
     BOOL fSuccess = true;
     encLeft = encRight = 0;
     CheckLockHeld(lockDaisy);
@@ -215,7 +215,7 @@ float motorPowerScale = DEFAULT_MOTOR_POWER_SCALE;
 // though that should reasonably change to be the daisy lock.
 //
 void
-SetMotorPower(MOTOR & motor, int powerArg) {
+SetMotorPower(MOTOR &motor, int powerArg) {
     short power_ = Rounded((float)powerArg * motorPowerScale, short);
     ClampVar(power_, -100, 100);
     RecordMotorPower(motor.imotorctlr,
@@ -257,7 +257,7 @@ BOOL fHaltProgramOnMotorStall = true;
 
 // We've hit a stall. Deal with it according to how the current app wishes.
 void
-AbortDueToMotorStall(MOTOR & motor, MILLI ms) {
+AbortDueToMotorStall(MOTOR &motor, MILLI ms) {
     hogCpuNestable();           /* paranoia: we don't want another task to restart the motors after we turn them off */
     SetMotorPower(motorLeft, 0);
     SetMotorPower(motorRight, 0);

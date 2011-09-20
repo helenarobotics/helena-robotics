@@ -3,31 +3,29 @@
 //
 #define TRACE(x)  writeDebugStreamLine x
 
-typedef struct
-    {
+typedef struct {
     long field0;
     long field1;
-    } FOO;
+} FOO;
 
 int globalDummy;
 FOO foo;
 
-typedef union
-    {
-    void*   pv;
-    long    l;
-    } UNION;
+typedef union {
+    void *pv;
+    long l;
+} UNION;
 
 UNION u;
 
-long Field(long& l)
-    {
+long
+Field(long &l) {
     u.pv = l;
     return u.l;
-    }
+}
 
-task main()
-    {
+task
+main() {
     TRACE(("------"));
 
     foo.field0 = 77;
@@ -48,4 +46,4 @@ task main()
 
     lvar = foo.field0;
     TRACE(("%d", lvar));
-    }
+}

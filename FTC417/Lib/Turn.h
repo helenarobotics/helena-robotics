@@ -209,7 +209,7 @@ CALLEDBY(iTaskMain)
     // need to compute them here.
     BOOL fUseGyro = false;
 #if SensorIsDefined(sensnmGyroHorz)
-    fUseGyro = !(flags & TURNFLAG_PROHIBIT_GYRO);
+    fUseGyro = !(flags &TURNFLAG_PROHIBIT_GYRO);
 #endif
     if (fUseGyro) {
         // Set dencLeft and dencRight to some value with the right sign
@@ -221,7 +221,7 @@ CALLEDBY(iTaskMain)
             dencLeft = -1.0;
             dencRight = 1.0;
         }
-    } else if (!(flags & TURNFLAG_USE_ENCOD)) {
+    } else if (!(flags &TURNFLAG_USE_ENCOD)) {
         // We can't use the gyro, and the caller didn't give us encoder counts,
         // so we have to figure them out for ourselves.
         GetEncoderDeltasForTurnLeft(-angle, dencLeft, dencRight);

@@ -75,8 +75,8 @@ PackServosAfterScoring() {
 /* How many degrees remain (if any) until we have to attend to the next */
 /* magnetic baton that was detected by this sensor?                     */
 BOOL
-FDegUntilNextMagneticBatonSensor(MAGNETICSENSOR & sensor, ANGLE degRotor,
-    OUT ANGLE & degResult) {
+FDegUntilNextMagneticBatonSensor(MAGNETICSENSOR &sensor, ANGLE degRotor,
+    OUT ANGLE &degResult) {
     BOOL fResult = false;
     degResult = 720.0;          // anything bigger than a full turn will do
 
@@ -109,7 +109,7 @@ FDegUntilNextMagneticBatonSensor(MAGNETICSENSOR & sensor, ANGLE degRotor,
 
 // How much can we still turn until we have to deal with the next remaining baton?
 BOOL
-FDegUntilNextMagneticBaton(ANGLE degRotor, OUT ANGLE & degResult) {
+FDegUntilNextMagneticBaton(ANGLE degRotor, OUT ANGLE &degResult) {
     ANGLE degMagRemaining, degMagRemainingAux;
     BOOL fMagRemaining =
         FDegUntilNextMagneticBatonSensor(sensMagRotor, degRotor,

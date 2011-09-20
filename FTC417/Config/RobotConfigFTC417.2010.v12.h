@@ -18,7 +18,7 @@
 // Put the elbow servo at svpos zero, then measure the angle
 // of the arm linkage that's attached thereto. Usually it's slighly
 // *above* the horizontal; here that is recorded a *negative* angle.
-#define degElbowCalibrate      (-5)   // as measured, 2011.04.25
+#define degElbowCalibrate      (-5)     // as measured, 2011.04.25
 
 // The apogee is nice to know, but really only effects servo movement
 // rate estimatoin
@@ -49,10 +49,12 @@
 #define motorLeftAux        rgmotor[2]
 #define motorRightAux       rgmotor[3]
 
-void InitializeMotors(IN OUT STICKYFAILURE& fOverallSuccess) {
+void
+InitializeMotors(IN OUT STICKYFAILURE &fOverallSuccess) {
     // This bot has two motor controllers, which are first and second in the daisy chain on sensor connector #1
-    InitializeMotorController(fOverallSuccess, motorController,    I2CLINK_1, 1);
-    InitializeMotorController(fOverallSuccess, motorControllerAux, I2CLINK_1, 2);
+    InitializeMotorController(fOverallSuccess, motorController, I2CLINK_1, 1);
+    InitializeMotorController(fOverallSuccess, motorControllerAux, I2CLINK_1,
+        2);
 
     // This bot has six physical motors:
     //
@@ -68,13 +70,17 @@ void InitializeMotors(IN OUT STICKYFAILURE& fOverallSuccess) {
     //
     // We only ever look at the encoders on motorController, since it's
     // the one with both motorLeft and motorRight.
-    InitializeMotor(fOverallSuccess, motorLeft,  motorController, 1, "left",  MOTORPROP_ENCODER | MOTORPROP_NONE     );
-    InitializeMotor(fOverallSuccess, motorRight, motorController, 2, "right", MOTORPROP_ENCODER | MOTORPROP_REFLECTED);
+    InitializeMotor(fOverallSuccess, motorLeft, motorController, 1, "left",
+        MOTORPROP_ENCODER | MOTORPROP_NONE);
+    InitializeMotor(fOverallSuccess, motorRight, motorController, 2, "right",
+        MOTORPROP_ENCODER | MOTORPROP_REFLECTED);
 
-    InitializeMotor(fOverallSuccess, motorLeftAux,  motorControllerAux, 1, "leftAux",  MOTORPROP_REFLECTED     );
-    InitializeMotor(fOverallSuccess, motorRightAux, motorControllerAux, 2, "rightAux", MOTORPROP_NONE          );
+    InitializeMotor(fOverallSuccess, motorLeftAux, motorControllerAux, 1,
+        "leftAux", MOTORPROP_REFLECTED);
+    InitializeMotor(fOverallSuccess, motorRightAux, motorControllerAux, 2,
+        "rightAux", MOTORPROP_NONE);
 
-    motorLeft.imotorPaired  = motorLeftAux.imotor;
+    motorLeft.imotorPaired = motorLeftAux.imotor;
     motorRight.imotorPaired = motorRightAux.imotor;
 }
 
@@ -102,34 +108,46 @@ void InitializeMotors(IN OUT STICKYFAILURE& fOverallSuccess) {
 #define sensnmEopdArm        SensorOnMux(2,3)
 #define sensnmMagRotorAux    SensorOnMux(2,4)
 
-SONICSENSOR                  sensSonicFront;
-SONICSENSOR                  sensSonicBack;
-SONICSENSOR                  sensSonicLeft;
-SONICSENSOR                  sensSonicRight;
-EOPDSENSOR                   sensEopdFront;
-GYROSENSOR                   sensGyroHorz;
-COLORSENSOR                  sensColor;
-EOPDSENSOR                   sensEopdFrontRight;
-EOPDSENSOR                   sensEopdArm;
-ANGLESENSOR                  sensAngleRotor;
-MAGNETICSENSOR               sensMagRotor;
-MAGNETICSENSOR               sensMagRotorAux;
+SONICSENSOR sensSonicFront;
+SONICSENSOR sensSonicBack;
+SONICSENSOR sensSonicLeft;
+SONICSENSOR sensSonicRight;
+EOPDSENSOR sensEopdFront;
+GYROSENSOR sensGyroHorz;
+COLORSENSOR sensColor;
+EOPDSENSOR sensEopdFrontRight;
+EOPDSENSOR sensEopdArm;
+ANGLESENSOR sensAngleRotor;
+MAGNETICSENSOR sensMagRotor;
+MAGNETICSENSOR sensMagRotorAux;
 
 #define AngleSensorFromIndex(isensangle,member)    (sensAngleRotor.member)
 
-void InitializeSensors(IN OUT STICKYFAILURE& fOverallSuccess) {
-    InitializeSonicSensor(fOverallSuccess, "left",  sensSonicLeft,      sensnmSonicLeft);
-    InitializeSonicSensor(fOverallSuccess, "right", sensSonicRight,     sensnmSonicRight);
-    InitializeSonicSensor(fOverallSuccess, "front", sensSonicFront,     sensnmSonicFront);
-    InitializeSonicSensor(fOverallSuccess, "back",  sensSonicBack,      sensnmSonicBack);
-    InitializeEopdSensor (fOverallSuccess, "epodF", sensEopdFront,      sensnmEopdFront,        EOPD_RAW,       EOPD_LONG);
-    InitializeGyroSensor (fOverallSuccess, "gyro",  sensGyroHorz,       sensnmGyroHorz);
-    InitializeColorSensor(fOverallSuccess, "color", sensColor,          sensnmColor);
-    InitializeEopdSensor (fOverallSuccess, "eopdA", sensEopdArm,        sensnmEopdArm,          EOPD_RAW,       EOPD_SHORT);
-    InitializeEopdSensor (fOverallSuccess, "eopdFR",sensEopdFrontRight, sensnmEopdFrontRight,   EOPD_RAW,       EOPD_LONG);
-    InitializeAngleSensor(fOverallSuccess, "angle", sensAngleRotor,     sensnmAngleRotor);
-    InitializeMagneticSensor(fOverallSuccess, "mag",    sensMagRotor,   sensnmMagRotor);
-    InitializeMagneticSensor(fOverallSuccess, "magAux", sensMagRotorAux,sensnmMagRotorAux);
+void
+InitializeSensors(IN OUT STICKYFAILURE &fOverallSuccess) {
+    InitializeSonicSensor(fOverallSuccess, "left", sensSonicLeft,
+        sensnmSonicLeft);
+    InitializeSonicSensor(fOverallSuccess, "right", sensSonicRight,
+        sensnmSonicRight);
+    InitializeSonicSensor(fOverallSuccess, "front", sensSonicFront,
+        sensnmSonicFront);
+    InitializeSonicSensor(fOverallSuccess, "back", sensSonicBack,
+        sensnmSonicBack);
+    InitializeEopdSensor(fOverallSuccess, "epodF", sensEopdFront,
+        sensnmEopdFront, EOPD_RAW, EOPD_LONG);
+    InitializeGyroSensor(fOverallSuccess, "gyro", sensGyroHorz,
+        sensnmGyroHorz);
+    InitializeColorSensor(fOverallSuccess, "color", sensColor, sensnmColor);
+    InitializeEopdSensor(fOverallSuccess, "eopdA", sensEopdArm, sensnmEopdArm,
+        EOPD_RAW, EOPD_SHORT);
+    InitializeEopdSensor(fOverallSuccess, "eopdFR", sensEopdFrontRight,
+        sensnmEopdFrontRight, EOPD_RAW, EOPD_LONG);
+    InitializeAngleSensor(fOverallSuccess, "angle", sensAngleRotor,
+        sensnmAngleRotor);
+    InitializeMagneticSensor(fOverallSuccess, "mag", sensMagRotor,
+        sensnmMagRotor);
+    InitializeMagneticSensor(fOverallSuccess, "magAux", sensMagRotorAux,
+        sensnmMagRotorAux);
 
     // Set the angle sensor gearing. The gear attached to the servo has
     // 40 teeth, and the one attached to the angle sensor has 36
@@ -181,10 +199,11 @@ void InitializeSensors(IN OUT STICKYFAILURE& fOverallSuccess) {
 #define dsvposShoulder      0
 #define dsvposElbow         0
 
-#define SdrAdj(svpos)       ((svpos) + dsvposShoulder)   // WRONG
-#define ElbAdj(svpos)       ((svpos) + dsvposElbow)      // WRONG
+#define SdrAdj(svpos)       ((svpos) + dsvposShoulder)  // WRONG
+#define ElbAdj(svpos)       ((svpos) + dsvposElbow)     // WRONG
 
-void InitializeServos(IN OUT STICKYFAILURE& fOverallSuccess) {
+void
+InitializeServos(IN OUT STICKYFAILURE &fOverallSuccess) {
     /*
      * Our two servo controllers are #3 and #4 in the daisy chain (the
      * motor controllers come first)
@@ -192,36 +211,41 @@ void InitializeServos(IN OUT STICKYFAILURE& fOverallSuccess) {
     InitializeServoController(fOverallSuccess, servoController3, I2CLINK_1, 3);
     InitializeServoController(fOverallSuccess, servoController4, I2CLINK_1, 4);
 
-    InitializeServo(fOverallSuccess, svoArmRotation,     "rot",   servoController3,1,  servoController3,2,      SVOKIND_STANDARD, HAS_ARM_SERVOS);
-    InitializeServo(fOverallSuccess, svoArmShoulder,     "sdr",   servoController4,2,  servoController4,1,      SVOKIND_STANDARD, HAS_ARM_SERVOS);
-    InitializeServo(fOverallSuccess, svoArmElbow,        "elb",   servoController4,5,  servoController4,4,      SVOKIND_STANDARD, HAS_ARM_SERVOS);
-    InitializeServo(fOverallSuccess, svoRotor,           "rtr",   servoController3,5,  servoControllerDummy,0,  SVOKIND_CNTROT,   HAS_ARM_SERVOS);
-    InitializeServo(fOverallSuccess, svoArmWrist,        "wrist", servoController3,6,  servoControllerDummy,0,  SVOKIND_STANDARD, HAS_WRIST_SERVOS);
+    InitializeServo(fOverallSuccess, svoArmRotation, "rot", servoController3,
+        1, servoController3, 2, SVOKIND_STANDARD, HAS_ARM_SERVOS);
+    InitializeServo(fOverallSuccess, svoArmShoulder, "sdr", servoController4,
+        2, servoController4, 1, SVOKIND_STANDARD, HAS_ARM_SERVOS);
+    InitializeServo(fOverallSuccess, svoArmElbow, "elb", servoController4, 5,
+        servoController4, 4, SVOKIND_STANDARD, HAS_ARM_SERVOS);
+    InitializeServo(fOverallSuccess, svoRotor, "rtr", servoController3, 5,
+        servoControllerDummy, 0, SVOKIND_CNTROT, HAS_ARM_SERVOS);
+    InitializeServo(fOverallSuccess, svoArmWrist, "wrist", servoController3, 6,
+        servoControllerDummy, 0, SVOKIND_STANDARD, HAS_WRIST_SERVOS);
 
     svoArmRotation.fReflectedPaired = false;
-    svoArmRotation.svposUpper       = svposLast;
-    svoArmRotation.svposLower       = 0;
+    svoArmRotation.svposUpper = svposLast;
+    svoArmRotation.svposLower = 0;
 
-    svoArmShoulder  .svposUpper       = 250;
-    svoArmShoulder  .svposLower       = 0;
-    svoArmShoulder  .svposApogee      = svposShoulderApogee;
+    svoArmShoulder.svposUpper = 250;
+    svoArmShoulder.svposLower = 0;
+    svoArmShoulder.svposApogee = svposShoulderApogee;
 
-    svoArmShoulder  .isvoctlrTripped  = servoController4.isvoctlr;
-    svoArmShoulder  .isvcTripped      = 3-1;
-    svoArmShoulder  .isvoctlrQuad     = servoController4.isvoctlr;
-    svoArmShoulder  .isvcQuad         = 6-1;
+    svoArmShoulder.isvoctlrTripped = servoController4.isvoctlr;
+    svoArmShoulder.isvcTripped = 3 - 1;
+    svoArmShoulder.isvoctlrQuad = servoController4.isvoctlr;
+    svoArmShoulder.isvcQuad = 6 - 1;
 
-    svoArmShoulder  .fReflectedPaired  = true;
-    svoArmShoulder  .fReflectedTripped = true;
-    svoArmShoulder  .fReflectedQuad    = false;
+    svoArmShoulder.fReflectedPaired = true;
+    svoArmShoulder.fReflectedTripped = true;
+    svoArmShoulder.fReflectedQuad = false;
 
-    svoArmElbow     .svposUpper     = 233; /* empirical: *just* avoids hitting the stop */
-    svoArmElbow     .svposLower     = 0;
-    svoArmElbow     .svposApogee    = svoArmElbow.svposUpper;
+    svoArmElbow.svposUpper = 233;       /* empirical: *just* avoids hitting the stop */
+    svoArmElbow.svposLower = 0;
+    svoArmElbow.svposApogee = svoArmElbow.svposUpper;
 
-    SetServoWaits(svoArmElbow,      2.5, 1.6, 0);
-    SetServoWaits(svoArmShoulder,   3.0, 2.0, 0);
-    SetServoWaits(svoArmRotation,   3.0, 3.0, 0);
+    SetServoWaits(svoArmElbow, 2.5, 1.6, 0);
+    SetServoWaits(svoArmShoulder, 3.0, 2.0, 0);
+    SetServoWaits(svoArmRotation, 3.0, 3.0, 0);
 }
 
 #define PackArmSimply() MoveDispenserArm(svposPackedRotation, svposPackedElbow, svposPackedShoulder)
@@ -268,7 +292,7 @@ void InitializeServos(IN OUT STICKYFAILURE& fOverallSuccess) {
 
 // How many degrees after detecting a mag baton can the rotor be turned
 // through and still safely and reliably be carrying said baton?
-#define DEG_ROTOR_TURN_MAG_CARRY_BATON      100.0      // WRONG! need to actually measure
+#define DEG_ROTOR_TURN_MAG_CARRY_BATON      100.0       // WRONG! need to actually measure
 
 // How many degrees after detecting a mag baton can the rotor be turned
 // through before we need to focus on scoring *that* baton
@@ -284,39 +308,15 @@ void InitializeServos(IN OUT STICKYFAILURE& fOverallSuccess) {
 // the arm.  Consult the Geometer's Sketchpad drawing
 // (v12\arm2\Model.gsp) for interpretation.
 const float
-    xP  = 0,
-    yP  = 0, // 16.5,
-    dAE = 17.6,
-    dAH = 4.8,
-    dBT = 17.6,
-    dDF = 5.6,
-    dFI = 11.2,
-    dHI = 6.4,
-    dNC = 22.4,
-    dPQ = 4.0,
-    dQN = 3.2,
-    dxCA = 6.4,
-    dxCD = 3.4,
-    dyCA = 0.8,
-    dyCD = 0.22,
-    dAI = sqrt(dAH*dAH + dHI*dHI),
-    dxXY = 12.9,
-    dyXY = -0.01,                            // NB: negative of what's in the .GSP
-    rGearBig = 3.2,
-    rGearSmall = 1.6,
-    gammaZero = degreesToRadians(degElbowCalibrate),
-
-    svposRange      = 255.0,
-    shoulderGearing = 2.0,
-    degAlphaZero    = degShoulderCalibrate - (degShoulderServoRange * svposShoulderCalibrate) / (shoulderGearing * svposRange),
-    alphaZero       = degreesToRadians(degAlphaZero), // was 0.0
-
-    dYZ       = dBT,
-    rTip      = dYZ;
+  xP = 0, yP = 0,               // 16.5,
+    dAE = 17.6, dAH = 4.8, dBT = 17.6, dDF = 5.6, dFI = 11.2, dHI = 6.4, dNC = 22.4, dPQ = 4.0, dQN = 3.2, dxCA = 6.4, dxCD = 3.4, dyCA = 0.8, dyCD = 0.22, dAI = sqrt(dAH * dAH + dHI * dHI), dxXY = 12.9, dyXY = -0.01,       // NB: negative of what's in the .GSP
+    rGearBig = 3.2, rGearSmall = 1.6, gammaZero = degreesToRadians(degElbowCalibrate), svposRange = 255.0, shoulderGearing = 2.0, degAlphaZero = degShoulderCalibrate - (degShoulderServoRange * svposShoulderCalibrate) / (shoulderGearing * svposRange), alphaZero = degreesToRadians(degAlphaZero),  // was 0.0
+    dYZ = dBT, rTip = dYZ;
 
 // Compute point X from C and gamma. FYI: This code automatically generated by
 // Mathematica from symbolic algebra model of the arm.
-void YZFromPThetaGamma(OUT POINT& ptY, OUT POINT& ptZ, float theta, float gamma) {
+void
+YZFromPThetaGamma(OUT POINT &ptY, OUT POINT &ptZ, float theta, float gamma) {
     POINT ptC;
 
     const float v000 = alphaZero + (rGearSmall * theta) / rGearBig;
@@ -339,17 +339,23 @@ void YZFromPThetaGamma(OUT POINT& ptY, OUT POINT& ptZ, float theta, float gamma)
     const float v13 = v10 + v12;
     const float v14 = 1 / v13;
     const float v15 = (v00 + v13) - v01;
-    const float v16 = sqrt(v14 * (v00 + 0.25 * v14 * v15 * (((v01 - v12) - v10) - v00)));
-    const float v17 = (((dyCD + 0.5 * v11 * v14 * v15) - v09 * v16) - v07) - dyCA;
-    const float v18 = (((v11 * v16 + 0.5 * v09 * v14 * v15) - v08) - dxCD) - dxCA;
+    const float v16 =
+        sqrt(v14 * (v00 + 0.25 * v14 * v15 * (((v01 - v12) - v10) - v00)));
+    const float v17 =
+        (((dyCD + 0.5 * v11 * v14 * v15) - v09 * v16) - v07) - dyCA;
+    const float v18 =
+        (((v11 * v16 + 0.5 * v09 * v14 * v15) - v08) - dxCD) - dxCA;
     const float v19 = square(v17);
     const float v20 = square(v18);
     const float v21 = v19 + v20;
     const float v22 = 1 / v21;
     const float v23 = (v03 + v21) - v02;
-    const float v24 = sqrt(v22 * (v03 + 0.25 * v22 * v23 * (((v02 - v20) - v19) - v03)));
-    ptY.x = dxCA + dxXY + ptC.x + dAE * v06 * (0.5 * v18 * v22 * v23 - v17 * v24);
-    ptY.y = dyXY + v04 + ptC.y + dAE * v06 * (v18 * v24 + 0.5 * v17 * v22 * v23);
+    const float v24 =
+        sqrt(v22 * (v03 + 0.25 * v22 * v23 * (((v02 - v20) - v19) - v03)));
+    ptY.x =
+        dxCA + dxXY + ptC.x + dAE * v06 * (0.5 * v18 * v22 * v23 - v17 * v24);
+    ptY.y =
+        dyXY + v04 + ptC.y + dAE * v06 * (v18 * v24 + 0.5 * v17 * v22 * v23);
     ptZ.x = dxCA + dxXY + ptC.x;
     ptZ.y = dyXY + v04 + ptC.y;
 }
@@ -382,24 +388,28 @@ void YZFromPThetaGamma(OUT POINT& ptY, OUT POINT& ptZ, float theta, float gamma)
 #endif
 
 #if USE_ARM_MOVE_DEBUG
-void CFromPTheta(OUT POINT& ptC, float theta) {
+void
+CFromPTheta(OUT POINT &ptC, float theta) {
     const float v00 = alphaZero + (rGearSmall * theta) / rGearBig;
     ptC.x = (xP + dNC * cos(v00)) - dPQ;
     ptC.y = dQN + yP + dNC * sin(v00);
 }
 
-void DFromCGamma(OUT POINT& ptD, float xC, float yC, float gamma) {
+void
+DFromCGamma(OUT POINT &ptD, float xC, float yC, float gamma) {
     ptD.x = xC - dxCD;
     ptD.y = yC + dyCD;
 }
 
-void FFromCGamma(OUT POINT& ptF, float xC, float yC, float gamma) {
+void
+FFromCGamma(OUT POINT &ptF, float xC, float yC, float gamma) {
     const float v00 = gamma + gammaZero;
     ptF.x = (xC - dDF * cos(v00)) - dxCD;
     ptF.y = (dyCD + yC) - dDF * sin(v00);
 }
 
-void XFromCGamma(OUT POINT& ptX, float xC, float yC, float gamma) {
+void
+XFromCGamma(OUT POINT &ptX, float xC, float yC, float gamma) {
     const float v00 = square(dFI);
     const float v01 = square(dAI);
     const float v02 = square(dHI);
@@ -415,15 +425,19 @@ void XFromCGamma(OUT POINT& ptX, float xC, float yC, float gamma) {
     const float v12 = v09 + v11;
     const float v13 = 1 / v12;
     const float v14 = (v00 + v12) - v01;
-    const float v15 = sqrt(v13 * (v00 + 0.25 * v13 * v14 * (((v01 - v11) - v09) - v00)));
-    const float v16 = (((dyCD + 0.5 * v10 * v13 * v14) - v08 * v15) - v06) - dyCA;
-    const float v17 = (((v10 * v15 + 0.5 * v08 * v13 * v14) - v07) - dxCD) - dxCA;
+    const float v15 =
+        sqrt(v13 * (v00 + 0.25 * v13 * v14 * (((v01 - v11) - v09) - v00)));
+    const float v16 =
+        (((dyCD + 0.5 * v10 * v13 * v14) - v08 * v15) - v06) - dyCA;
+    const float v17 =
+        (((v10 * v15 + 0.5 * v08 * v13 * v14) - v07) - dxCD) - dxCA;
     const float v18 = square(v16);
     const float v19 = square(v17);
     const float v20 = v18 + v19;
     const float v21 = 1 / v20;
     const float v22 = (v03 + v20) - v02;
-    const float v23 = sqrt(v21 * (v03 + 0.25 * v21 * v22 * (((v02 - v19) - v18) - v03)));
+    const float v23 =
+        sqrt(v21 * (v03 + 0.25 * v21 * v22 * (((v02 - v19) - v18) - v03)));
     ptX.x = dxCA + xC + dAE * v05 * (0.5 * v17 * v21 * v22 - v16 * v23);
     ptX.y = (yC + dAE * v05 * (v17 * v23 + 0.5 * v16 * v21 * v22)) - dQN;
 }
@@ -444,19 +458,19 @@ void XFromCGamma(OUT POINT& ptX, float xC, float yC, float gamma) {
 #define TURNFLAG_DEFAULT TURNFLAG_PROHIBIT_GYRO
 
 float mpangledenc[][3] = {
-    { -180.0000, 3215.0, -3215.0 },
-    { -90.0000,  1574.0, -1574.0 },
-    { -45.0000,   709.0,  -709.0 },
-    { -28.58,     400.0,  -400.0 },
-    { -16.64,     200.0,  -200.0 },
-    {  -4.00,      55.0,   -55.0 }, // manual fudge, linear = 48.1
-    {   0.0,        0.0,     0.0 },
-    {   4.00,     -55.0,    55.0 }, // manual fudge, linear = 50.0
-    {  16.00,    -200.0,   200.0 },
-    {  27.67,    -400.0,   400.0 },
-    { 45.0000,   -748.0,   748.0 },
-    { 90.0000,  -1644.0,  1644.0 },
-    { 180.0000, -3403.0,  3403.0 },
+    {-180.0000, 3215.0, -3215.0},
+    {-90.0000, 1574.0, -1574.0},
+    {-45.0000, 709.0, -709.0},
+    {-28.58, 400.0, -400.0},
+    {-16.64, 200.0, -200.0},
+    {-4.00, 55.0, -55.0},       // manual fudge, linear = 48.1
+    {0.0, 0.0, 0.0},
+    {4.00, -55.0, 55.0},        // manual fudge, linear = 50.0
+    {16.00, -200.0, 200.0},
+    {27.67, -400.0, 400.0},
+    {45.0000, -748.0, 748.0},
+    {90.0000, -1644.0, 1644.0},
+    {180.0000, -3403.0, 3403.0},
 };
 
 #define mpangledencScaleFactor 1.0

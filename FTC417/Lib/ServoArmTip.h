@@ -150,7 +150,7 @@ typedef struct {
 
 //-----------------------------------------------------------------------------
 BOOL
-MoveArmToWaypoint(ARMTIPSTATE & stateCur, ARMTIPSTATE & stateWaypoint,
+MoveArmToWaypoint(ARMTIPSTATE &stateCur, ARMTIPSTATE &stateWaypoint,
     MOVEARMTIP mode)
 // Move the arm from it's current state to that of the waypoint, in a manner
 // indicated by the current mode.
@@ -245,8 +245,8 @@ MoveArmToWaypoint(ARMTIPSTATE & stateCur, ARMTIPSTATE & stateWaypoint,
 }
 
 BOOL
-ComputeElbowRotationToPoint(IN OUT ARMTIPSTATE & stateWaypointInOut,
-    IN POINT & ptWaypoint)
+ComputeElbowRotationToPoint(IN OUT ARMTIPSTATE &stateWaypointInOut,
+    IN POINT &ptWaypoint)
 // Given that the state of the arm is as found in stateWaypoint, rotate (only)
 // the elbow so the arm tip reaches ptWaypoint. That ptWaypoint can be reached
 // in this way is guaranteed by caller.
@@ -356,7 +356,7 @@ ComputeElbowRotationToPoint(IN OUT ARMTIPSTATE & stateWaypointInOut,
 }
 
 BOOL
-MoveFromTo(ARMTIPSTATE & stateStart, float x, float y, MOVEARMTIP mode)
+MoveFromTo(ARMTIPSTATE &stateStart, float x, float y, MOVEARMTIP mode)
 // Given that the arm is in the indicated start location, move it to
 // ptTo. If fLinear is true, then move it smoothly there in a straight
 // line as best we can; if false, then move it in one fell swoop. Answer

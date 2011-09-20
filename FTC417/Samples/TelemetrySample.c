@@ -7,9 +7,10 @@
 //
 #include "..\lib\TelemetryFTC.h"
 
-void DoCompletenessTest()
+void
+DoCompletenessTest()
 // Exercise all the various telemetry data types
-    {
+{
     // Capture the starting time so we can include the increment thereon
     // in each of our telemetry records.
     long msBase = nSysTime;
@@ -37,17 +38,22 @@ void DoCompletenessTest()
     // Transmit the data. This is a typical example, in that it transmits
     // a timestamp at which the record was made, a serial# to support
     // detection of dropouts, and then some actual data.
-    for (telemetry.serialNumber = 0; telemetry.serialNumber < 1000; telemetry.serialNumber++)
-        {
+    for (telemetry.serialNumber = 0; telemetry.serialNumber < 1000;
+        telemetry.serialNumber++) {
         TelemetryAddInt16(nSysTime - msBase);
         TelemetryAddInt32(telemetry.serialNumber);
         //
-        long   iDatum   = -telemetry.serialNumber;
-        bool   fDatum   = (iDatum % 2 == 0);
-        char   chDatum  = 'a' + (telemetry.serialNumber % 26);
-        char   rgch[4]; rgch[0] = chDatum; rgch[1] = (chDatum+1); rgch[2] = (chDatum+2); rgch[3] = 0;
-        string sDatum; StringFromChars(sDatum, rgch[0]);
-        float  flDatum  = 3.14159 * telemetry.serialNumber / 180.0;
+        long iDatum = -telemetry.serialNumber;
+        bool fDatum = (iDatum % 2 == 0);
+        char chDatum = 'a' + (telemetry.serialNumber % 26);
+        char rgch[4];
+        rgch[0] = chDatum;
+        rgch[1] = (chDatum + 1);
+        rgch[2] = (chDatum + 2);
+        rgch[3] = 0;
+        string sDatum;
+        StringFromChars(sDatum, rgch[0]);
+        float flDatum = 3.14159 * telemetry.serialNumber / 180.0;
         //
         TelemetryAddInt8(iDatum);
         TelemetryAddInt16(iDatum);
@@ -61,46 +67,47 @@ void DoCompletenessTest()
         TelemetryAddChar(chDatum);
         //
         TelemetrySend();
-        }
-
-    TelemetryDone();
     }
 
-void DoSpeedTest()
+    TelemetryDone();
+}
+
+void
+DoSpeedTest()
 // Send one datum of the smallest size as fast as we can, many times.
 // We use a negation trick to see whether any values get dropped:
 // the sign of the data in the records received should always alternate
 // from record to record; the (absolute) value itself is the number of
 // milliseconds since the start of the run.
-    {
+{
     long msBase = nSysTime;
     TelemetrySetUSBPollInterval(0);
 
     long s = 1;
-    for (int i = 0; i < 1000; i++)
-        {
+    for (int i = 0; i < 1000; i++) {
         long value = (nSysTime - msBase) * s;
         s = -s;
         TelemetryAddInt16(value);
         TelemetrySend();
-        }
-
-    TelemetryDone();
     }
 
-void DoOne()
+    TelemetryDone();
+}
+
+void
+DoOne()
 // Pretty much the simplest telemetry transmission one can imagine: just one record is sent
-    {
+{
     TelemetrySetUSBPollInterval(0);
     //
     TelemetryAddInt16(42);
     TelemetrySend();
     //
     TelemetryDone();
-    }
+}
 
-task main()
-    {
+task
+main() {
     writeDebugStreamLine("main...");
 
     // Hog the CPU so our code here can transmit as fast as possible, thus
@@ -110,7 +117,7 @@ task main()
 
     // Initialize the telemetry.
     TelemetryInitialize();
-    TelemetryUseBluetooth(false);   // set to true if use of Bluetooth is desired
+    TelemetryUseBluetooth(false);       // set to true if use of Bluetooth is desired
 
     // Actually send some
     DoCompletenessTest();
@@ -120,4 +127,4 @@ task main()
     releaseCPU();
 
     writeDebugStreamLine("...main");
-    }
+}

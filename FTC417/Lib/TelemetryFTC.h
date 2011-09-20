@@ -235,8 +235,8 @@ typedef struct {
         };
     };
     long serialNumber;          // a handy variable useful for programs,
-                                // perhaps in order to count telemetry
-                                // records as they are sent
+    // perhaps in order to count telemetry
+    // records as they are sent
 
     int _isActive;              // internal use only
     int _recordOverflowed;      // internal use only
@@ -399,7 +399,7 @@ _TELEMETRY telemetry;           // The one _TELEMETRY variable
     _FirstTelemetryTag_(t) |= ((isheet) << 4);                  \
 }                                                               \
                                                                 \
-// Empty out the polling buffer used in the non-bluetooth case
+                                // Empty out the polling buffer used in the non-bluetooth case
 #define _TelemetryEmptyPollBuffer_()                                    \
 {                                                                       \
     short ioResult = 0;                                                 \
@@ -420,8 +420,8 @@ typedef enum {
 {                                                                   \
     t._rgbMsg[0] = 0x80 | 3; /* 0x80==meta, 3==#bytes of payload */ \
     t._rgbMsg[1] = _TELEMETRY_META_COMMAND_POLLING_INTERVAL;        \
-    t._rgbMsg[2] = ( (ms)       & 0xFF);                            \
-    t._rgbMsg[3] = (((ms) >> 8) & 0xFF);                            \
+    t._rgbMsg[2] = ( (ms)       &0xFF);                            \
+    t._rgbMsg[3] = (((ms) >> 8) &0xFF);                            \
     t._ibMsgNext = 4;                                               \
     _TelemetrySend_(t, 0, false);                                   \
     /* give TelemetryFTC program a chance to change the polling */  \
@@ -493,7 +493,7 @@ typedef struct {
 
 typedef struct {
     byte Name[_SIZE_OF_BT_NAME];        // 16
-    byte BluecoreVersion[2];            // 2
+    byte BluecoreVersion[2];    // 2
     byte BdAddr[_SIZE_OF_BDADDR];       // 7
     byte BtStateStatus;
     byte BtHwStatus;
@@ -609,7 +609,7 @@ const string _strCommMap = "Comm.mod";
 
 // Send the telemetry record to the telemetry recorder
 void
-_TelemetrySend_(_TELEMETRY & t, int isheet, bool fFinalize = true) {
+_TelemetrySend_(_TELEMETRY &t, int isheet, bool fFinalize = true) {
     // Don't do anything if telemetry isn't actually active
     if (t._isActive) {
         // Finalize the record if asked to
@@ -624,7 +624,7 @@ _TelemetrySend_(_TELEMETRY & t, int isheet, bool fFinalize = true) {
                 EndTimeSlice();
             }
             cCmdMessageWriteToBluetooth(_FirstTelemetryTag_(t),
-                                        _CbTelemetryRecord_(t), t._bluetoothMailbox);
+                _CbTelemetryRecord_(t), t._bluetoothMailbox);
             while (nBluetoothCmdStatus == ioRsltCommPending) {
                 EndTimeSlice();
             }
@@ -639,13 +639,13 @@ _TelemetrySend_(_TELEMETRY & t, int isheet, bool fFinalize = true) {
             // Find out the current location of the circular buffer pointers
             ubyte rgbPtr[2];
             nxtReadIOMap(_strCommMap, ioResult, rgbPtr[0],
-                         _dibHsInBuf + _dibHSBUFInPtr, 2);
+                _dibHsInBuf + _dibHSBUFInPtr, 2);
             int ibInPtr = rgbPtr[0];
             int ibOutPtr = rgbPtr[1];   // this may become stale while we run, but that will only increase available space, so it's safe
 
             // Figure out how much room there is in the buffer
             const int cbBuffer = _SIZE_OF_USBBUF;       // you'd think this should be SIZE_OF_HSBUF, but it isn't be due to a NXT firmware bug at c_comm.c(1127)
-            const int cbUsed = (ibInPtr - ibOutPtr) & (cbBuffer - 1);
+            const int cbUsed = (ibInPtr - ibOutPtr) &(cbBuffer - 1);
             const int cbFree = cbBuffer - cbUsed - 1;   // need the -1 so that ptrs don't coincide when full
             const int cbWriteWanted = 1 + _CbTelemetryRecord_(t);       // +1 because we include the initial byte count at the start of the chunk
             const int cbToWrite = _Min(cbFree, cbWriteWanted);
@@ -662,15 +662,15 @@ _TelemetrySend_(_TELEMETRY & t, int isheet, bool fFinalize = true) {
                 // nxtWriteIOMap API will allow (see
                 // _CircularCommWrite_).
                 _CircularCommWrite_(t._rgbMsg, 0, _dibHsInBuf + ibInPtr,
-                                    cbChunkFirst, ioResult);
+                    cbChunkFirst, ioResult);
                 _CircularCommWrite_(t._rgbMsg, cbChunkFirst, _dibHsInBuf,
-                                    cbChunkSecond, ioResult);
+                    cbChunkSecond, ioResult);
 
                 // Update the in ptr. This will, atomically, make the
                 // data available for transmission in the 'Poll' command
-                rgbPtr[0] = (ibInPtr + cbToWrite) & (cbBuffer - 1);
+                rgbPtr[0] = (ibInPtr + cbToWrite) &(cbBuffer - 1);
                 nxtWriteIOMap(_strCommMap, ioResult, rgbPtr[0],
-                              _dibHsInBuf + _dibHSBUFInPtr, 1);
+                    _dibHsInBuf + _dibHSBUFInPtr, 1);
             } else {
                 // writeDebugStreamLine("telemetry full");
             }

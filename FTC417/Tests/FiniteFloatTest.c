@@ -3,16 +3,16 @@
 //
 #include "..\lib\MainPrelude.h"
 
-void DoFiniteTest(float fl)
-    {
+void
+DoFiniteTest(float fl) {
     FLOAT_LONG pair;
     BOOL fFinite;
     IsFinite(fFinite, pair, fl);
-    TRACE(("%s: %f", (fFinite ? "true" : "false"), fl ));
-    }
+    TRACE(("%s: %f", (fFinite ? "true" : "false"), fl));
+}
 
-task main()
-    {
+task
+main() {
     TRACE(("---"));
     DoFiniteTest(1.0 / 0.0);
     DoFiniteTest(-1.0 / 0.0);
@@ -32,28 +32,27 @@ task main()
     inp.b1 = 0;
     inp.b2 = 0;
     inp.b3 = 0;
-    DoFiniteTest(inp.f);    // -2
+    DoFiniteTest(inp.f);        // -2
 
     inp.b0 = 0x3f;
     inp.b1 = 0x80;
-    DoFiniteTest(inp.f);    // 1
+    DoFiniteTest(inp.f);        // 1
 
     inp.b0 = 0x80;
     inp.b1 = 0;
-    DoFiniteTest(inp.f);    // -0
+    DoFiniteTest(inp.f);        // -0
 
     inp.b0 = 0x7f;
     inp.b1 = 0x7f;
     inp.b2 = 0xff;
     inp.b3 = 0xff;
-    DoFiniteTest(inp.f);    // 3.4e38 (max single precision)
+    DoFiniteTest(inp.f);        // 3.4e38 (max single precision)
 
     float fl = 1.0;
     int i = 0;
-    while (i < 50)
-        {
+    while (i < 50) {
         DoFiniteTest(fl);
         fl *= -2.0;
         i++;
-        }
     }
+}

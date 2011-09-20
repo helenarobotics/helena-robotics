@@ -93,7 +93,7 @@
 const float cmPerMotorRev = CM_WHEEL_CIRCUMFERENCE * MOTOR_GEARING;
 const float crevMotorPerCm = 1. / cmPerMotorRev;
 const float cmPerEncoderTick =
-    cmPerMotorRev / (float) ENCODER_TICKS_PER_MOTOR_REV;
+    cmPerMotorRev / (float)ENCODER_TICKS_PER_MOTOR_REV;
 const float encoderTickPerCm = 1. / cmPerEncoderTick;
 
 #define RET_IF_FAIL(a, b)  { if (!(a)) { PlaySad(); /* DisplayMessage(b); */ return false; } }
@@ -116,8 +116,7 @@ const float encoderTickPerCm = 1. / cmPerEncoderTick;
 //---------------------------------------------------------------------------
 
 BOOL
-InitializeMain(BOOL fBackgroundTasks, BOOL fInitArmServos)
-{
+InitializeMain(BOOL fBackgroundTasks, BOOL fInitArmServos) {
     // Ensure we can hear the bot
     nVolume = kMaxVolumeLevel;
 
