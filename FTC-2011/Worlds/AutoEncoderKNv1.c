@@ -80,11 +80,11 @@ const long SYNC_TICK_ERROR = 50;
 
 // We've determined by experience that by setting both motors to full
 // power, it keeps them more in sync with one another.
-const int STRAIGHT_POWER = 80;
+const int STRAIGHT_POWER = 60;
 
 // Changing this will effect the FULL_TURN_TICKS value (determined
 // experimentally), so make sure to change both numbers in parallel.
-const int TURN_POWER = 50;
+const int TURN_POWER = 70;
 
 // How can we move the robot?
 typedef enum {
@@ -149,7 +149,7 @@ task main()
     deployBatonArmWait();
 
     // Turn 'left' to capture the goal
-    moveWait(TURN, -45.0);
+    moveWait(TURN, -45);
 
     // Knock the bridge down
     deployBridgeArmWait();

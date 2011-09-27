@@ -7,6 +7,7 @@
 #pragma config(Motor,  mtr_S1_C2_2,     mBridgeArm,    tmotorNormal, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C3_1,     mDispArm,      tmotorNormal, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C3_2,     mRGLiftArm,    tmotorNormal, PIDControl, reversed, encoder)
+#pragma config(Servo,  srvo_S1_C4_1,    ,                     tServoStandard)
 #pragma config(Servo,  srvo_S1_C4_3,    sBatonCup,            tServoStandard)
 #pragma config(Servo,  srvo_S1_C4_4,    sRGTeethL,            tServoStandard)
 #pragma config(Servo,  srvo_S1_C4_5,    sRGTeethR,            tServoStandard)
@@ -145,6 +146,9 @@ void toggleRGLift();
 void abortRGLift();
 task RGLiftTask();
 
+void resetStuff();
+void moveBridgeArmTog();
+
 float Power(float num, int exp);
 int expoJoystick(int eJoy);
 
@@ -175,7 +179,7 @@ void initializeRobot()
     // attachments (arms, servos, etc..)
     StartTask(BatonArmTask);
     StartTask(BatonCupTask);
-    StartTask(BridgeArmTask);
+    //StartTask(BridgeArmTask);
     StartTask(DispenserArmTask);
     StartTask(RGLiftTask);
 }
@@ -202,13 +206,16 @@ task main()
 
         // Move robot
         moveTracks();
-        moveBridgeArm();
+        moveBridgeArmTog();
         moveDispenserControls();
         moveDispenserWrist();
 
         moveBatonArm();
         moveBatonCup();
         moveRGLift();
+        nxtDisplayString(1,"%d - %d",nMotorEncoder[mDispWristL],nMotorEncoder[mDispWristR]);
+
+        resetStuff();
     }
 }
 
@@ -634,4 +641,55 @@ int expoJoystick(int eJoy)
     // Convert the number back to a motor power, which is between -100
     // and 100.
     return (int)(100.0 * result);
+}
+
+void parkDispenserWrist()
+{
+    motor[mDispWristL] = -40;
+}
+
+void parkDispenserWristWait()
+{
+    while(nMotorEncoder[mDispWristL] > 10)
+    {
+        EndTimeSlice();
+    }
+    motor[mDispWristL] = 0;
+}
+
+void moveBridgeArmTog()
+{
+    if(!(joy2Btn(5) && joy2Btn(7)))
+    {
+        if(joy2Btn(5))
+        {
+            motor[mBridgeArm] = -BRIDGE_ARM_MOVE_POWER;
+        }
+        else if(joy2Btn(7))
+        {
+            motor[mBridgeArm] = BRIDGE_ARM_MOVE_POWER;
+        }
+        else
+        {
+            motor[mBridgeArm] = 0;
+        }
+    }
+    else
+    {
+        motor[mBridgeArm] = 0;
+    }
+}
+
+void resetStuff()
+{
+    if(joy1Btn(10) && joy2Btn(10))
+    {
+	    parkBatonArm();
+	    parkBridgeArm();
+	    parkDispenserWrist();
+	    parkDispenserWristWait();
+	    dispenserArmAutoParkWait();
+	    parkBridgeArmWait();
+	    parkBatonArmWait();
+	}
 }

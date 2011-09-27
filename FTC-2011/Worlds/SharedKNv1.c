@@ -66,7 +66,7 @@ const int DISPENSER_ARM_PRESET_MOVE_POWER = 10;
 const int DISPENSER_ARM_HIGHEST_POS = 3500;
 
 // The dispenser arm height in autonomous mode
-const int DISPENSER_ARM_AUTO_PRESET_POS = 1650;
+const int DISPENSER_ARM_AUTO_PRESET_POS = 3000;
 
 // The three preset heights for the dispenser arm
 const int DISPENSER_ARM_HIGH_PRESET_POS = 3000;
@@ -294,6 +294,8 @@ typedef enum {
 
 bridgeState brState = BRIDGE_PARKED;
 
+bool movingDown = true;
+bool bridgeBrake = true;
 bool bridgeArmButtonWasPressed = false;
 void moveBridgeArm()
 {
@@ -360,6 +362,7 @@ task BridgeArmTask()
                 // Reverse the motor a bit to reduce slop, per a posting
                 // my Dick Swan (author or RobotC for NXT).
                 motor[mBridgeArm] = 2;
+                movingDown = false;
             }
             // Fall through
         case BRIDGE_PARKED:
@@ -370,6 +373,7 @@ task BridgeArmTask()
         case BRIDGE_OUT:
             if (armPos >= BRIDGE_ARM_DEPLOYED_POS)
                 brState = BRIDGE_DEPLOYED;
+                movingDown = true;
             // Fall through
         case BRIDGE_DEPLOYED:
             // We allow the users to move the bridge arm in the deployed
@@ -394,9 +398,9 @@ task BridgeArmTask()
                 // Gotta move to get there!
                 int armPower = calculateTetrixPower(
                     BRIDGE_ARM_MOVE_POWER, targetPos - armPos);
-                if (targetPos > armPos)
+                if (targetPos > armPos && !movingDown || bridgeBrake)
                     motor[mBridgeArm] = armPower;
-                else
+                else if(targetPos < armPos && movingDown || bridgeBrake)
                     motor[mBridgeArm] = -armPower;
             }
         }
