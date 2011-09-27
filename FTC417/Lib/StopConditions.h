@@ -45,74 +45,74 @@ InitializeStopConditions(STOPCONDITIONS &stop) {
 
 void
 ArmStopConditions(STOPCONDITIONS &stop) {
-#if SensorIsDefined(sensnmTouchPreload)
+#    if SensorIsDefined(sensnmTouchPreload)
     if (stop.fStopOnTouchPreload)
         StartDetectingTouchSensor(sensTouchPreload);
-#endif
-#if SensorIsDefined(sensnmEopdFront)
+#    endif
+#    if SensorIsDefined(sensnmEopdFront)
     if (stop.fStopOnEopdFront)
         StartDetectingEopdSensor(sensEopdFront);
-#endif
-#if SensorIsDefined(sensnmEopdFrontRight)
+#    endif
+#    if SensorIsDefined(sensnmEopdFrontRight)
     if (stop.fStopOnEopdFrontRight)
         StartDetectingEopdSensor(sensEopdFrontRight);
-#endif
-#if SensorIsDefined(sensnmEopdArm)
+#    endif
+#    if SensorIsDefined(sensnmEopdArm)
     if (stop.fStopOnEopdArm)
         StartDetectingEopdSensor(sensEopdArm);
-#endif
-#if SensorIsDefined(sensnmAngleRotor)
+#    endif
+#    if SensorIsDefined(sensnmAngleRotor)
     if (stop.fStopOnAngleRotor)
         StartDetectingAngleSensor(sensAngleRotor);
-#endif
-#if SensorIsDefined(sensnmColor)
+#    endif
+#    if SensorIsDefined(sensnmColor)
     if (stop.fStopOnColor)
         StartDetectingColorSensor(sensColor);
-#endif
-#if SensorIsDefined(sensnmGyroHorz)
+#    endif
+#    if SensorIsDefined(sensnmGyroHorz)
     if (stop.fStopOnGyroHorz)
         StartDetectingGyroSensor(sensGyroHorz);
-#endif
-#if SensorIsDefined(sensnmGyroVert)
+#    endif
+#    if SensorIsDefined(sensnmGyroVert)
     if (stop.fStopOnGyroVert)
         StartDetectingGyroSensor(sensGyroVert);
-#endif
+#    endif
 }
 
 void
 DisarmStopConditions(STOPCONDITIONS &stop) {
-#if SensorIsDefined(sensnmTouchPreload)
+#    if SensorIsDefined(sensnmTouchPreload)
     if (stop.fStopOnTouchPreload)
         StopDetectingTouchSensor(sensTouchPreload);
-#endif
-#if SensorIsDefined(sensnmEopdFront)
+#    endif
+#    if SensorIsDefined(sensnmEopdFront)
     if (stop.fStopOnEopdFront)
         StopDetectingEopdSensor(sensEopdFront);
-#endif
-#if SensorIsDefined(sensnmEopdFrontRight)
+#    endif
+#    if SensorIsDefined(sensnmEopdFrontRight)
     if (stop.fStopOnEopdFrontRight)
         StopDetectingEopdSensor(sensEopdFrontRight);
-#endif
-#if SensorIsDefined(sensnmEopdArm)
+#    endif
+#    if SensorIsDefined(sensnmEopdArm)
     if (stop.fStopOnEopdArm)
         StopDetectingEopdSensor(sensEopdArm);
-#endif
-#if SensorIsDefined(sensnmAngleRotor)
+#    endif
+#    if SensorIsDefined(sensnmAngleRotor)
     if (stop.fStopOnAngleRotor)
         StopDetectingAngleSensor(sensAngleRotor);
-#endif
-#if SensorIsDefined(sensnmColor)
+#    endif
+#    if SensorIsDefined(sensnmColor)
     if (stop.fStopOnColor)
         StopDetectingColorSensor(sensColor);
-#endif
-#if SensorIsDefined(sensnmGyroHorz)
+#    endif
+#    if SensorIsDefined(sensnmGyroHorz)
     if (stop.fStopOnGyroHorz)
         StopDetectingGyroSensor(sensGyroHorz);
-#endif
-#if SensorIsDefined(sensnmGyroVert)
+#    endif
+#    if SensorIsDefined(sensnmGyroVert)
     if (stop.fStopOnGyroVert)
         StopDetectingGyroSensor(sensGyroVert);
-#endif
+#    endif
 }
 
 BOOL
@@ -120,45 +120,45 @@ CheckStopConditions(STOPCONDITIONS &stop) {
     BOOL fStop = false;
     LockBlackboard();
     //
-#if SensorIsDefined(sensnmTouchPreload)
+#    if SensorIsDefined(sensnmTouchPreload)
     if (!fStop && stop.fStopOnTouchPreload)
         fStop = sensTouchPreload.fDetected;
-#endif
+#    endif
     //
-#if SensorIsDefined(sensnmEopdFront)
+#    if SensorIsDefined(sensnmEopdFront)
     if (!fStop && stop.fStopOnEopdFront)
         fStop = sensEopdFront.fDetected;
-#endif
+#    endif
 
-#if SensorIsDefined(sensnmEopdFrontRight)
+#    if SensorIsDefined(sensnmEopdFrontRight)
     if (!fStop && stop.fStopOnEopdFrontRight)
         fStop = sensEopdFrontRight.fDetected;
-#endif
+#    endif
 
-#if SensorIsDefined(sensnmEopdArm)
+#    if SensorIsDefined(sensnmEopdArm)
     if (!fStop && stop.fStopOnEopdArm)
         fStop = sensEopdArm.fDetected;
-#endif
+#    endif
 
-#if SensorIsDefined(sensnmAngleRotor)
+#    if SensorIsDefined(sensnmAngleRotor)
     if (!fStop && stop.fStopOnAngleRotor)
         fStop = sensAngleRotor.fDetected;
-#endif
+#    endif
 
-#if SensorIsDefined(sensnmColor)
+#    if SensorIsDefined(sensnmColor)
     if (!fStop && stop.fStopOnColor)
         fStop = sensColor.fDetected;
-#endif
+#    endif
 
-#if SensorIsDefined(sensnmGyroHorz)
+#    if SensorIsDefined(sensnmGyroHorz)
     if (!fStop && stop.fStopOnGyroHorz)
         fStop = sensGyroHorz.fDetected;
-#endif
+#    endif
 
-#if SensorIsDefined(sensnmGyroVert)
+#    if SensorIsDefined(sensnmGyroVert)
     if (!fStop && stop.fStopOnGyroVert)
         fStop = sensGyroVert.fDetected;
-#endif
+#    endif
     ReleaseBlackboard();
     return fStop;
 }

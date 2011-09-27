@@ -3,9 +3,9 @@
 //
 
 #ifndef HAS_SERVO_ROTOR
-#define HAS_SERVO_ROTOR 0
-#undef  USE_ROTOR_STALL_CHECK
-#define USE_ROTOR_STALL_CHECK 0
+#    define HAS_SERVO_ROTOR 0
+#    undef  USE_ROTOR_STALL_CHECK
+#    define USE_ROTOR_STALL_CHECK 0
 #endif
 
 typedef enum
@@ -13,13 +13,13 @@ typedef enum
 
 #if HAS_SERVO_ROTOR
 
-#ifndef USE_ROTOR_STALL_CHECK
-#if SensorIsDefined(sensnmAngleRotor)
-#define USE_ROTOR_STALL_CHECK 1
-#else
-#define USE_ROTOR_STALL_CHECK 0
-#endif
-#endif
+#    ifndef USE_ROTOR_STALL_CHECK
+#        if SensorIsDefined(sensnmAngleRotor)
+#            define USE_ROTOR_STALL_CHECK 1
+#        else
+#            define USE_ROTOR_STALL_CHECK 0
+#        endif
+#    endif
 
 //-----------------------------------------------------------------------------
 // Rotor stall check logic
@@ -33,15 +33,15 @@ typedef enum {
 
 ROTOR_STALL_STATE rotorStallState = ROTOR_STALL_STATE_OK;
 
-#if USE_ROTOR_STALL_CHECK
+#    if USE_ROTOR_STALL_CHECK
 
 MILLI msLastRotorStallCheck = 0;
 int cRotorStallCheckRequests = 0;
 
-#define ResetRotorStallCheck()  { msLastRotorStallCheck = 0; }
+#        define ResetRotorStallCheck()  { msLastRotorStallCheck = 0; }
 
 // NB: Need the blackboard lock in order to be able to read the angle sensor
-#define CheckForRotorStall(msNow)                                       \
+#        define CheckForRotorStall(msNow)                                       \
 {                                                                       \
     BOOL fFirstTime = (0 == msLastRotorStallCheck);                     \
                                                                         \
@@ -184,23 +184,23 @@ BOOL fDoRotorTaskWork = false;
 // If we have a magnetic sensor, then turn on its detection whenever the
 // rotor is spinning. Also keep track of the angle too, as we need to
 // count it' s rotations.
-#if SensorIsDefined(sensnmMagRotor) && !SensorIsDefined(sensnmMagRotorAux)
-#define DetectMagOnRotorStart()     { StartDetectingMagneticSensor(sensMagRotor); }
-#define DetectMagOnRotorStop()      { StopDetectingMagneticSensor(sensMagRotor);  }
-#elif SensorIsDefined(sensnmMagRotor) && SensorIsDefined(sensnmMagRotorAux)
-#define DetectMagOnRotorStart()     { StartDetectingMagneticSensor(sensMagRotor); StartDetectingMagneticSensor(sensMagRotorAux);  }
-#define DetectMagOnRotorStop()      { StopDetectingMagneticSensor(sensMagRotor);  StopDetectingMagneticSensor(sensMagRotorAux);   }
-#else
-#define DetectMagOnRotorStart()
-#define DetectMagOnRotorStop()
-#endif
-#if SensorIsDefined(sensnmAngleRotor)
-#define ReadAngleOnRotorStart()   StartReadingAngleSensor(sensAngleRotor,true)
-#define ReadAngleOnRotorStop()    { StopReadingAngleSensor(sensAngleRotor); }
-#else
-#define ReadAngleOnRotorStart()   0
-#define ReadAngleOnRotorStop()
-#endif
+#        if SensorIsDefined(sensnmMagRotor) && !SensorIsDefined(sensnmMagRotorAux)
+#            define DetectMagOnRotorStart()     { StartDetectingMagneticSensor(sensMagRotor); }
+#            define DetectMagOnRotorStop()      { StopDetectingMagneticSensor(sensMagRotor);  }
+#        elif SensorIsDefined(sensnmMagRotor) && SensorIsDefined(sensnmMagRotorAux)
+#            define DetectMagOnRotorStart()     { StartDetectingMagneticSensor(sensMagRotor); StartDetectingMagneticSensor(sensMagRotorAux);  }
+#            define DetectMagOnRotorStop()      { StopDetectingMagneticSensor(sensMagRotor);  StopDetectingMagneticSensor(sensMagRotorAux);   }
+#        else
+#            define DetectMagOnRotorStart()
+#            define DetectMagOnRotorStop()
+#        endif
+#        if SensorIsDefined(sensnmAngleRotor)
+#            define ReadAngleOnRotorStart()   StartReadingAngleSensor(sensAngleRotor,true)
+#            define ReadAngleOnRotorStop()    { StopReadingAngleSensor(sensAngleRotor); }
+#        else
+#            define ReadAngleOnRotorStart()   0
+#            define ReadAngleOnRotorStop()
+#        endif
 // Change the rotor speed, being sure to set up / tear down whatever
 // monitoring may be necessary.
         void
@@ -241,16 +241,17 @@ BOOL fDoRotorTaskWork = false;
 // User-level APIs
 //-----------------------------------------------------------------------------
 
-#define StartRotor()   { SetRotorSpeed(svposRotorFast); }
-#define StopRotor()    { SetRotorSpeed(svposRotorStop); }
+#        define StartRotor()   { SetRotorSpeed(svposRotorFast); }
+#        define StopRotor()    { SetRotorSpeed(svposRotorStop); }
 
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
-#define MS_ROTOR_DISPENSING_TIME          (4500+100)    // 4500 is the absolute min to fully dispense (v11), and 100 is just a bit extra
-#elif ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
-#define MS_ROTOR_DISPENSING_TIME          (4800)
-#else
-#define MS_ROTOR_DISPENSING_TIME          0
-#endif
+#        if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
+#            define MS_ROTOR_DISPENSING_TIME          (4500+100)
+                                                        // 4500 is the absolute min to fully dispense (v11), and 100 is just a bit extra
+#        elif ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
+#            define MS_ROTOR_DISPENSING_TIME          (4800)
+#        else
+#            define MS_ROTOR_DISPENSING_TIME          0
+#        endif
 
 // Assuming that the arm is in the correct dispensing position,
 void
@@ -269,7 +270,7 @@ UnloadDispenser(BATON_DISPOSITION batonDisposition) {
     MILLI msDispensingStop = nSysTime + MS_ROTOR_DISPENSING_TIME;
     BOOL fDone = false;
     while (!fDone && nSysTime < msDispensingStop) {
-#if SensorIsDefined(sensnmAngleRotor)
+#        if SensorIsDefined(sensnmAngleRotor)
         if (fRotorDispensingStopValid || CAPTURE_BATONS == batonDisposition) {
             LockBlackboard();
 
@@ -281,7 +282,7 @@ UnloadDispenser(BATON_DISPOSITION batonDisposition) {
 
             ReleaseBlackboard();
         }
-#endif
+#        endif
         EndTimeSlice();
     }
     StopRotor();
@@ -290,7 +291,7 @@ UnloadDispenser(BATON_DISPOSITION batonDisposition) {
     StopRotorStallCheck();
 }
 
-#if SensorIsDefined(sensnmAngleRotor)
+#        if SensorIsDefined(sensnmAngleRotor)
 // Assuming that the rotor is currently stopped, rotate it through
 // the indicated number of degrees, then stop it again.
 void
@@ -338,20 +339,20 @@ TurnRotorBy(ANGLE angle, int svposSpeed) {
 
     StopReadingAngleSensor(sensAngleRotor);
 }
-#endif
+#        endif
 
-#else
+#    else
 
 // No servo rotor
-#define StartRotor()                        {  }
-#define StopRotor()                         {  }
-#define UnloadDispenser(batonDisposition)   {  }
+#        define StartRotor()                        {  }
+#        define StopRotor()                         {  }
+#        define UnloadDispenser(batonDisposition)   {  }
 
-#endif
+#    endif
 
 //-----------------------------------------------------------------------------
 // Internal nits
 //-----------------------------------------------------------------------------
-#ifndef DoRotorTaskStallWork
-#define DoRotorTaskStallWork(msNow)
-#endif
+#    ifndef DoRotorTaskStallWork
+#        define DoRotorTaskStallWork(msNow)
+#    endif

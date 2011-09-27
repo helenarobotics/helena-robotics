@@ -51,27 +51,27 @@ BOOL AdjustForearmAngle(ANGLE degTarget,
 
 //-----------------------------------------------------------------------------
 #ifndef HAS_ARM_SERVOS
-#define HAS_ARM_SERVOS      0
+#    define HAS_ARM_SERVOS      0
 #endif
 #ifndef HAS_WRIST_SERVOS
-#define HAS_WRIST_SERVOS    0
+#    define HAS_WRIST_SERVOS    0
 #endif
 #ifndef HAS_PRELOAD_SERVOS
-#define HAS_PRELOAD_SERVOS  0
+#    define HAS_PRELOAD_SERVOS  0
 #endif
 
 //-----------------------------------------------------------------------------
 
 // Function for doing some tracing of where we think the arm tip currently is
 #if !defined(ReportArmState)
-#define ReportArmState(sz, state)               \
+#    define ReportArmState(sz, state)               \
 {                                               \
 }
 #endif
 
 // Function for actually moving the arm tip
 #if !defined(MoveArmToWaypointStep)
-#define MoveArmToWaypointStep(svposShoulder, svposElbow, fServosValid)  \
+#    define MoveArmToWaypointStep(svposShoulder, svposElbow, fServosValid)  \
 {                                                                       \
     fServosValid = FValidArmSvposs(svposShoulder, svposElbow);          \
     if (fServosValid)                                                   \

@@ -12,56 +12,58 @@
 
 typedef enum { TURN_LEFT, TURN_RIGHT } TURN_DIRECTION;
 
-#define ReverseTurnDirection(direction) ((direction) == TURN_LEFT ? TURN_RIGHT : TURN_LEFT)
+#    define ReverseTurnDirection(direction) ((direction) == TURN_LEFT ? TURN_RIGHT : TURN_LEFT)
 
 //-----------------------------------------------------------------------------
 // Constants
 //-----------------------------------------------------------------------------
-#ifndef TURN_POWER_FULL
-#define TURN_POWER_FULL     100
-#endif
-#ifndef TURN_POWER_FAST
-#define TURN_POWER_FAST     100
-#endif
-#ifndef TURN_POWER_MEDIUM
-#define TURN_POWER_MEDIUM    70
-#endif
-#ifndef TURN_POWER_SLOW
-#define TURN_POWER_SLOW      40
-#endif
-#ifndef TURN_POWER_RAMPTO
-#define TURN_POWER_RAMPTO    10
-#endif
-#ifndef TURN_POWER_STALL
-#define TURN_POWER_STALL     10 // slower than this we risk the motors
+#    ifndef TURN_POWER_FULL
+#        define TURN_POWER_FULL     100
+#    endif
+#    ifndef TURN_POWER_FAST
+#        define TURN_POWER_FAST     100
+#    endif
+#    ifndef TURN_POWER_MEDIUM
+#        define TURN_POWER_MEDIUM    70
+#    endif
+#    ifndef TURN_POWER_SLOW
+#        define TURN_POWER_SLOW      40
+#    endif
+#    ifndef TURN_POWER_RAMPTO
+#        define TURN_POWER_RAMPTO    10
+#    endif
+#    ifndef TURN_POWER_STALL
+#        define TURN_POWER_STALL     10
+                                // slower than this we risk the motors
                                 // (exact level to be verified)
-#endif
+#    endif
 
-#ifndef TURN_BALANCE
-#define TURN_BALANCE    (1.0)
-#endif
+#    ifndef TURN_BALANCE
+#        define TURN_BALANCE    (1.0)
+#    endif
 
 // We begin the turn ramp when we're within so many encoder ticks of our goal
-#ifndef TURN_RAMP_THRESHOLD
-#define TURN_RAMP_THRESHOLD     dencTurnRampThreshold
-#define TURN_RAMP_THRESHOLD_DEFAULT
+#    ifndef TURN_RAMP_THRESHOLD
+#        define TURN_RAMP_THRESHOLD     dencTurnRampThreshold
+#        define TURN_RAMP_THRESHOLD_DEFAULT
 ENCOD dencTurnRampThreshold;    // initialized by InitializeTurns
-#endif
+#    endif
 
 //-----------------------------------------------------------------------------
 // Allow client programs to control the use of ramping and waiting if
 // they desire
 //-----------------------------------------------------------------------------
 
-#ifndef USE_TURN_RAMP
-#define USE_TURN_RAMP false     // we wish we could, but it's just
+#    ifndef USE_TURN_RAMP
+#        define USE_TURN_RAMP false
+                                // we wish we could, but it's just
                                 // causing problems and we're out of
                                 // testing runway
-#endif
+#    endif
 
-#ifndef MS_TURN_WAIT
-#define MS_TURN_WAIT 100        // useful for v11 repeatability
-#endif
+#    ifndef MS_TURN_WAIT
+#        define MS_TURN_WAIT 100// useful for v11 repeatability
+#    endif
 
 //-----------------------------------------------------------------------------
 // State passed between turn-related functions
@@ -88,7 +90,7 @@ typedef struct
     BOOL fUseGyro;              // whether we're turning based on the gyro or encoders
 } TURNSTATE;
 
-#define MotorOfTurnState(state)     rgmotor[state.imotor]
+#    define MotorOfTurnState(state)     rgmotor[state.imotor]
 
 //-----------------------------------------------------------------------------
 // Power support
@@ -96,7 +98,7 @@ typedef struct
 
 void
 CALLEDBY(iTaskMain)
-  RampTurnPower(TURNSTATE &state, float fraction) {
+RampTurnPower(TURNSTATE &state, float fraction) {
     LockBlackboard();
     int16 power = 0;
 
@@ -125,7 +127,7 @@ CALLEDBY(iTaskMain)
 
 void
 CALLEDBY(iTaskMain)
-  RampTurnPower(TURNSTATE &state) {
+RampTurnPower(TURNSTATE &state) {
     // REVIEW: in future, we should (if we do ramps at all) do a ramp
     // even when we're turning using the gyro. But for now we don't
     // bother (testing testing testing!).
@@ -137,7 +139,7 @@ CALLEDBY(iTaskMain)
             (float)state.absdencCur / (float)state.dencRampThreshold;
         float powerFraction =
             state.fractionRampTo + (1.0 -
-                                    state.fractionRampTo) * encoderFraction;
+            state.fractionRampTo) * encoderFraction;
         RampTurnPower(state, powerFraction);
     }
 }
@@ -146,11 +148,11 @@ CALLEDBY(iTaskMain)
 // Turning
 //-----------------------------------------------------------------------------
 void GetEncoderDeltasForTurnLeft(ANGLE angle, ENCOD &dencLeft,
-                                 ENCOD &dencRight);
+    ENCOD &dencRight);
 
 void
 InitializeTurnState(TURNSTATE &state, MOTOR &motorParam, ENCOD denc,
-                    BOOL fUseGyroParam) {
+    BOOL fUseGyroParam) {
     state.imotor = motorParam.imotor;
     state.encCur = state.encStart;
     state.dencCur = denc;
@@ -167,14 +169,14 @@ InitializeTurnState(TURNSTATE &state, MOTOR &motorParam, ENCOD denc,
     state.fUseGyro = fUseGyroParam;
 }
 
-#define DisplayNameTurnState(state) (MotorOfTurnState(state).displayName)
+#    define DisplayNameTurnState(state) (MotorOfTurnState(state).displayName)
 
-#define AchievedTurnTarget(state)               \
+#    define AchievedTurnTarget(state)               \
 {                                               \
     state.fActive = false;                      \
 }
 
-#define OvershotTurn(state)                                             \
+#    define OvershotTurn(state)                                             \
 {                                                                       \
     string szDisplayName = DisplayNameTurnState(state);                 \
     TRACE(("turn: %s overshot p=%d c=%d", szDisplayName, state.dencPrev, state.dencCur)); \
@@ -184,23 +186,22 @@ InitializeTurnState(TURNSTATE &state, MOTOR &motorParam, ENCOD denc,
 // A bit field of flags controlling turn behavior
 typedef enum {
     TURNFLAG_NONE = 0,          // value to pass if one is not
-                                // interested in any of the other flags
+    // interested in any of the other flags
 
     TURNFLAG_USE_ENCOD = 1,     // ignore the angle (literally: the
-                                // value may be junk) and execute the
-                                // turn based on the provided encoder
-                                // values
+    // value may be junk) and execute the
+    // turn based on the provided encoder
+    // values
 
     TURNFLAG_PROHIBIT_GYRO = 2, // even if a gyro is present, don't use
-                                // it; instead compute encoders from
-                                // angle and go from there
+    // it; instead compute encoders from
+    // angle and go from there
 } TURNFLAG;
 
 BOOL
 CALLEDBY(iTaskMain)
-  TurnRightCore(ANGLE angle, int16 power, TURNFLAG flags, ENCOD dencLeft,
-                ENCOD dencRight, STOPCONDITIONS &stop,
-                float balance = TURN_BALANCE) {
+TurnRightCore(ANGLE angle, int16 power, TURNFLAG flags, ENCOD dencLeft,
+    ENCOD dencRight, STOPCONDITIONS &stop, float balance = TURN_BALANCE) {
     BOOL fSuccess = !stop.fRequireStop;
 
     // Figure out if we need to need to do an encoder-based turn
@@ -208,9 +209,9 @@ CALLEDBY(iTaskMain)
     // might have provided the encoder values already, or we might
     // need to compute them here.
     BOOL fUseGyro = false;
-#if SensorIsDefined(sensnmGyroHorz)
+#    if SensorIsDefined(sensnmGyroHorz)
     fUseGyro = !(flags &TURNFLAG_PROHIBIT_GYRO);
-#endif
+#    endif
     if (fUseGyro) {
         // Set dencLeft and dencRight to some value with the right sign
         // so that we know which way to turn each wheel.
@@ -229,7 +230,7 @@ CALLEDBY(iTaskMain)
 
     if ((fUseGyro && angle != 0.0) || (dencLeft != 0 || dencRight != 0)) {
         TRACE(("TurnRight(%.0f,%d,%d,%d,%d)", angle, power, dencLeft,
-               dencRight, fUseGyro));
+                dencRight, fUseGyro));
 
         // Initialize the state variables
         TURNSTATE stateLeft, stateRight;
@@ -253,7 +254,7 @@ CALLEDBY(iTaskMain)
         ClampVar(stateRight.powerTurn, TURN_POWER_STALL, TURN_POWER_FULL);
         ClampVar(stateLeft.powerRampTo, TURN_POWER_STALL, stateLeft.powerTurn);
         ClampVar(stateRight.powerRampTo, TURN_POWER_STALL,
-                 stateRight.powerTurn);
+            stateRight.powerTurn);
 
         // We suspend the display task purely as a perf optimization.
         SuspendDisplayTask();
@@ -272,7 +273,7 @@ CALLEDBY(iTaskMain)
 
         // If we're using the gyro, then add that to our list of stop
         // conditions
-#if SensorIsDefined(sensnmGyroHorz)
+#    if SensorIsDefined(sensnmGyroHorz)
         // if true on exit, we need to call a balancing StopReadingGyroSensor()
         BOOL fUnReadGyro = false;
         int32 cGyroReadStart = 0;
@@ -310,7 +311,7 @@ CALLEDBY(iTaskMain)
 
             ReleaseBlackboard();
         }
-#endif
+#    endif
         // Start the monitoring of the sensors for detecting when we
         // should stop
         ArmStopConditions(stop);
@@ -318,7 +319,7 @@ CALLEDBY(iTaskMain)
         // Off to the races!
         for (;;) {
             if (fUseGyro) {
-#if 0
+#    if 0
                 LockBlackboard();
                 TelemetryAddInt32(telemetry, nSysTime - msStart);
                 TelemetryAddFloat(telemetry, sensGyroHorz.degCWPerS);
@@ -326,7 +327,7 @@ CALLEDBY(iTaskMain)
                 TelemetryAddInt16(telemetry, stateLeft.powerTurn);
                 ReleaseBlackboard();
                 TelemetrySend(telemetry);
-#endif
+#    endif
             } else {
                 ReadEncoders_Lock(stateLeft.encCur, stateRight.encCur);
 
@@ -351,17 +352,17 @@ CALLEDBY(iTaskMain)
                         (float)stateRight.dencCur / (float)dencRight;
                     stop.fractionRemaining = leftFraction;
                     TRACE(("turn: stop reached: %1.3f %1.3f", leftFraction,
-                           rightFraction));
+                            rightFraction));
                 } else {
-#if SensorIsDefined(sensnmGyroHorz)
+#    if SensorIsDefined(sensnmGyroHorz)
                     LockBlackboard();
                     stop.fractionRemaining =
                         (float)abs(sensGyroHorz.deg -
-                                   sensGyroHorz.degTarget) / abs(angle);
+                        sensGyroHorz.degTarget) / abs(angle);
                     ReleaseBlackboard();
                     TRACE(("turn: stop reached: %1.3f",
-                           stop.fractionRemaining));
-#endif
+                            stop.fractionRemaining));
+#    endif
                 }
                 break;
             }
@@ -372,21 +373,24 @@ CALLEDBY(iTaskMain)
                 stateLeft.absdencCur = Abs(stateLeft.dencCur);
                 stateRight.absdencCur = Abs(stateRight.dencCur);
 
-                if (stateLeft.fActive && (float)stateLeft.absdencCur < dencDriveTolerance)
+                if (stateLeft.fActive
+                    && (float)stateLeft.absdencCur < dencDriveTolerance)
                     AchievedTurnTarget(stateLeft);
-                if (stateRight.fActive && (float)stateRight.absdencCur < dencDriveTolerance)
+                if (stateRight.fActive
+                    && (float)stateRight.absdencCur < dencDriveTolerance)
                     AchievedTurnTarget(stateRight);
 
-                if (stateLeft.fActive && Sign(stateLeft.dencCur) != Sign(stateLeft.dencPrev))
+                if (stateLeft.fActive
+                    && Sign(stateLeft.dencCur) != Sign(stateLeft.dencPrev))
                     OvershotTurn(stateLeft);
-                if (stateRight.fActive && Sign(stateRight.dencCur) != Sign(stateRight.dencPrev))
+                if (stateRight.fActive
+                    && Sign(stateRight.dencCur) != Sign(stateRight.dencPrev))
                     OvershotTurn(stateRight);
 
                 // If both motors are finished, then we're done
                 if (!stateLeft.fActive && !stateRight.fActive)
                     break;
             }
-
             // Adjust the power to each motor (if necessary)
             RampTurnPower(stateLeft);
             RampTurnPower(stateRight);
@@ -407,19 +411,19 @@ CALLEDBY(iTaskMain)
 
         StopRobot();
         DisarmStopConditions(stop);
-#if SensorIsDefined(sensnmGyroHorz)
+#    if SensorIsDefined(sensnmGyroHorz)
         if (fUseGyro && stop.fStopConditionReached) {
             int32 cRead = sensGyroHorz.cRead - cGyroReadStart;
             TRACE(("goal=%.0f ach=%.0f", sensGyroHorz.degTarget,
-                   sensGyroHorz.degDetected));
+                    sensGyroHorz.degDetected));
             TRACE(("count=%d rate=%.1f", cRead,
-                   (float)cRead / ((float)(nSysTime -
-                                           msGyroStart)) * 1000.0));
+                    (float)cRead / ((float)(nSysTime -
+                            msGyroStart)) * 1000.0));
         }
         if (fUnReadGyro) {
             StopReadingGyroSensor(sensGyroHorz);
         }
-#endif
+#    endif
         //
         // Wait for robot inertia to settle to improve navigation.
         //
@@ -442,7 +446,7 @@ GetEncoderDeltasForTurnLeft(ANGLE angle, ENCOD &dencLeft, ENCOD &dencRight)
 // Find out how the motor encoders need to change to accomplish a turn
 // of the indicated magnitude
 {
-#if HAS_ENCODER_BASED_TURNING_TABLE
+#    if HAS_ENCODER_BASED_TURNING_TABLE
     // Ensure the angle in the range [-180.0, 180.0)
     NormalizeAngleVar(angle);
 
@@ -489,42 +493,42 @@ GetEncoderDeltasForTurnLeft(ANGLE angle, ENCOD &dencLeft, ENCOD &dencRight)
 
         float dencLeftFloat =
             mpangledenc[iCur][1] + angleFraction * (mpangledenc[iNext][1] -
-                                                    mpangledenc[iCur][1]);
+            mpangledenc[iCur][1]);
         float dencRightFloat =
             mpangledenc[iCur][2] + angleFraction * (mpangledenc[iNext][2] -
-                                                    mpangledenc[iCur][2]);
+            mpangledenc[iCur][2]);
 
         dencLeft = Rounded(dencLeftFloat * scale, ENCOD);
         dencRight = Rounded(dencRightFloat * scale, ENCOD);
     }
     TRACE(("a=%3.1f i=%d l=%d r=%d", angle, iCur, dencLeft, dencRight));
-#else
+#    else
     dencLeft = dencRight = 0;
-#endif
+#    endif
 }
 
 //-----------------------------------------------------------------------------
 // Helper functions
 //-----------------------------------------------------------------------------
-#define InitializeTurns()                                           \
+#    define InitializeTurns()                                           \
 {                                                                   \
 #ifdef TURN_RAMP_THRESHOLD_DEFAULT
-    /* the ramp threshold is approx 45 degrees */                   \
-    ENCOD dencLeft, dencRight;                                      \
-    GetEncoderDeltasForTurnLeft(45.0, dencLeft, dencRight);         \
-    dencTurnRampThreshold = Abs(dencRight); /*Abs is paranoia*/     \
+    /* the ramp threshold is approx 45 degrees */
+ENCOD dencLeft, dencRight;
+GetEncoderDeltasForTurnLeft(45.0, dencLeft, dencRight);
+dencTurnRampThreshold = Abs(dencRight); /*Abs is paranoia */
 #endif
 }
 
 #ifndef TURNFLAG_DEFAULT
-#define TURNFLAG_DEFAULT    TURNFLAG_NONE
+#    define TURNFLAG_DEFAULT    TURNFLAG_NONE
 #endif
 
 BOOL
 TurnRight(ANGLE angle, int16 powerLevel, STOPCONDITIONS &stop,
-          float balance = TURN_BALANCE) {
-    return TurnRightCore(
-        angle, powerLevel, TURNFLAG_DEFAULT, 0, 0, stop, balance);
+    float balance = TURN_BALANCE) {
+    return TurnRightCore(angle, powerLevel, TURNFLAG_DEFAULT, 0, 0, stop,
+        balance);
 }
 
 BOOL
@@ -537,13 +541,13 @@ TurnRight(ANGLE angleToTurn, int16 powerLevel, float balance) {
 
 BOOL
 TurnRightEncod(int powerLevel, ENCOD dencLeft, ENCOD dencRight,
-               float balance = TURN_BALANCE) {
+    float balance = TURN_BALANCE) {
     STOPCONDITIONS stop;
     // review: could probably use global 'stop' rather than a new local
     InitializeStopConditions(stop);
     return TurnRightCore(0, powerLevel,
-                         (TURNFLAG) (TURNFLAG_USE_ENCOD | TURNFLAG_DEFAULT), dencLeft,
-                         dencRight, stop, balance);
+        (TURNFLAG) (TURNFLAG_USE_ENCOD | TURNFLAG_DEFAULT), dencLeft,
+        dencRight, stop, balance);
 }
 
 BOOL

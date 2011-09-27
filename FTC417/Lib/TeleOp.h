@@ -12,9 +12,9 @@ DISPENSER disp = DISP_MED;
 //-----------------------------------------------------------------------------
 // Joystick switching management
 //-----------------------------------------------------------------------------
-#ifndef USE_JOYSTICK_CONTROLLER_MODES
-#define USE_JOYSTICK_CONTROLLER_MODES 1
-#endif
+#    ifndef USE_JOYSTICK_CONTROLLER_MODES
+#        define USE_JOYSTICK_CONTROLLER_MODES 1
+#    endif
 
 typedef enum { JYC1_MODE_PASSIVE, JYC1_MODE_DRIVE, JYC1_MODE_ARM } JYC1_MODE;
 typedef enum { JYC2_MODE_PASSIVE, JYC2_MODE_ARM } JYC2_MODE;
@@ -22,7 +22,7 @@ typedef enum { JYC2_MODE_PASSIVE, JYC2_MODE_ARM } JYC2_MODE;
 JYC1_MODE jyc1Mode = JYC1_MODE_DRIVE;
 JYC2_MODE jyc2Mode = JYC2_MODE_ARM;
 
-#define SetJoy1Mode(mode)                                               \
+#    define SetJoy1Mode(mode)                                               \
 {                                                                       \
     if (JYC1_MODE_DRIVE == mode && JYC1_MODE_DRIVE != jyc1Mode) {       \
         jyc1Mode = JYC1_MODE_DRIVE;                                     \
@@ -33,9 +33,9 @@ JYC2_MODE jyc2Mode = JYC2_MODE_ARM;
     }                                                                   \
 }
 
-#define CheckJoy1ModeChange(jyc,joystick)
+#    define CheckJoy1ModeChange(jyc,joystick)
 {
-#if USE_JOYSTICK_CONTROLLER_MODES
+#    if USE_JOYSTICK_CONTROLLER_MODES
     if (joyBtnOnce(jyc, JOYBTN_TOP_LEFT)) {
         Beep(NOTE_C, 30);
         SetJoy1Mode(JYC1_MODE_DRIVE);
@@ -43,7 +43,7 @@ JYC2_MODE jyc2Mode = JYC2_MODE_ARM;
         Beep(NOTE_G, 30);
         SetJoy1Mode(JYC1_MODE_ARM);
     }
-#endif
+#    endif
 }
 
 //-----------------------------------------------------------------------------
@@ -56,7 +56,7 @@ DoCommonJoystick(int jyc) {
     //----------------------------------------------------------
     // Running dispensing logic
     //----------------------------------------------------------
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
+#    if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
     else if (joyHatOnce(jyc, JOYHAT_LEFT)) {
         // Configuring for dispensing from the high dispenser
         disp = DISP_HIGH;
@@ -96,7 +96,7 @@ DoCommonJoystick(int jyc) {
             }
         }
     }
-#endif
+#    endif
     return true;
 }
 
@@ -116,7 +116,7 @@ DoDriveJoystick(int jyc) {
     //----------------------------------------------------------
     // Scoring (preloaded) batons
     //----------------------------------------------------------
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
+#    if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
     else if (joyBtnOnce(jyc, 1)) {
         ScoreBatonsInRollingGoal(ROLLING_GOAL_1);
     } else if (joyBtnOnce(jyc, 3)) {
@@ -124,9 +124,9 @@ DoDriveJoystick(int jyc) {
     } else if (joyBtnOnce(jyc, 4)) {
         ScoreBatonsInRollingGoal(ROLLING_GOAL_4);
     }
-#endif
+#    endif
 
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
+#    if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
     else if (joyBtnOnce(jyc, JOYBTN_LEFTTRIGGER_UPPER)) {
         // Extend or retract the preload arm
         //
@@ -147,12 +147,12 @@ DoDriveJoystick(int jyc) {
             RetractPreloadArm();
         }
     }
-#endif
+#    endif
 
     //----------------------------------------------------------
     // Defence
     //----------------------------------------------------------
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
+#    if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
     else if (joyBtnOnce(jyc, JOYBTN_LEFTTRIGGER_UPPER)) {
         PackArmSafelyFromAnywhere(true);
     } else if (joyBtnOnce(jyc, JOYBTN_LEFTTRIGGER_LOWER)) {
@@ -161,9 +161,9 @@ DoDriveJoystick(int jyc) {
         DisableServoController(fSuccess,
             MainServoControllerOf(svoArmRotation));
     }
-#endif
+#    endif
 
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
+#    if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
     else if (joyBtnOnce(jyc, 1)) {
         // Pack arm normally
         PackArmSimply();
@@ -193,9 +193,9 @@ DoDriveJoystick(int jyc) {
 
         PackDispenserArmFromEOPD(disp, cm);
     }
-#endif
+#    endif
 
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
+#    if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
     else if (joyHatOnce(jyc, JOYHAT_UP)) {
         // Configuring for dispensing from the high dispenser
         disp = DISP_HIGH;
@@ -221,7 +221,7 @@ DoDriveJoystick(int jyc) {
             DispenseFromEOPDPosition(disp, cm);
         }
     }
-#endif
+#    endif
 
     //----------------------------------------------------------
     // Cleanup
@@ -248,9 +248,9 @@ ScaleJoystickThrottle(float djoy, float range) {
     return result;
 }
 
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
+#    if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
 int svposRotorRotorSpeed = svposRotorStop;      // speed of the rotor
-#endif
+#    endif
 
 void
 DoArmJoystick(int jyc) {
@@ -265,7 +265,7 @@ DoArmJoystick(int jyc) {
     // Scoring
     //----------------------------------------------------------
 
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
+#    if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
     else if (joyBtnOnce(jyc, 1)) {
         ScoreBatonsInRollingGoal(ROLLING_GOAL_1);
     } else if (joyBtnOnce(jyc, 3)) {
@@ -336,16 +336,16 @@ DoArmJoystick(int jyc) {
     if (joyBtnOnce(jyc, JOYBTN_LEFTTRIGGER_LOWER)) {
         PackArmSafelyFromAnywhere(false);
     }
-#endif
+#    endif
 }
 
 //-----------------------------------------------------------------------------
 // Main
 //-----------------------------------------------------------------------------
-#if 0
-#define DoTeleOpTelemetry()
-#else
-#define DoTeleOpTelemetry()                                     \
+#    if 0
+#        define DoTeleOpTelemetry()
+#    else
+#        define DoTeleOpTelemetry()                                     \
     {                                                           \
         if (TelemetryIsEnabled())                               \
         {                                                       \
@@ -370,9 +370,9 @@ DoArmJoystick(int jyc) {
             telemetry.serialNumber++;                           \
         }                                                       \
     }
-#endif
+#    endif
 
-#define DoTeleOp()                                                      \
+#    define DoTeleOp()                                                      \
 {                                                                       \
     DisplayMessage("<- tele op ->");                                    \
     fHaltProgramOnMotorStall = false;                                   \

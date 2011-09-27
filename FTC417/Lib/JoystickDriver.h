@@ -22,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if defined(NXT) || defined(TETRIX)
-#pragma autoStartTasks          // Automatically start tasks (which ones?) when the main user program starts.
+#    pragma autoStartTasks      // Automatically start tasks (which ones?) when the main user program starts.
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -32,7 +32,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifndef BOOL
-#define BOOL    bool
+#    define BOOL    bool
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,11 +113,11 @@ int joyFlickDeadZone = 45;
 int joyThrottleDeadZone = 15;
 
 #ifndef Max
-#define Max(a,b)    ((a) > (b) ? (a) : (b))
+#    define Max(a,b)    ((a) > (b) ? (a) : (b))
 #endif
 
 #ifndef Min
-#define Min(a,b)    ((a) < (b) ? (a) : (b))
+#    define Min(a,b)    ((a) < (b) ? (a) : (b))
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,7 +202,7 @@ BOOL getJoystickSettings(TJoystick &joystickVar);
 // What's a reasonable length of time beyond which we believe that the Field Control System
 // has just gone away.
 #ifndef MS_JOYSTICK_FCS_DISCONNECTED_THRESHOLD
-#define MS_JOYSTICK_FCS_DISCONNECTED_THRESHOLD  1000    // a reasonable value, but not exact by any means
+#    define MS_JOYSTICK_FCS_DISCONNECTED_THRESHOLD  1000// a reasonable value, but not exact by any means
 #endif
 
 // 'Functions' for accessing the various state of the two joystick controllers. Note that these *assume*
@@ -484,7 +484,7 @@ readMsgFromPC() {
 
 const string kConfigName = "FTCConfig.txt";
 
-#define getUserControlProgram(szFileName)                   \
+#    define getUserControlProgram(szFileName)                   \
     {                                                       \
     szFileName = "";                                        \
                                                             \
@@ -523,14 +523,14 @@ const string kConfigName = "FTCConfig.txt";
 //
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef USE_DISPLAY_DIAGNOSTICS
-#define USE_DISPLAY_DIAGNOSTICS 1
-#endif
+#    ifndef USE_DISPLAY_DIAGNOSTICS
+#        define USE_DISPLAY_DIAGNOSTICS 1
+#    endif
 
-#if USE_DISPLAY_DIAGNOSTICS
+#    if USE_DISPLAY_DIAGNOSTICS
 BOOL bDisplayDiagnostics = true;        // Set to false in user program to disable diagnostic display
 
-#define disableDiagnosticsDisplay()       \
+#        define disableDiagnosticsDisplay()       \
     {                                     \
     bDisplayDiagnostics = false;          \
     }
@@ -569,7 +569,7 @@ displayDiagnostics() {
         wait1Msec(200);
     }
 }
-#endif
+#    endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -586,73 +586,73 @@ displayDiagnostics() {
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef USE_WAIT_FOR_START
-#define USE_WAIT_FOR_START  1
-#endif
+#    ifndef USE_WAIT_FOR_START
+#        define USE_WAIT_FOR_START  1
+#    endif
 
-#ifndef DISPLAY_MESSAGE_DEFAULT
-#define DISPLAY_MESSAGE_DEFAULT "<-all is well->"
-#endif
+#    ifndef DISPLAY_MESSAGE_DEFAULT
+#        define DISPLAY_MESSAGE_DEFAULT "<-all is well->"
+#    endif
 
-#if USE_WAIT_FOR_START
+#    if USE_WAIT_FOR_START
 
 // Define here in a simple way so that, at least, this file is self contained.
 // See also display.h, where a better sol'n is provided.
-#ifndef DisplayMessage
-#define DisplayMessage(message)     nxtDisplayCenteredTextLine(7, "%s", message)
-#endif
+#        ifndef DisplayMessage
+#            define DisplayMessage(message)     nxtDisplayCenteredTextLine(7, "%s", message)
+#        endif
 
 // With this escape hatch, if the orange button is pressed within the first
 // two seconds, the waitForStart() terminates. Note that the !(nNxtButtonTask = -1)
 // at the end of OrangeButtonWaitBreak() is not a bug, but rather is intentionally
 // both restoring the default button processing after the two seconds and returning
 // false so as to not terminate the waitForStart().
-#define OrangeButtonWaitInit()      { nNxtButtonTask = -2; /* tell the NXT OS that we want the buttons */ }
-#define OrangeButtonWaitCond()      (MsSinceWaitForStart() <= OrangeButtonWaitTimeThreshold())
-#define OrangeButtonWaitBreak()     (OrangeButtonWaitCond() ? nNxtButtonPressed==kEnterButton: !(nNxtButtonTask = -1))
-#define OrangeButtonWaitFeedback()  {                                                                                        \
+#        define OrangeButtonWaitInit()      { nNxtButtonTask = -2; /* tell the NXT OS that we want the buttons */ }
+#        define OrangeButtonWaitCond()      (MsSinceWaitForStart() <= OrangeButtonWaitTimeThreshold())
+#        define OrangeButtonWaitBreak()     (OrangeButtonWaitCond() ? nNxtButtonPressed==kEnterButton: !(nNxtButtonTask = -1))
+#        define OrangeButtonWaitFeedback()  {                                                                                        \
                                     if (OrangeButtonWaitDoFeedback())                                                        \
                                         {                                                                                    \
                                         DisplayMessage((MsSinceWaitForStart() / 2000 % 2 == 0) ? "orange==go" : "wait for start"); \
                                         }                                                                                    \
                                     }
-#define OrangeButtonWaitDone()      {                                                                                        \
+#        define OrangeButtonWaitDone()      {                                                                                        \
                                     nNxtButtonTask = -1; /* return buttons to their default processing */                    \
                                     DisplayMessage(DISPLAY_MESSAGE_DEFAULT);                                                 \
                                     }
 
-#ifndef OrangeButtonWaitDoFeedback
-#define OrangeButtonWaitDoFeedback() true
-#endif
+#        ifndef OrangeButtonWaitDoFeedback
+#            define OrangeButtonWaitDoFeedback() true
+#        endif
 
-#ifndef OrangeButtonWaitTimeThreshold
-#define OrangeButtonWaitTimeThreshold()     0x7FFFFFFF
-#endif
+#        ifndef OrangeButtonWaitTimeThreshold
+#            define OrangeButtonWaitTimeThreshold()     0x7FFFFFFF
+#        endif
 
 // Unless some tells us not to, we turn on the orange button processing
-#ifndef WAITFORSTART_USE_ORANGE_BUTTON
-#define WAITFORSTART_USE_ORANGE_BUTTON  1
-#endif
+#        ifndef WAITFORSTART_USE_ORANGE_BUTTON
+#            define WAITFORSTART_USE_ORANGE_BUTTON  1
+#        endif
 
-#if WAITFORSTART_USE_ORANGE_BUTTON
-#ifndef WaitForStartInit
-#define WaitForStartInit()        OrangeButtonWaitInit()
-#endif
-#ifndef WaitForStartBreak
-#define WaitForStartBreak()       OrangeButtonWaitBreak()
-#endif
-#ifndef WaitForStartLoop
-#define WaitForStartLoop()        OrangeButtonWaitFeedback()
-#endif
-#ifndef WaitForStartDone
-#define WaitForStartDone()        OrangeButtonWaitDone()
-#endif
-#endif
+#        if WAITFORSTART_USE_ORANGE_BUTTON
+#            ifndef WaitForStartInit
+#                define WaitForStartInit()        OrangeButtonWaitInit()
+#            endif
+#            ifndef WaitForStartBreak
+#                define WaitForStartBreak()       OrangeButtonWaitBreak()
+#            endif
+#            ifndef WaitForStartLoop
+#                define WaitForStartLoop()        OrangeButtonWaitFeedback()
+#            endif
+#            ifndef WaitForStartDone
+#                define WaitForStartDone()        OrangeButtonWaitDone()
+#            endif
+#        endif
 
 long msWaitForStart;
-#define MsSinceWaitForStart()   (nSysTime - msWaitForStart)
+#        define MsSinceWaitForStart()   (nSysTime - msWaitForStart)
 
-#define waitForStart()                      \
+#        define waitForStart()                      \
     {                                       \
     msWaitForStart = nSysTime;              \
     WaitForStartInit();                     \
@@ -668,6 +668,6 @@ long msWaitForStart;
     WaitForStartDone();                     \
     }
 
-#endif
+#    endif
 
 #endif

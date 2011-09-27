@@ -5,17 +5,17 @@
 // file could still use some cleanup wrt configuration modularity.
 
 #ifndef HAS_ARM_SERVOS
-#define HAS_ARM_SERVOS      0
+#    define HAS_ARM_SERVOS      0
 #endif
 #ifndef HAS_WRIST_SERVOS
-#define HAS_WRIST_SERVOS    0
+#    define HAS_WRIST_SERVOS    0
 #endif
 #ifndef HAS_PRELOAD_SERVOS
-#define HAS_PRELOAD_SERVOS  0
+#    define HAS_PRELOAD_SERVOS  0
 #endif
 
 #ifndef USE_EXTERNAL_ARM_TIP_TEST
-#define USE_EXTERNAL_ARM_TIP_TEST 0
+#    define USE_EXTERNAL_ARM_TIP_TEST 0
 #endif
 
 #if !USE_EXTERNAL_ARM_TIP_TEST
@@ -26,27 +26,27 @@ int
 PositionPreloadArm(int pos, MILLI msWaitIgnored = 0) {
 // Position the preload arm to the indicated position, but
 // make sure it's not outside of it's allowable range.
-#if HAS_PRELOAD_SERVOS
+#    if HAS_PRELOAD_SERVOS
     ClampVar(pos, svposPreloadArmExtended, svposPreloadArmRetracted);
     MoveServo(svoPreloadArm, pos);
     WaitForServos();
-#endif
+#    endif
     return pos;
 }
 
-#if HAS_PRELOAD_SERVOS
-#define ExtendPreloadArm()  PositionPreloadArm(svposPreloadArmExtended, 500)
-#define RetractPreloadArm() PositionPreloadArm(svposPreloadArmRetracted, 500)
-#else
-#define ExtendPreloadArm()  { }
-#define RetractPreloadArm() { }
-#endif
+#    if HAS_PRELOAD_SERVOS
+#        define ExtendPreloadArm()  PositionPreloadArm(svposPreloadArmExtended, 500)
+#        define RetractPreloadArm() PositionPreloadArm(svposPreloadArmRetracted, 500)
+#    else
+#        define ExtendPreloadArm()  { }
+#        define RetractPreloadArm() { }
+#    endif
 
 void
 DumpPreload(BOOL fPreloadArmExtended) {
     TRACE(("dumping preload"));
     //
-#if HAS_PRELOAD_SERVOS
+#    if HAS_PRELOAD_SERVOS
     if (!fPreloadArmExtended) {
         ExtendPreloadArm();
     }
@@ -68,13 +68,13 @@ DumpPreload(BOOL fPreloadArmExtended) {
     //
     MoveServo(svoPreloadGate, svposPreloadGateClosed);
     WaitForServos();
-#endif
+#    endif
 }
 
 //-----------------------------------------------------------------------------
 // Low-level dispenser arm manipulation
 //-----------------------------------------------------------------------------
-#define MoveDispenserArm(svposRotation, svposElbow, svposShoulder)  \
+#    define MoveDispenserArm(svposRotation, svposElbow, svposShoulder)  \
     {                                                               \
         MoveServo(svoArmRotation, svposRotation);                   \
         MoveServo(svoArmElbow,    svposElbow);                      \
@@ -116,23 +116,23 @@ typedef enum {
     isvposRotationMax,
 } ISVPOSROTATION;
 
-#ifndef SdrAdj
-#define SdrAdj(svpos)   (svpos)
-#endif
-#ifndef ElbAdj
-#define ElbAdj(svpos)   (svpos)
-#endif
+#    ifndef SdrAdj
+#        define SdrAdj(svpos)   (svpos)
+#    endif
+#    ifndef ElbAdj
+#        define ElbAdj(svpos)   (svpos)
+#    endif
 
-#if HAS_ARM_SERVOS
+#    if HAS_ARM_SERVOS
 // Designated positions of the rotation servo
 int rgsvposRotation[] = {
     svposPackedRotation,        // packed
     svposIntRotation,
     233,                        // eopd, dispensing, etc
 };
-#endif
+#    endif
 
-#if HAS_ARM_SERVOS
+#    if HAS_ARM_SERVOS
 int rgsvposHighDispenser[][SVOJNT_MAX * ARMPOS_MAX] = { // 23
     {ElbAdj(158), SdrAdj(23), 0,
             ElbAdj(80), SdrAdj(73), 0,
@@ -190,7 +190,7 @@ int rgsvposLowDispenser[][SVOJNT_MAX * ARMPOS_MAX] = {
             ElbAdj(113), SdrAdj(150), 0,
         ElbAdj(233), SdrAdj(196), 0},   // iffy dispensing
 };
-#endif
+#    endif
 
 /* hi  mid  lo */
 int rgcmDispenseTurnMin[3] = { 18, 255, 18 };   // min dist need to even try to correct our distance from wall
@@ -201,11 +201,11 @@ int rgcmUnpackSwingTopHighMax[3] = { 27, 255, 28 };     // at this distance or g
 
 // NOTE: Give current usage and RobotC bugs these MUST NOT call a
 // function (though prob could call an intrinsic)
-#define CmDispenseCanTurnMin(disp)     rgcmDispenseTurnMin[disp]
-#define CmDispenseMin(disp)            rgcmDispenseMin[disp]
-#define CmDispenseCorrect(disp)        rgcmDispenseCorrect[disp]
-#define CmDispenseMax(disp)            rgcmDispenseMax[disp]
-#define CmUnpackSwingTopHighMax(disp)  rgcmUnpackSwingTopHighMax[disp]
+#    define CmDispenseCanTurnMin(disp)     rgcmDispenseTurnMin[disp]
+#    define CmDispenseMin(disp)            rgcmDispenseMin[disp]
+#    define CmDispenseCorrect(disp)        rgcmDispenseCorrect[disp]
+#    define CmDispenseMax(disp)            rgcmDispenseMax[disp]
+#    define CmUnpackSwingTopHighMax(disp)  rgcmUnpackSwingTopHighMax[disp]
 
 BOOL
 LookupServoPositions(DISPENSER disp, int cm, ARMPOS armPos, int &svposRotation,
@@ -217,7 +217,7 @@ LookupServoPositions(DISPENSER disp, int cm, ARMPOS armPos, int &svposRotation,
     svposRotation = svposElbow = svposShoulder = -1;    // assume failure
     BOOL fSuccess = false;
     //
-#if HAS_ARM_SERVOS
+#    if HAS_ARM_SERVOS
     if (CmDispenseMin(disp) <= cm && cm < CmDispenseMax(disp)) {
         int dcm = cm - CmDispenseMin(disp);     // rgsvpos arrays are indexed starting with the min value
         int isvpos = armPos * SVOJNT_MAX;       // form index into the 2-d matrix manually
@@ -235,7 +235,7 @@ LookupServoPositions(DISPENSER disp, int cm, ARMPOS armPos, int &svposRotation,
             fSuccess = true;
         }
     }
-#endif
+#    endif
     return fSuccess;
 }
 
@@ -266,16 +266,16 @@ LookupServoPosition(DISPENSER disp, int cm, ARMPOS armPos, SVOJNT svojnt) {
     return -1;
 }
 
-#define SvposEOPD(disp, cm, svojnt)     LookupServoPosition(disp, cm, ARMPOS_EOPD,    svojnt)
-#define SvposDispInt(disp, cm, svojnt)  LookupServoPosition(disp, cm, ARMPOS_DISPINT, svojnt)
-#define SvposDisp(disp, cm, svojnt)     LookupServoPosition(disp, cm, ARMPOS_DISP,    svojnt)
+#    define SvposEOPD(disp, cm, svojnt)     LookupServoPosition(disp, cm, ARMPOS_EOPD,    svojnt)
+#    define SvposDispInt(disp, cm, svojnt)  LookupServoPosition(disp, cm, ARMPOS_DISPINT, svojnt)
+#    define SvposDisp(disp, cm, svojnt)     LookupServoPosition(disp, cm, ARMPOS_DISP,    svojnt)
 
 //-----------------------------------------------------------------------------
 void
 RaiseTopArmForPackOrUnpack(DISPENSER disp, int cm, int svposCur) {
     // Where the top arm needs to be as we pack or unpack from the EOPD
     // position depends on how close we are to the dispenser.
-#if HAS_ARM_SERVOS
+#    if HAS_ARM_SERVOS
     if (cm < CmUnpackSwingTopHighMax(disp)) {
         // The elbow always has an apogee defined
         MoveServo(svoArmElbow, svoArmElbow.svposApogee);
@@ -286,19 +286,19 @@ RaiseTopArmForPackOrUnpack(DISPENSER disp, int cm, int svposCur) {
             WaitForServos();
         }
     }
-#endif
+#    endif
 }
 
-#if HAS_ARM_SERVOS
+#    if HAS_ARM_SERVOS
 
-#define MoveDispenserFromPackedToInt()                                  \
+#        define MoveDispenserFromPackedToInt()                                  \
 {                                                                       \
     /* Move to the intermediate position from the packed position*/     \
     MoveDispenserArm(svposIntRotation, svposIntElbow, svposIntShoulder); \
     WaitForServos();                                                    \
 }
 
-#define MoveDispenserFromIntToPacked()                                  \
+#        define MoveDispenserFromIntToPacked()                                  \
 {                                                                       \
     /* Move to the packed position from the intermediate position*/     \
     MoveDispenserArm(svposIntToPackedRotation, svposIntToPackedElbow, svposIntToPackedShoulder); \
@@ -306,12 +306,12 @@ RaiseTopArmForPackOrUnpack(DISPENSER disp, int cm, int svposCur) {
     MoveDispenserArm(svposPackedRotation, svposPackedElbow, svposPackedShoulder); \
     WaitForServos();                                                    \
 }
-#else
+#    else
 
-#define MoveDispenserFromPackedToInt() { }
-#define MoveDispenserFromIntToPacked() { }
+#        define MoveDispenserFromPackedToInt() { }
+#        define MoveDispenserFromIntToPacked() { }
 
-#endif
+#    endif
 
 // The arm is assumed to be in its packed position. Raise it and rotate
 // over to the left side of the bot to the position in which we can use
@@ -320,7 +320,7 @@ RaiseTopArmForPackOrUnpack(DISPENSER disp, int cm, int svposCur) {
 BOOL
 UnpackDispenserArmForReadingEopd(DISPENSER disp, int cm, SIDE side) {
     BOOL fSuccess = HAS_ARM_SERVOS;
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
+#    if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
 
     MoveServo(svoArmElbow, 60);
     WaitForServos();
@@ -353,7 +353,7 @@ UnpackDispenserArmForReadingEopd(DISPENSER disp, int cm, SIDE side) {
         WaitForServos();
     }
 
-#elif ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
+#    elif ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
     // We have an intermediate staging position about half way along
     // to the full EOPD reading position.
     MoveDispenserFromPackedToInt();
@@ -383,13 +383,13 @@ UnpackDispenserArmForReadingEopd(DISPENSER disp, int cm, SIDE side) {
     // perpendicular to the wall.  That should help it get more reliable
     // readings.
     AdjustForearmAngle(0.0);
-#endif
+#    endif
     return fSuccess;
 }
 
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
-#define PackArmSafelyFromAnywhere(fConservativelyRotate)     { PackArmSimply(); WaitForServos(); }
-#elif ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
+#    if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
+#        define PackArmSafelyFromAnywhere(fConservativelyRotate)     { PackArmSimply(); WaitForServos(); }
+#    elif ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
 
 void
 PackArmSafelyFromAnywhere(BOOL fConservativelyRotate) {
@@ -422,19 +422,19 @@ PackArmSafelyFromAnywhere(BOOL fConservativelyRotate) {
     PackArmSimply();
     WaitForServos();
 }
-#else
-#define PackArmSafelyFromAnywhere(fConservativelyRotate)     {  }
-#endif
+#    else
+#        define PackArmSafelyFromAnywhere(fConservativelyRotate)     {  }
+#    endif
 
 BOOL
 PackDispenserArmFromEOPD(DISPENSER disp, int cm, SIDE side) {
     // Inverse of UnpackDispenserArmForReadingEopd
     BOOL fSuccess = HAS_ARM_SERVOS;
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
+#    if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
 
     PackArmSafelyFromAnywhere(false);
 
-#elif ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
+#    elif ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
     int svposShoulder = svoArmShoulder.svposApogee;
     int svposElbow = GetServoValue(svoArmElbow);
     MoveServo(svoArmShoulder, svposShoulder);
@@ -450,7 +450,7 @@ PackDispenserArmFromEOPD(DISPENSER disp, int cm, SIDE side) {
 
     // Pack it away
     MoveDispenserFromIntToPacked();
-#endif
+#    endif
     return fSuccess;
 }
 
@@ -471,9 +471,9 @@ typedef struct {
     ARMPOINT rgpt[3];
 } DISPENSINGPATH;
 
-#define InitializeDispensingPath(path)  { path.cpt = 0; }
+#    define InitializeDispensingPath(path)  { path.cpt = 0; }
 
-#define AddToDispensingPath(path, ptFrom)                           \
+#    define AddToDispensingPath(path, ptFrom)                           \
 {                                                                   \
     path.rgpt[path.cpt].fSvpos        = ptFrom.fSvpos;              \
     path.rgpt[path.cpt].svposElbow    = ptFrom.svposElbow;          \
@@ -485,7 +485,7 @@ typedef struct {
 
 // Compute the path from the EOPD to the dispensing position. NOTE: the
 // EOPD position itself is always the first point in the returned path.
-#define ComputeDispensingPath(fSuccess, path, disp, cm)                 \
+#    define ComputeDispensingPath(fSuccess, path, disp, cm)                 \
 {                                                                       \
     InitializeDispensingPath(path);                                     \
     ARMPOINT pt;                                                        \
@@ -516,7 +516,7 @@ typedef struct {
 }
 
 // Move the arm to the indicated ARMPOINT
-#define MoveToArmPoint(pt, fForward)                                    \
+#    define MoveToArmPoint(pt, fForward)                                    \
 {                                                                       \
     if (!pt.fSvpos) {                                                   \
         MoveArmTipTo(pt.x, pt.y, MOVEARMTIP_DIRECT);                    \
@@ -538,7 +538,7 @@ BOOL
 MoveFromEOPDToDispensing(OUT DISPENSINGPATH &path, DISPENSER disp, int cm,
     BOOL fRotate) {
     BOOL fSuccess = HAS_ARM_SERVOS;
-#if HAS_ARM_SERVOS
+#    if HAS_ARM_SERVOS
     ComputeDispensingPath(fSuccess, path, disp, cm);
     if (fSuccess) {
         // Do all the movements but one. We skip the first point, as
@@ -554,14 +554,14 @@ MoveFromEOPDToDispensing(OUT DISPENSINGPATH &path, DISPENSER disp, int cm,
         // Do the last movement
         MoveToArmPoint(path.rgpt[path.cpt - 1], true);
     }
-#endif
+#    endif
     return fSuccess;
 }
 
 //-----------------------------------------------------------------------------
 // Initialization
 //-----------------------------------------------------------------------------
-#if HAS_ARM_SERVOS
+#    if HAS_ARM_SERVOS
 // Is the arm rotation servo ad one of the indicated positions? We use
 // the half-way point between the positions as angle of demarcation.
 BOOL
@@ -580,26 +580,29 @@ FRotationAt(ISVPOSROTATION isvposRotation) {
 
     return Between(svposLowThreshold, svpos, svposHighThreshold);
 }
-#endif
+#    endif
 
 // Is the dispenser arm at the packed rotation? Other locations?
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
-#define FRotationPacked()           FRotationAt(isvposRotationPacked)
-#define FRotationIntermediate()     FRotationAt(isvposRotationInt)
-#define FRotationEopd()             FRotationAt(isvposRotationEopd)
-#elif ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
-#define FRotationPacked()           FRotationAt(isvposRotationPacked)   // REVIEW
-#define FRotationIntermediate()     FRotationAt(isvposRotationInt)      // REVIEW
-#define FRotationEopd()             FRotationAt(isvposRotationEopd)     // REVIWE
-#else
-#define FRotationPacked()           true
-#define FRotationIntermediate()     false
-#define FRotationEopd()             false
-#endif
+#    if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
+#        define FRotationPacked()           FRotationAt(isvposRotationPacked)
+#        define FRotationIntermediate()     FRotationAt(isvposRotationInt)
+#        define FRotationEopd()             FRotationAt(isvposRotationEopd)
+#    elif ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
+#        define FRotationPacked()           FRotationAt(isvposRotationPacked)
+                                                                        // REVIEW
+#        define FRotationIntermediate()     FRotationAt(isvposRotationInt)
+                                                                        // REVIEW
+#        define FRotationEopd()             FRotationAt(isvposRotationEopd)
+                                                                        // REVIWE
+#    else
+#        define FRotationPacked()           true
+#        define FRotationIntermediate()     false
+#        define FRotationEopd()             false
+#    endif
 
 void
 MoveServosToInitialPositions() {
-#if HAS_ARM_SERVOS
+#    if HAS_ARM_SERVOS
     // Did the 12v power just come on?
     BOOL fRotSvoControllerJustPowered =
         MainServoControllerOf(svoArmRotation).fJustPowered;
@@ -620,24 +623,24 @@ MoveServosToInitialPositions() {
         //
         PackArmSimply();
         MoveServo(svoRotor, svposRotorStop);
-#if HAS_WRIST_SERVOS
+#        if HAS_WRIST_SERVOS
         MoveServo(svoArmWrist, svposArmWristHorizontal);
-#endif
+#        endif
         // Now we're in the state that if any of the servos are powered,
         // reasonable things will happen.
     }
-#endif
-#if HAS_WRIST_SERVOS
+#    endif
+#    if HAS_WRIST_SERVOS
     MoveServo(svoArmWrist, svposArmWristHorizontal);
-#endif
-#if HAS_PRELOAD_SERVOS
+#    endif
+#    if HAS_PRELOAD_SERVOS
     MoveServo(svoPreloadArm, svposPreloadArmRetracted);
     MoveServo(svoPreloadGate, svposPreloadGateClosed);
-#endif
-#if HAS_ARM_SERVOS
+#    endif
+#    if HAS_ARM_SERVOS
     PackArmSafelyFromAnywhere(false);
     MoveServo(svoRotor, svposRotorStop);
-#endif
+#    endif
     // Wait for all the movement to complete
     WaitForServos();
 }

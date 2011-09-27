@@ -7,11 +7,11 @@
 
 #if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
 
-#define svposShoulderScoringClear 255
-#define svposElbowScoringClear    200
+#    define svposShoulderScoringClear 255
+#    define svposElbowScoringClear    200
 
 /* Move the servos into the indicated position for the purpose of scoring them in a rolling goal */
-#define MoveSerovsForScoring(array, goal)       \
+#    define MoveSerovsForScoring(array, goal)       \
     { MoveSerovsForScoring_(array[goal][0], array[goal][1], array[goal][2], array[goal][3]); }
 
 void
@@ -316,25 +316,25 @@ DriveToWhiteLine(float cmDistance, float cmExtra, BACKGROUND background) {
     switch (background) {
     case BACKGROUND_BLACK:
     case BACKGROUND_BLUE:
-#if SensorIsDefined(sensnmEopdFront)
+#    if SensorIsDefined(sensnmEopdFront)
         stop.fStopOnEopdFront = true;
         InitializeEopdStopConditions(sensEopdFront);
         sensEopdFront.comparison = COMPARE_GT;
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
+#        if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
         sensEopdFront.target = 100;
-#endif
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
+#        endif
+#        if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
         sensEopdFront.target = 175;
-#endif
+#        endif
         break;
-#endif
+#    endif
     case BACKGROUND_RED:
-#if SensorIsDefined(sensnmColor)
+#    if SensorIsDefined(sensnmColor)
         power = DRIVE_POWER_SLOW;       // try not to overshoot the line
         stop.fStopOnColor = true;
         stop.cmAdditional -= dcmEopdFrontColor; // TO DO: if this goes negative, the algorithm needs improvement
         SetTargetColor(sensColor, 255, 240, 240);       // Color levels are ok, but certainly not optimized
-#endif
+#    endif
         break;
     }
 #endif
@@ -349,17 +349,17 @@ GoBalanceOnBridge(ANGLE fieldHeadingZero, BACKGROUND background)
 #if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11 || ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
     // Balance using encoder-based turning
 
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
+#    if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
     const ENCOD denc = 2300;    // correct empirically for 90 right turn (or so) on the cliff
     const ENCOD dencBack = 2150;
     const int cmToBridge = 104;
     const MILLI msBridgeWait = 2000;
-#elif ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
+#    elif ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
     const ENCOD denc = 1840;    // correct empirically for 90 right turn (or so) on the cliff
     const ENCOD dencBack = 1750;
     const int cmToBridge = 102;
     const MILLI msBridgeWait = 150;
-#endif
+#    endif
     InitializeStopConditions(stop);
 
     // Backup a bit from the white line
@@ -370,9 +370,9 @@ GoBalanceOnBridge(ANGLE fieldHeadingZero, BACKGROUND background)
 
     // Use rear sensor to get dist from wall, then drive to middle-ish of bridge
     int cm = 20;                // rough default if we lack a rear sonic REVIEW: '20' needs to be checked
-#if SensorIsDefined(sensnmSonicBack)
+#    if SensorIsDefined(sensnmSonicBack)
     cm = ReadSonic_Main(sensSonicBack, true);
-#endif
+#    endif
     RET_IF_FAIL(DriveForwards(cmToBridge - cm), "onto bridge");
 
     // Turn back left 90 degrees (this actually overturns a bit: we're on the bridge now)
@@ -394,19 +394,19 @@ GoBalanceOnBridge(ANGLE fieldHeadingZero, BACKGROUND background)
     // only just a bit). Rather than backing up a very tiny amount, which is hard
     // to do well, we continue past by a chunk, then back up that larger amount.
 
-#if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
+#    if ROBOT_NAME==ROBOT_NAME_FTC417_2010_V11
     int cmWhiteToEopd = 18;
     MILLI msRed = 2000;
     int pwrRed = DRIVE_POWER_SLOW;
     int cmRedFudge = (BACKGROUND_RED == background ? 10 : 0);
     int cmRedFudgeBack = cmRedFudge + 2;
-#elif ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
+#    elif ROBOT_NAME==ROBOT_NAME_FTC417_2010_V12
     int cmWhiteToEopd = 12.5;
     MILLI msRed = 100;
     int pwrRed = 70;
     int cmRedFudge = (BACKGROUND_RED == background ? 7 : 0);
     int cmRedFudgeBack = 0;
-#endif
+#    endif
 
     // How far to go in total
     int cmPastWhite = cmWhiteToEopd + cmRedFudge;

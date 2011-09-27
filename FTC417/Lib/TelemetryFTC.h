@@ -150,51 +150,51 @@
 // Use the following functions to add data of various types to your
 // accumulating telemetry record:
 //
-#define TelemetryAddInt8(bVal)      _TelemetryAddInt8_(telemetry,bVal)
-#define TelemetryAddInt16(shVal)    _TelemetryAddInt16_(telemetry,shVal)
-#define TelemetryAddInt32(lVal)     _TelemetryAddInt32_(telemetry,lVal)
-#define TelemetryAddUInt8(bVal)     _TelemetryAddUInt8_(telemetry,bVal)
-#define TelemetryAddUInt16(shVal)   _TelemetryAddUInt16_(telemetry,shVal)
-#define TelemetryAddUInt32(lVal)    _TelemetryAddUInt32_(telemetry,lVal)
-#define TelemetryAddFloat(flVal)    _TelemetryAddFloat_(telemetry,flVal)
-#define TelemetryAddBool(boolVal)   _TelemetryAddBool_(telemetry,boolVal)
-#define TelemetryAddChar(charVal)   _TelemetryAddChar_(telemetry,charVal)
-#define TelemetryAddString(str)     _TelemetryAddString_(telemetry,str)
+#    define TelemetryAddInt8(bVal)      _TelemetryAddInt8_(telemetry,bVal)
+#    define TelemetryAddInt16(shVal)    _TelemetryAddInt16_(telemetry,shVal)
+#    define TelemetryAddInt32(lVal)     _TelemetryAddInt32_(telemetry,lVal)
+#    define TelemetryAddUInt8(bVal)     _TelemetryAddUInt8_(telemetry,bVal)
+#    define TelemetryAddUInt16(shVal)   _TelemetryAddUInt16_(telemetry,shVal)
+#    define TelemetryAddUInt32(lVal)    _TelemetryAddUInt32_(telemetry,lVal)
+#    define TelemetryAddFloat(flVal)    _TelemetryAddFloat_(telemetry,flVal)
+#    define TelemetryAddBool(boolVal)   _TelemetryAddBool_(telemetry,boolVal)
+#    define TelemetryAddChar(charVal)   _TelemetryAddChar_(telemetry,charVal)
+#    define TelemetryAddString(str)     _TelemetryAddString_(telemetry,str)
 //
 // Call TelemetrySend() or TelemetrySendSheet() to transmit the
 // accumulated telemetry record and reset for accumulation of the next
 // one.
 //
-#define TelemetrySend()             _TelemetrySend_(telemetry,0)
-#define TelemetrySendSheet(isheet)  _TelemetrySend_(telemetry,isheet)
+#    define TelemetrySend()             _TelemetrySend_(telemetry,0)
+#    define TelemetrySendSheet(isheet)  _TelemetrySend_(telemetry,isheet)
 //
 // Call TelemetryInitialize(), once, before you call any other telemetry
 // functions.
 //
-#define TelemetryInitialize()       _TelemetryInitialize_(telemetry)
+#    define TelemetryInitialize()       _TelemetryInitialize_(telemetry)
 //
 // Cause any subsequent telemetry transmission, either in the currently
 // running program or in the execution of a subsqeuent program on this
 // NXT, to be recorded in a fresh spanking new Excel workbook.
 //
-#define TelemetryDone()             _TelemetryDone_(telemetry)
+#    define TelemetryDone()             _TelemetryDone_(telemetry)
 //
 // Control whether telemetry is transmitted over Bluetooth and/or USB.
 //
-#define TelemetryUseBluetooth(useBluetooth)  { telemetry._useBluetooth = (useBluetooth); }
-#define TelemetryUseUSB(useUSB)              { telemetry._useUSB = (useUSB); }
-#define TelemetryUse(useBluetooth,useUSB)    { TelemetryUseBluetooth(useBluetooth); TelemetryUseUSB(useUSB); }
+#    define TelemetryUseBluetooth(useBluetooth)  { telemetry._useBluetooth = (useBluetooth); }
+#    define TelemetryUseUSB(useUSB)              { telemetry._useUSB = (useUSB); }
+#    define TelemetryUse(useBluetooth,useUSB)    { TelemetryUseBluetooth(useBluetooth); TelemetryUseUSB(useUSB); }
 //
 // Control whether telemetry accumulation and transmission is active or
 // is suppressed.
 //
-#define TelemetryEnable(isActive)            { telemetry._isActive = (isActive); }
-#define TelemetryIsEnabled()                 (telemetry._isActive)
+#    define TelemetryEnable(isActive)            { telemetry._isActive = (isActive); }
+#    define TelemetryIsEnabled()                 (telemetry._isActive)
 //
 // Control the rate at which TelemetryFTC on the PC polls for data when
 // using USB.
 //
-#define TelemetrySetUSBPollInterval(ms) _TelemetrySetUSBPollInterval_(telemetry, ms)
+#    define TelemetrySetUSBPollInterval(ms) _TelemetrySetUSBPollInterval_(telemetry, ms)
 
 //=============================================================================
 //=============================================================================
@@ -219,7 +219,7 @@ typedef enum {
     _TELEM_TYPE_CHAR,
 } _TELEM_TYPE;
 
-#define _TELEM_CB_PAYLOAD_MAX 64
+#    define _TELEM_CB_PAYLOAD_MAX 64
 
 typedef struct {
     // internal use only
@@ -249,17 +249,17 @@ typedef struct {
 
 _TELEMETRY telemetry;           // The one _TELEMETRY variable
 
-#define _CbTelemetryRecord_(t)          ((int)(t._ibMsgNext - 1))
-#define _PackTelemetryByteCount_(t)     { t._rgbMsg[0]=_CbTelemetryRecord_(t); }
-#define _ResetTelemetryByteCount_(t)    { t._ibMsgNext = 1; }
-#define _AppendTelemetryByte_(t,b)      { t._rgbMsg[t._ibMsgNext] = ((byte)b); t._ibMsgNext++; }
-#define _HasCbAvailableTelemetry_(t,cb) (_TELEM_CB_PAYLOAD_MAX - t._ibMsgNext >= cb)
-#define _FirstTelemetryTag_(t)          t._rgbMsg[1]
+#    define _CbTelemetryRecord_(t)          ((int)(t._ibMsgNext - 1))
+#    define _PackTelemetryByteCount_(t)     { t._rgbMsg[0]=_CbTelemetryRecord_(t); }
+#    define _ResetTelemetryByteCount_(t)    { t._ibMsgNext = 1; }
+#    define _AppendTelemetryByte_(t,b)      { t._rgbMsg[t._ibMsgNext] = ((byte)b); t._ibMsgNext++; }
+#    define _HasCbAvailableTelemetry_(t,cb) (_TELEM_CB_PAYLOAD_MAX - t._ibMsgNext >= cb)
+#    define _FirstTelemetryTag_(t)          t._rgbMsg[1]
 
 // mailbox1 is used by joysticks
 // mailbox2 is used by the Samantha module
 // we use mailbox3 to avoid conflicts
-#define _TelemetryInitialize_(t)                          \
+#    define _TelemetryInitialize_(t)                          \
 {                                                         \
     _TelemetryResetRecord_(t);                            \
     t._isActive = true;                                   \
@@ -271,13 +271,13 @@ _TELEMETRY telemetry;           // The one _TELEMETRY variable
 }
 
 // Prepare the telemetry for sending a new record
-#define _TelemetryResetRecord_(t)                         \
+#    define _TelemetryResetRecord_(t)                         \
 {                                                         \
     _ResetTelemetryByteCount_(t);                         \
     t._recordOverflowed = false;                          \
 }
 
-#define _TelemetryAdd_(t, tag, bFirst, cb)                  \
+#    define _TelemetryAdd_(t, tag, bFirst, cb)                  \
 {                                                           \
     if (_HasCbAvailableTelemetry_(t,cb)) {                  \
         if (!t._recordOverflowed) {                         \
@@ -290,7 +290,7 @@ _TELEMETRY telemetry;           // The one _TELEMETRY variable
     }                                                       \
 }
 
-#define _TelemetryAddFloat_(t, flVal)                     \
+#    define _TelemetryAddFloat_(t, flVal)                     \
 {                                                         \
     if (t._isActive) {                                    \
         t._fl = (float)flVal;                             \
@@ -298,7 +298,7 @@ _TELEMETRY telemetry;           // The one _TELEMETRY variable
     }                                                     \
 }
 
-#define _TelemetryAddBool_(t, boolVal)                    \
+#    define _TelemetryAddBool_(t, boolVal)                    \
 {                                                         \
     if (t._isActive) {                                    \
         t._b0 = (unsigned byte)(!!(boolVal));             \
@@ -306,7 +306,7 @@ _TELEMETRY telemetry;           // The one _TELEMETRY variable
     }                                                     \
 }
 
-#define _TelemetryAddChar_(t, charVal)                    \
+#    define _TelemetryAddChar_(t, charVal)                    \
 {                                                         \
     if (t._isActive) {                                    \
         t._b0 = (unsigned byte)(charVal);                 \
@@ -314,7 +314,7 @@ _TELEMETRY telemetry;           // The one _TELEMETRY variable
     }                                                     \
 }
 
-#define _TelemetryAddInt8_(t, bVal)                       \
+#    define _TelemetryAddInt8_(t, bVal)                       \
 {                                                         \
     if (t._isActive) {                                    \
         t._sh = (short)bVal;                              \
@@ -322,7 +322,7 @@ _TELEMETRY telemetry;           // The one _TELEMETRY variable
     }                                                     \
 }
 
-#define _TelemetryAddInt16_(t, shVal)                     \
+#    define _TelemetryAddInt16_(t, shVal)                     \
 {                                                         \
     if (t._isActive) {                                    \
         t._sh = (short)shVal;                             \
@@ -330,7 +330,7 @@ _TELEMETRY telemetry;           // The one _TELEMETRY variable
     }                                                     \
 }
 
-#define _TelemetryAddInt32_(t, lVal)                      \
+#    define _TelemetryAddInt32_(t, lVal)                      \
 {                                                         \
     if (t._isActive) {                                    \
         t._l = (long)lVal;                                \
@@ -338,7 +338,7 @@ _TELEMETRY telemetry;           // The one _TELEMETRY variable
     }                                                     \
 }
 
-#define _TelemetryAddUInt8_(t, bVal)                      \
+#    define _TelemetryAddUInt8_(t, bVal)                      \
 {                                                         \
     if (t._isActive) {                                    \
         t._sh = (short)bVal;                              \
@@ -346,7 +346,7 @@ _TELEMETRY telemetry;           // The one _TELEMETRY variable
     }                                                     \
 }
 
-#define _TelemetryAddUInt16_(t, shVal)                    \
+#    define _TelemetryAddUInt16_(t, shVal)                    \
 {                                                         \
     if (t._isActive) {                                    \
         t._sh = (short)shVal;                             \
@@ -354,7 +354,7 @@ _TELEMETRY telemetry;           // The one _TELEMETRY variable
     }                                                     \
 }
 
-#define _TelemetryAddUInt32_(t, lVal)                     \
+#    define _TelemetryAddUInt32_(t, lVal)                     \
 {                                                         \
     if (t._isActive) {                                    \
         t._l = (long)lVal;                                \
@@ -362,7 +362,7 @@ _TELEMETRY telemetry;           // The one _TELEMETRY variable
     }                                                     \
 }
 
-#define _TelemetryAddString_(t, str)                                    \
+#    define _TelemetryAddString_(t, str)                                    \
 {                                                                       \
     if (t._isActive) {                                                  \
         int cch = strlen(str);                                          \
@@ -382,7 +382,7 @@ _TELEMETRY telemetry;           // The one _TELEMETRY variable
     }                                                                   \
 }
 
-#define _TelemetryDone_(t)                                       \
+#    define _TelemetryDone_(t)                                       \
 {                                                                \
     if (t._isActive) {                                           \
         _TelemetryResetRecord_(t);                               \
@@ -392,7 +392,7 @@ _TELEMETRY telemetry;           // The one _TELEMETRY variable
 }
 
 // Prepare the record for transmission to the telemetry recorder
-#define _TelemetryFinalizeRecord_(t, isheet)                    \
+#    define _TelemetryFinalizeRecord_(t, isheet)                    \
 {                                                               \
     _PackTelemetryByteCount_(t);                                \
     /* hi bits of first tag are sheet number */                 \
@@ -400,7 +400,7 @@ _TELEMETRY telemetry;           // The one _TELEMETRY variable
 }                                                               \
                                                                 \
                                 // Empty out the polling buffer used in the non-bluetooth case
-#define _TelemetryEmptyPollBuffer_()                                    \
+#    define _TelemetryEmptyPollBuffer_()                                    \
 {                                                                       \
     short ioResult = 0;                                                 \
     ubyte rgbPtr[2];                                                    \
@@ -416,7 +416,7 @@ typedef enum {
 } _TELEMETRY_META_COMMAND;
 
 // Tell the telemetry recorder to poll us with the indicated polling interval
-#define _TelemetrySetUSBPollInterval_(t, ms)                        \
+#    define _TelemetrySetUSBPollInterval_(t, ms)                        \
 {                                                                   \
     t._rgbMsg[0] = 0x80 | 3; /* 0x80==meta, 3==#bytes of payload */ \
     t._rgbMsg[1] = _TELEMETRY_META_COMMAND_POLLING_INTERVAL;        \
@@ -444,10 +444,10 @@ typedef long _INTPTR;
 
 //--------------------------------------------------------------------
 // Size constants taken from Lego Firmware 1.29
-#define   _SIZE_OF_BT_NAME               16
-#define   _SIZE_OF_BRICK_NAME            8
-#define   _SIZE_OF_CLASS_OF_DEVICE       4
-#define   _SIZE_OF_BT_PINCODE            16
+#    define   _SIZE_OF_BT_NAME               16
+#    define   _SIZE_OF_BRICK_NAME            8
+#    define   _SIZE_OF_CLASS_OF_DEVICE       4
+#    define   _SIZE_OF_BT_PINCODE            16
 
 // NOTE: real address is only six bytes. But extra character for NULL
 // termination char.
@@ -455,13 +455,13 @@ typedef long _INTPTR;
 // But also note that address bytes can contain zeroes. So can't use
 // standard 'string' manipulation functions because they assum strings
 // do not contain zeroes in the value bytes!
-#define   _SIZE_OF_BDADDR                7
+#    define   _SIZE_OF_BDADDR                7
 
-#define   _SIZE_OF_USBBUF                64
-#define   _SIZE_OF_HSBUF                 128
-#define   _SIZE_OF_BTBUF                 128
-#define   _SIZE_OF_BT_DEVICE_TABLE       30
-#define   _SIZE_OF_BT_CONNECT_TABLE      4      /* Index 0 is alway incomming connections */
+#    define   _SIZE_OF_USBBUF                64
+#    define   _SIZE_OF_HSBUF                 128
+#    define   _SIZE_OF_BTBUF                 128
+#    define   _SIZE_OF_BT_DEVICE_TABLE       30
+#    define   _SIZE_OF_BT_CONNECT_TABLE      4  /* Index 0 is alway incomming connections */
 
 //--------------------------------------------------------------------
 // Struct definitions, with additional padding added
@@ -503,7 +503,7 @@ typedef struct {
     byte Spare3;
 } _BRICKDATA;
 
-#define _cbBRICKDATA (_SIZE_OF_BT_NAME + 2 + _SIZE_OF_BDADDR + 6)
+#    define _cbBRICKDATA (_SIZE_OF_BT_NAME + 2 + _SIZE_OF_BDADDR + 6)
 
 typedef struct {
     byte Buf[_SIZE_OF_BTBUF];
@@ -513,7 +513,7 @@ typedef struct {
     byte Spare2;
 } _BTBUF;
 
-#define _cbBTBUF (_SIZE_OF_BTBUF + 4)
+#    define _cbBTBUF (_SIZE_OF_BTBUF + 4)
 
 typedef struct {
     byte Buf[_SIZE_OF_HSBUF];
@@ -523,9 +523,9 @@ typedef struct {
     byte Spare2;
 } _HSBUF;
 
-#define _dibHSBUFInPtr       _SIZE_OF_HSBUF
-#define _dibHSBUFOutPtr      (_SIZE_OF_HSBUF + 1)
-#define _cbHSBUF             (_SIZE_OF_HSBUF + 4)
+#    define _dibHSBUFInPtr       _SIZE_OF_HSBUF
+#    define _dibHSBUFOutPtr      (_SIZE_OF_HSBUF + 1)
+#    define _cbHSBUF             (_SIZE_OF_HSBUF + 4)
 
 typedef struct {
     byte Buf[_SIZE_OF_USBBUF];
@@ -538,9 +538,9 @@ typedef struct {
     byte Spare2;
 } _USBBUF;
 
-#define _dibUSBBUFInPtr      _SIZE_OF_USBBUF
-#define _dibUSBBUFOutPtr     (_SIZE_OF_USBBUF + 1)
-#define _cbUSBBUF            (_SIZE_OF_USBBUF + 4)
+#    define _dibUSBBUFInPtr      _SIZE_OF_USBBUF
+#    define _dibUSBBUFOutPtr     (_SIZE_OF_USBBUF + 1)
+#    define _cbUSBBUF            (_SIZE_OF_USBBUF + 4)
 
 typedef struct {
     _INTPTR pFunc;              // 0      // UWORD (*pFunc)(byte , byte , byte , byte , byte *, UWORD*);
@@ -573,31 +573,31 @@ typedef struct {
     byte UsbState;              // 1928
 } _IOMAPCOMM;                   // see c_comm.iom in the Lego firmware sources
 
-#define _dibBtDeviceTable  8
-#define _dibBtConnectTable 968
-#define _dibBrickData      1160
-#define _dibBtInBuf        1191
-#define _dibBtOutBuf       1323
-#define _dibHsInBuf        1455
-#define _dibHsOutBuf       1587
-#define _dibUsbInBuf       1719
-#define _dibUsbOutBuf      1787
-#define _dibUsbPollBuf     1855
-#define _dibBtDeviceCnt    1923
-#define _cbIOMAPCOMM       1929
+#    define _dibBtDeviceTable  8
+#    define _dibBtConnectTable 968
+#    define _dibBrickData      1160
+#    define _dibBtInBuf        1191
+#    define _dibBtOutBuf       1323
+#    define _dibHsInBuf        1455
+#    define _dibHsOutBuf       1587
+#    define _dibUsbInBuf       1719
+#    define _dibUsbOutBuf      1787
+#    define _dibUsbPollBuf     1855
+#    define _dibBtDeviceCnt    1923
+#    define _cbIOMAPCOMM       1929
 
 const string _strCommMap = "Comm.mod";
 
 //=============================================================================
 
 // Define a handy utlity macro
-#ifndef _Min
-#define _Min(a,b) ((a) < (b) ? (a) : (b))
-#endif
+#    ifndef _Min
+#        define _Min(a,b) ((a) < (b) ? (a) : (b))
+#    endif
 
 // Write data into a circular buffer in the COMM IoMap
-#ifndef _CircularCommWrite_
-#define _CircularCommWrite_(rgbData, dibSrc, dibDest, cbToWrite, ioResult) \
+#    ifndef _CircularCommWrite_
+#        define _CircularCommWrite_(rgbData, dibSrc, dibDest, cbToWrite, ioResult) \
 {                                                                       \
     const int cbQuantum = 64;                                           \
     for (int cbWritten = 0; cbWritten < (cbToWrite); cbWritten += cbQuantum) { \
@@ -605,7 +605,7 @@ const string _strCommMap = "Comm.mod";
         nxtWriteIOMap(_strCommMap, ioResult, rgbData[(dibSrc)+cbWritten], (dibDest)+cbWritten, cbQuantumWrite); \
     }                                                                   \
 }
-#endif
+#    endif
 
 // Send the telemetry record to the telemetry recorder
 void

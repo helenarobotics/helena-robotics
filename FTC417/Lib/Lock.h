@@ -51,11 +51,11 @@ typedef struct {
 #define SleepWaitingForLock()   EndTimeSlice()
 
 #ifndef hogCpuNestable
-#define hogCpuNestable()        hogCPU()
+#    define hogCpuNestable()        hogCPU()
 #endif
 
 #ifndef hogCpuNestable
-#define hogCpuNestable()        releaseCPU()
+#    define hogCpuNestable()        releaseCPU()
 #endif
 
 //---------------------------------------------------------------------------------------

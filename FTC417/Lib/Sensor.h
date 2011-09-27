@@ -192,9 +192,9 @@ InitializeSensor_(IN OUT STICKYFAILURE &fOverallSuccess, string nm,
 }
 
 #if 1
-#define StartDetectingAngleSensor(sensor)     StartDetectingSensor_(sensor)
-#define StopDetectingAngleSensor(sensor)      StopDetectingSensor_(sensor)
-#define StopReadingAngleSensor(sensor)        StopReadingSensor_(sensor)
+#    define StartDetectingAngleSensor(sensor)     StartDetectingSensor_(sensor)
+#    define StopDetectingAngleSensor(sensor)      StopDetectingSensor_(sensor)
+#    define StopReadingAngleSensor(sensor)        StopReadingSensor_(sensor)
 #else
 void
 StartDetectingAngleSensor(ANGLESENSOR &sensor) {
@@ -656,7 +656,7 @@ InitializeGyroSensor(STICKYFAILURE &fOverallSuccess, string nm,
 
 #ifndef AngleSensorFromIndex
 ANGLESENSOR sensAngleDummy;     // needed to make code compile, but presumably never used (isensangleAssociated will always be -1)
-#define AngleSensorFromIndex(isensangle,member)    (sensAngleDummy.member)
+#    define AngleSensorFromIndex(isensangle,member)    (sensAngleDummy.member)
 #endif
 
 // Variables used to manage not losing magnetic batons that we've detected in the hand
@@ -705,10 +705,11 @@ ReadMagneticSensor(MAGNETICSENSOR &sensor) {
                     /* Remember the angle in the next avaialable slot */
                     ANGLE deg =
                         AngleSensorFromIndex(isensangleAssociated, deg);
-                    sensor.rgdegDetectionRecord[sensor.
-                        idegDetectionRecordNext] = deg;
-                    sensor.rgfDetectionRecordValid[sensor.
-                        idegDetectionRecordNext]
+                    sensor.
+                        rgdegDetectionRecord[sensor.idegDetectionRecordNext] =
+                        deg;
+                    sensor.
+                        rgfDetectionRecordValid[sensor.idegDetectionRecordNext]
                         = true;
                     sensor.idegDetectionRecordNext++;
 
@@ -768,14 +769,14 @@ InitializeMagneticSensor(STICKYFAILURE &fOverallSuccess, string nm,
 }
 
 #if 1
-#define StartDetectingMagneticSensor(sensor)                            \
+#    define StartDetectingMagneticSensor(sensor)                            \
     {                                                                   \
         if (!FDoSensorDetection(sensor)) { ResetMagneticSensorDetection(sensor); } \
         StartDetectingSensor_(sensor);                                  \
     }
-#define StopDetectingMagneticSensor(sensor)         StopDetectingSensor_(sensor)
-#define StartReadingMagneticSensor(sensor)          StartReadingSensor_(sensor)
-#define StopReadingMagneticSensor(sensor)           StopReadingSensor_(sensor)
+#    define StopDetectingMagneticSensor(sensor)         StopDetectingSensor_(sensor)
+#    define StartReadingMagneticSensor(sensor)          StartReadingSensor_(sensor)
+#    define StopReadingMagneticSensor(sensor)           StopReadingSensor_(sensor)
 #else
 void
 StartDetectingMagneticSensor(MAGNETICSENSOR &sensor) {

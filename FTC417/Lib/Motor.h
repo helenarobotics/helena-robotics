@@ -201,7 +201,7 @@ ReadEncodersInternal(OUT ENCOD &encLeft, OUT ENCOD &encRight) {
 // to the contrary notwithstanding) RobotC built-in variable nMaxRegulatedSpeed12V.
 
 #ifndef DEFAULT_MOTOR_POWER_SCALE
-#define DEFAULT_MOTOR_POWER_SCALE 1.0
+#    define DEFAULT_MOTOR_POWER_SCALE 1.0
 #endif
 
 #ifndef motorPowerScale
