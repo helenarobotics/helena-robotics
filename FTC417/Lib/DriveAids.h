@@ -1,49 +1,48 @@
 //
 // DriveAids.h
 //
-//----------------------------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
 // Configuration
-//----------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 #ifndef TURN_POWER_STRAIGHTEN
-#define TURN_POWER_STRAIGHTEN TURN_POWER_FAST
+#    define TURN_POWER_STRAIGHTEN TURN_POWER_FAST
 #endif
 
 #ifndef TURN_BALANCE_STRAIGHTEN
-#define TURN_BALANCE_STRAIGHTEN TURN_BALANCE
+#    define TURN_BALANCE_STRAIGHTEN TURN_BALANCE
 #endif
 
 #ifndef TURN_BALANCE_ADJUSTLATERAL
-#define TURN_BALANCE_ADJUSTLATERAL TURN_BALANCE
+#    define TURN_BALANCE_ADJUSTLATERAL TURN_BALANCE
 #endif
 
-//----------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // Simple aids
-//----------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-BOOL
-DriveForwardsAndStraightenUsingLeftSonic(float cmDistance, int powerLevel)
 // Drive forwards the indicated amount, then straighten using the delta
 // in reading on the left sonic sensor. Note: it would be reasonable to
 // generalize this to be able to use the right sensor instead: we'd just
 // have to turn the other direction.
-{
+BOOL
+DriveForwardsAndStraightenUsingLeftSonic(float cmDistance, int powerLevel) {
 #if SensorIsDefined(sensnmSonicLeft)
     int cmSonicStart = ReadSonic_Main(sensSonicLeft, true);
     BOOL fSuccess = DriveForwards(cmDistance, powerLevel);
     int cmSonicCur = ReadSonic_Main(sensSonicLeft, true);
-    //
+
     if (fSuccess) {
         float dy = (float)cmSonicCur - (float)cmSonicStart;
-        // TRACE(("h=%5.3f y=%d dy=%5.3f", cmDistance, cmSonicStart, dy));
-        //
+//        TRACE(("h=%5.3f y=%d dy=%5.3f", cmDistance, cmSonicStart, dy));
+
         ANGLE angle = asin(dy / cmDistance);    // in radians
         angle = oneEightyOverPi * angle;        // to degrees
-        //
+
         fSuccess =
             TurnRight(-angle, TURN_POWER_STRAIGHTEN, TURN_BALANCE_STRAIGHTEN);
     }
-    //
     return fSuccess;
 #else
     return false;
@@ -56,33 +55,31 @@ DriveForwardsAndStraightenUsingRightSonic(float cmDistance, int powerLevel) {
     int cmSonicStart = ReadSonic_Main(sensSonicRight, true);
     BOOL fSuccess = DriveForwards(cmDistance, powerLevel);
     int cmSonicCur = ReadSonic_Main(sensSonicRight, true);
-    //
+
     if (fSuccess) {
         float dy = (float)cmSonicCur - (float)cmSonicStart;
-        // TRACE(("h=%5.3f y=%d dy=%5.3f", cmDistance, cmSonicStart, dy));
-        //
+//        TRACE(("h=%5.3f y=%d dy=%5.3f", cmDistance, cmSonicStart, dy));
+
         ANGLE angle = asin(dy / cmDistance);    // in radians
         angle = oneEightyOverPi * angle * -1;   // to degrees
         TRACE(("straighten %f", angle));
-        //
+
         fSuccess =
             TurnRight(-angle, TURN_POWER_STRAIGHTEN, TURN_BALANCE_STRAIGHTEN);
     }
-    //
     return fSuccess;
 #else
     return false;
 #endif
 }
 
-BOOL
-AdjustLaterally(float dcm)
 // Adjust our position laterally by the indicated delta. We to this by
-// executing a 45deg turn, driving the hypotenuse of the triangle, turning
-// back 45deg, then driving back to position.
+// executing a 45deg turn, driving the hypotenuse of the triangle,
+// turning back 45deg, then driving back to position.
 //
 // Note that dcm may be positive or negative.
-{
+BOOL
+AdjustLaterally(float dcm) {
     RET_IF_FAIL(TurnRight(-45, TURN_POWER_FAST, TURN_BALANCE_ADJUSTLATERAL),
         "TurnRight");
     RET_IF_FAIL(DriveForwards(-sqrtTwo * dcm, DRIVE_POWER_SLOW),
@@ -90,7 +87,7 @@ AdjustLaterally(float dcm)
     RET_IF_FAIL(TurnRight(45, TURN_POWER_FAST, TURN_BALANCE_ADJUSTLATERAL),
         "TurnBack");
     RET_IF_FAIL(DriveForwards(dcm, DRIVE_POWER_SLOW), "DriveBackwards");
-    //
+
     return true;
 }
 
@@ -114,13 +111,12 @@ AdjustLaterallyUsingAngle(float dcm, ANGLE degAngle) {
     return true;
 }
 
-//----------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // Manual driving
-//----------------------------------------------------------------------------------------------
-
+//-----------------------------------------------------------------------------
 #if USE_JOYSTICK_DRIVER
 
-#if ROBOT_NAME==ROBOT_NAME_OMNI_BOT
+#    if ROBOT_NAME==ROBOT_NAME_OMNI_BOT
 
 void
 DoManualDrivingControl(int joy, TJoystick &joystick) {
@@ -160,11 +156,11 @@ DoManualDrivingControl(int joy, TJoystick &joystick) {
     ReleaseBlackboard();
 }
 
-#else
+#    else
 
+// Interpret the joysticks and manually drive the bot
 void
 DoManualDrivingControl(int joy, TJoystick &joystick)
-// Interpret the joysticks and manually drive the bot
 {
     // Extract values from the joysticks that we find useful
     int ctlPower = joyLeftY(joy);       // -128 to  127
@@ -188,17 +184,18 @@ DoManualDrivingControl(int joy, TJoystick &joystick)
     float scale = 100.0 / (128.0 - (float)sensitivityThreshold);
     ctlPower = Rounded((float)ctlPower * scale, int);
     ctlSteering = Rounded((float)ctlSteering * scale, int);
-    // if (ctlPower != 0 || ctlSteering != 0) {  TRACE(("power=%d steering=%d", ctlPower, ctlSteering)); }
+//    if (ctlPower != 0 || ctlSteering != 0) {  TRACE(("power=%d steering=%d", ctlPower, ctlSteering)); }
 
     // Update the motor power. The SetMotorPower internals will
     // clamp the power provided to +-100.
     int16 powerLeft = ctlPower - ctlSteering;
     int16 powerRight = ctlPower + ctlSteering;
 
-    // Correct the power balance to the wheels in order to better drive straight
+    // Correct the power balance to the wheels in order to better drive
+    // straight
     float balance = BalanceFromDirection(ctlPower >= 0 ? FORWARD : BACKWARD);
     BalancePower(powerLeft, powerRight, balance);
-    // if (powerLeft != 0 || powerRight != 0) { TRACE(("l=%d r=%d", powerLeft, powerRight)); }
+//    if (powerLeft != 0 || powerRight != 0) { TRACE(("l=%d r=%d", powerLeft, powerRight)); }
 
     LockBlackboard();
     SetMotorPower(motorLeft, powerLeft);
@@ -206,6 +203,5 @@ DoManualDrivingControl(int joy, TJoystick &joystick)
     SendMotorPowers();
     ReleaseBlackboard();
 }
-
-#endif
+#    endif
 #endif
