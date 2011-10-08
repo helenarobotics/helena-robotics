@@ -88,21 +88,23 @@ task gyroTask()
 
         // How much time has elapsed since we last checked, which we use
         // to determine how far we've turned
-        int now = nSysTime;
+        long now = nPgmTime;
 
-        // Filter out the high-frequency 'noise' that causes the sensor
-        // to bounce around. Something better would be nice, but this
-        // works well enough.
+        // Filter out the high-frequency 'noise' and really weird spikes
+        // caused from the sensor bouncing around.  Something better
+        // would be nice, but this works well enough in practice.
         if (abs(currRate) > 3) {
-            // Check if nSysTime wrapped around.  If so, re-calculate
-            // the difference as by incrementing both now and prevTime
-            // by a large number so prevTime will both are both wrapped,
-            // and then re-calculate the difference.
-            if (now < prevTime) {
+            // deltaSecs will only go negative if we've if nPgmTime
+            // wrapped around.  If so, re-calculate the difference as by
+            // incrementing both now and prevTime by a large number so
+            // prevTime will both are both wrapped, and then
+            // re-calculate the difference.
+            float deltaSecs = (now - prevTime) / 1000.0;
+            if (deltaSecs < 0) {
                 now += 1024;
                 prevTime += 1024;
+                deltaSecs = (now - prevTime) / 1000.0;
             }
-            float deltaSecs = (now - prevTime) / 1000.0;
 
             // Calculate how many degrees the heading changed.
             float degChange = (float)currRate * deltaSecs;
