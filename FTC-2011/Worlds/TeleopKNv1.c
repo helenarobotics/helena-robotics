@@ -682,5 +682,5 @@ void resetStuff()
         dispenserArmAutoParkWait();
         parkBridgeArmWait();
         parkBatonArmWait();
-	}
+    }
 }

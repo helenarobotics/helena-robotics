@@ -400,7 +400,7 @@ task BridgeArmTask()
                     BRIDGE_ARM_MOVE_POWER, targetPos - armPos);
                 if (targetPos > armPos && !movingDown || bridgeBrake)
                     motor[mBridgeArm] = armPower;
-                else if(targetPos < armPos && movingDown || bridgeBrake)
+                else if (targetPos < armPos && movingDown || bridgeBrake)
                     motor[mBridgeArm] = -armPower;
             }
         }
