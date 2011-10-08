@@ -213,8 +213,10 @@ task main()
         moveBatonArm();
         moveBatonCup();
         moveRGLift();
-        nxtDisplayString(1,"%d - %d",nMotorEncoder[mDispWristL],nMotorEncoder[mDispWristR]);
 
+        nxtDisplayString(1, "%d - %d",
+                         nMotorEncoder[mDispWristL],
+                         nMotorEncoder[mDispWristR]);
         resetStuff();
     }
 }
@@ -651,45 +653,34 @@ void parkDispenserWrist()
 void parkDispenserWristWait()
 {
     while(nMotorEncoder[mDispWristL] > 10)
-    {
         EndTimeSlice();
-    }
     motor[mDispWristL] = 0;
 }
 
 void moveBridgeArmTog()
 {
-    if(!(joy2Btn(5) && joy2Btn(7)))
-    {
-        if(joy2Btn(5))
-        {
+    if (!(joy2Btn(5) && joy2Btn(7))) {
+        if (joy2Btn(5)) {
             motor[mBridgeArm] = -BRIDGE_ARM_MOVE_POWER;
-        }
-        else if(joy2Btn(7))
-        {
+        } else if (joy2Btn(7)) {
             motor[mBridgeArm] = BRIDGE_ARM_MOVE_POWER;
-        }
-        else
-        {
+        } else {
             motor[mBridgeArm] = 0;
         }
-    }
-    else
-    {
+    } else {
         motor[mBridgeArm] = 0;
     }
 }
 
 void resetStuff()
 {
-    if(joy1Btn(10) && joy2Btn(10))
-    {
-	    parkBatonArm();
-	    parkBridgeArm();
-	    parkDispenserWrist();
-	    parkDispenserWristWait();
-	    dispenserArmAutoParkWait();
-	    parkBridgeArmWait();
-	    parkBatonArmWait();
+    if (joy1Btn(10) && joy2Btn(10)) {
+        parkBatonArm();
+        parkBridgeArm();
+        parkDispenserWrist();
+        parkDispenserWristWait();
+        dispenserArmAutoParkWait();
+        parkBridgeArmWait();
+        parkBatonArmWait();
 	}
 }
