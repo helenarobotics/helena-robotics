@@ -1,0 +1,103 @@
+Git 
+====
+Git is a tool that is used for tracking changes to a project. The main goal of
+Git is to allow users to track progress of the projects development. By doing
+this, users can to un-due changes that might have stopped code from working.
+Git also makes it easy for several developers to work together, without having
+to copy over each other's files and compare differences and modify each other's
+'working copies'
+
+Installation
+------------
+Two Software programs are required to get Git running on Windows, msysgit(the 
+actual git software) and TortoiseGit (a nice GUI interface)
+
+### mysygit
+1. Download the latest version at http://code.google.com/p/msysgit/downloads/list
+  * The file name should look like **Git-X.X.X.X-preview.exe**
+2. During installation, in 'Select Components', dselect "Windows Explorer integration"
+3. Complete installation
+
+### TortoiseGit
+1. Download the latest version at http://code.google.com/p/tortoisegit/downloads/list
+  * The file should look like **TortoiseGit-X.X.X.X-32bit.msi**
+2. Install using default instructions
+
+Get the Code
+-------------
+NOTE: this requires an internet connection
+
+To get the code off the site All you need to do is:
+
+1. Open Explorer(the file browser) to the folder you want the source code to be at
+2. Right like on an empty space
+3. Select "Git Clone..."
+4. Copy "https://code.google.com/p/helena-robotics/" into the URL field
+5. Click ok
+6. Congrats, you now have all the source code in this project
+
+Create your own repository
+---------------------------
+You don't need copy an existing project, you can create your own.
+
+1. Go to a project you are working on
+2. Right click on a blank space
+3. Select "Git create repository here..."
+4. Now right click on each file in your project and go to "tortoisegit -> add..."
+5. After you have added all your files and folders, Right click again on a blank
+   space and select "Git Commit -> Master"
+6. You will be asked for your name and email. Enter them now
+7. Type your message and click "Ok"
+8. Congratulations, you have created your 1st git respo
+
+Saving changes (Commit)
+------------------------
+Git needs to be told when to save changes, just like in Word before there was
+auto-save(I might be getting old)
+
+Commiting is simple:
+
+1. Add any new files that you might have created since you last commited
+2. Right click on a black space while within the project folder.
+3. Select "Git Commit -> Master" and type a useful message about what you have
+   done.
+
+Undoing mistakes (Revert)
+-------------------------
+First lets look at what you have changed and see if it's a simple mistake
+
+1. Open the TortoiseGit menu
+2. Select 'Diff'
+3. Double-click on files that show up.
+  * changes will be highlighted
+  * Look at changes and see if they make sense
+
+If you can't find out and just want to go back to how the files where
+WARNING: You will lose all changes to files you revert
+
+1. Open the TortoiseGit menu
+2. Select 'Revert...'
+3. Select files you want to change back
+4. Click 'Ok'
+
+What now
+---------
+Git as a very powerful tool, but takes time to learn. I have skipped many
+Important topics in the interest of getting you started quickly
+
+Once you feel comfortable, please learn more about git!
+
+Important topics to know:
+
+* Branch - allows you to work on new features while keeping a working copy
+  at all times
+* Merge - lets you add changes you or other people have done automatically
+* Log - Look at previous changes you have done
+
+Resources
+----------
+Here is a list of great Git resources:
+
+* [Git Community Book](http://book.git-scm.com/) - Great walkthough
+* [Git resource page](http://git-scm.com/documentation) - Additional help
+* Me, Chris :) - Feel free ask me any questions, Git can do more then you think

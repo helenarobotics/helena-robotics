@@ -1,0 +1,129 @@
+<h1>Git </h1>
+
+<p>Git is a tool that is used for tracking changes to a project. The main goal of
+Git is to allow users to track progress of the projects development. By doing
+this, users can to un-due changes that might have stopped code from working.
+Git also makes it easy for several developers to work together, without having
+to copy over each other's files and compare differences and modify each other's
+'working copies'</p>
+
+<h2>Installation</h2>
+
+<p>Two Software programs are required to get Git running on Windows, msysgit(the 
+actual git software) and TortoiseGit (a nice GUI interface)</p>
+
+<h3>mysygit</h3>
+
+<ol>
+<li>Download the latest version at http://code.google.com/p/msysgit/downloads/list
+<ul>
+<li>The file name should look like <strong>Git-X.X.X.X-preview.exe</strong></li>
+</ul></li>
+<li>During installation, in 'Select Components', dselect "Windows Explorer integration"</li>
+<li>Complete installation</li>
+</ol>
+
+<h3>TortoiseGit</h3>
+
+<ol>
+<li>Download the latest version at http://code.google.com/p/tortoisegit/downloads/list
+<ul>
+<li>The file should look like <strong>TortoiseGit-X.X.X.X-32bit.msi</strong></li>
+</ul></li>
+<li>Install using default instructions</li>
+</ol>
+
+<h2>Get the Code</h2>
+
+<p>NOTE: this requires an internet connection</p>
+
+<p>To get the code off the site All you need to do is:</p>
+
+<ol>
+<li>Open Explorer(the file browser) to the folder you want the source code to be at</li>
+<li>Right like on an empty space</li>
+<li>Select "Git Clone..."</li>
+<li>Copy "https://code.google.com/p/helena-robotics/" into the URL field</li>
+<li>Click ok</li>
+<li>Congrats, you now have all the source code in this project</li>
+</ol>
+
+<h2>Create your own repository</h2>
+
+<p>You don't need copy an existing project, you can create your own.</p>
+
+<ol>
+<li>Go to a project you are working on</li>
+<li>Right click on a blank space</li>
+<li>Select "Git create repository here..."</li>
+<li>Now right click on each file in your project and go to "tortoisegit -> add..."</li>
+<li>After you have added all your files and folders, Right click again on a blank
+space and select "Git Commit -> Master"</li>
+<li>You will be asked for your name and email. Enter them now</li>
+<li>Type your message and click "Ok"</li>
+<li>Congratulations, you have created your 1st git respo</li>
+</ol>
+
+<h2>Saving changes (Commit)</h2>
+
+<p>Git needs to be told when to save changes, just like in Word before there was
+auto-save(I might be getting old)</p>
+
+<p>Commiting is simple:</p>
+
+<ol>
+<li>Add any new files that you might have created since you last commited</li>
+<li>Right click on a black space while within the project folder.</li>
+<li>Select "Git Commit -> Master" and type a useful message about what you have
+done.</li>
+</ol>
+
+<h2>Undoing mistakes (Revert)</h2>
+
+<p>First lets look at what you have changed and see if it's a simple mistake</p>
+
+<ol>
+<li>Open the TortoiseGit menu</li>
+<li>Select 'Diff'</li>
+<li>Double-click on files that show up.
+<ul>
+<li>changes will be highlighted</li>
+<li>Look at changes and see if they make sense</li>
+</ul></li>
+</ol>
+
+<p>If you can't find out and just want to go back to how the files where
+WARNING: You will lose all changes to files you revert</p>
+
+<ol>
+<li>Open the TortoiseGit menu</li>
+<li>Select 'Revert...'</li>
+<li>Select files you want to change back</li>
+<li>Click 'Ok'</li>
+</ol>
+
+<h2>What now</h2>
+
+<p>Git as a very powerful tool, but takes time to learn. I have skipped many
+Important topics in the interest of getting you started quickly</p>
+
+<p>Once you feel comfortable, please learn more about git!</p>
+
+<p>Important topics to know:</p>
+
+<ul>
+<li>Branch - allows you to work on new features while keeping a working copy
+at all times</li>
+<li>Merge - lets you add changes you or other people have done automatically</li>
+<li>Log - Look at previous changes you have done</li>
+</ul>
+
+<h2>Resources</h2>
+
+<p>Here is a list of great Git resources:</p>
+
+<ul>
+<li><a href="http://book.git-scm.com/">Git Community Book</a> - Great walkthough</li>
+<li><a href="http://git-scm.com/documentation">Git resource page</a> - Additional help</li>
+<li>Me, Chris :) - Feel free ask me any questions, Git can do more then you think</li>
+</ul>
