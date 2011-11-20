@@ -181,7 +181,7 @@ void moveOmni()
         // atan gives strange reading for negative numbers, so we'll
         // figure out what the real direction is after calculating the
         // angle if in the upper-right polar quadrant.
-        int heading = radiansToDegrees(atan(abs((float)xJoy1 / (float)yJoy1)));
+        int heading = radiansToDegrees(atan(abs((float)yJoy1 / (float)xJoy1)));
 
         // Convert the heading to be correct for the correct quadrant
         if (yJoy1 > 0) {
@@ -209,8 +209,8 @@ void moveOmni()
     float cosDir = cosDegrees(robotHeading);
 
     // Simple math!
-    int forward = (float)magnitude * cosDir;
-    int right = (float)magnitude * sinDir;
+    int forward = (float)magnitude * sinDir;
+    int right = (float)magnitude * cosDir;
     int rotCw = xJoy2;
 
     // Keep the heading offset in mind to see how
