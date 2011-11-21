@@ -1,0 +1,34 @@
+<project name="PointCounter" default="jar" basedir=".">
+  <property name="build.dir" location="build"/>
+  <property name="project.jar" value="${ant.project.name}.jar"/>
+  <property name="src.dir" location="."/>
+
+  <target name="init">
+    <mkdir dir="${build.dir}"/>
+  </target>
+
+  <target name="compile" depends="init">
+    <javac includeantruntime="false" srcdir="${src.dir}" destdir="${build.dir}" debug="true">
+<!--
+      <compilerarg value="-Xlint:all,-path"/>
+-->
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile">
+    <jar jarfile="${lib.dir}/${project.jar}" basedir="${build.dir}"/>
+  </target>
+
+  <target name="test">
+    <java classname="PointCounter" fork="true"
+      failonerror="true" inputstring="">
+      <classpath>
+        <path refid="proj.classpath"/>
+      </classpath>
+    </java>
+  </target>
+
+  <target name="clean">
+    <delete dir="${build.dir}"/>
+  </target>
+</project>
