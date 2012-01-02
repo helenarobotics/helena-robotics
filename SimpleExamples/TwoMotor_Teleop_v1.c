@@ -69,14 +69,14 @@ task main() {
         getJoystickSettings(joystick);
 
         // Move robot
-        moveSimple();
+        moveTank();
     }
 }
 
 // Move the motor on the field
 bool slowSpeedButtonWasPressed = false;
 bool slowSpeedEnabled = false;
-void moveSimple()
+void moveTank()
 {
     // Make things less sensitive around the center (a slight
     // dead-band), and more aggressive at the extremes.
