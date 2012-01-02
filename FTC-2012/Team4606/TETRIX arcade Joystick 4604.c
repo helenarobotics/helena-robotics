@@ -43,7 +43,7 @@ const int TANK_DRIVE = 2;
 const int MOTOR_POWER_INCREMENT = 20;
 bool reverseDirection;
 int percPow;
-int DRIVE_MODE; //looks like a const,  por formating
+int DRIVE_MODE; // looks like a const,  por formating
 
 // Conveyor
 const int CONVEYOR_POWER = 100;
@@ -110,24 +110,24 @@ void moveRobot()
     if (DRIVE_MODE == CHOOSE_DRIVEMODE) {
         if (joy1Btn(5)) {
             DRIVE_MODE = TANK_DRIVE;
-        } else if (joy1Btn(6)){
+        } else if (joy1Btn(6)) {
             DRIVE_MODE = ARCADE_DRIVE;
         }
     } else if (DRIVE_MODE == TANK_DRIVE) {
         // Make sure the joystick is read past the 'threshold' value
-        if(abs(joystick.joy1_y1) > JOY_THRESHOLD)
+        if (abs(joystick.joy1_y1) > JOY_THRESHOLD)
             // Move proportionally
             lPow = joystick.joy1_y1 / 1.28;
 
-        if(abs(joystick.joy1_y2) > JOY_THRESHOLD)
+        if (abs(joystick.joy1_y2) > JOY_THRESHOLD)
             // Move proportionally
             rPow = joystick.joy1_y2 / 1.28;
-    } else if(DRIVE_MODE == ARCADE_DRIVE) {
+    } else if (DRIVE_MODE == ARCADE_DRIVE) {
         int nSpeedPower = 0;
         int nTurnPower = 0;
-        if(abs(joystick.joy1_y1) > JOY_THRESHOLD)
+        if (abs(joystick.joy1_y1) > JOY_THRESHOLD)
             nSpeedPower = joystick.joy1_y1 / 1.28;
-        if(abs(joystick.joy1_x2) > JOY_THRESHOLD)
+        if (abs(joystick.joy1_x2) > JOY_THRESHOLD)
             nTurnPower = joystick.joy1_x2 / 1.28;
 
         // Power and speed
@@ -135,7 +135,7 @@ void moveRobot()
         lPow = nSpeedPower + nTurnPower;
 
         // If we're turning, halve the power
-        if(abs(nTurnPower) > 0 && abs(nSpeedPower) > 25){
+        if (abs(nTurnPower) > 0 && abs(nSpeedPower) > 25) {
             rPow /= 2;
             lPow /= 2;
         }
@@ -147,27 +147,27 @@ void moveRobot()
 
     // Reverse the front and rear of robot
     if (reverseDirection) {
-	   int tempL = lPow;
-	   lPow = -rPow;
-	   rPow = -tempL;
+        int tempL = lPow;
+        lPow = -rPow;
+        rPow = -tempL;
     }
     motor[leftDrive] = lPow;
     motor[rightDrive] = rPow;
 
     if (DRIVE_MODE != CHOOSE_DRIVEMODE) {
-       // Buttons 5 and 6 decrease/increase the power in incremental chunks
-       bool btn5IP = joy1Btn(5);
-       if (btn5IP && !btn5WP) {
-           if (percPow > MOTOR_POWER_INCREMENT)
-               percPow -= MOTOR_POWER_INCREMENT;
+        // Buttons 5 and 6 decrease/increase the power in incremental chunks
+        bool btn5IP = joy1Btn(5);
+        if (btn5IP && !btn5WP) {
+            if (percPow > MOTOR_POWER_INCREMENT)
+                percPow -= MOTOR_POWER_INCREMENT;
         }
         btn5WP = btn5IP;
 
         bool btn6IP = joy1Btn(6);
         if (btn6IP && !btn6WP) {
-           if (percPow <= (100 - MOTOR_POWER_INCREMENT))
-               percPow += MOTOR_POWER_INCREMENT;
-       }
+            if (percPow <= (100 - MOTOR_POWER_INCREMENT))
+                percPow += MOTOR_POWER_INCREMENT;
+        }
         btn6WP = btn6IP;
 
         // Reverse the front and rear directions
@@ -205,7 +205,7 @@ void moveRotationArm()
 bool btnBCWP = false;
 void toggleBallConveyor()
 {
-     // Toggle the conveyor on/off
+    // Toggle the conveyor on/off
     bool btnBCIP = joy1Btn(7);
     if (!btnBCIP && btnBCWP)
         conveyorOn = !conveyorOn;
@@ -270,7 +270,7 @@ task main()
     waitForStart();
 
     // Infinite loop:
-    while(true)
+    while (true)
     {
         getJoystickSettings(joystick);
 

@@ -28,10 +28,10 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "JoystickDriver.c"  //Include file to "handle" the Bluetooth messages.
-int vtile=1333;
-  int v90turn=900;
-  int v45turn=450;
+#include "JoystickDriver.c"  // Include file to "handle" the Bluetooth messages.
+int vtile = 1333;
+int v90turn = 900;
+int v45turn = 450;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -50,87 +50,86 @@ int vtile=1333;
 
 void initializeRobot()
 {
-  // Place code here to sinitialize servos to starting positions.
-  // Sensors are automatically configured and setup by ROBOTC. They may need a brief time to stabilize.
-
-  return;
+    // Place code here to sinitialize servos to starting positions.
+    // Sensors are automatically configured and setup by ROBOTC. They may need a brief time to stabilize.
+    return;
 }
 
 void moveforward(int speed, int vdistance)
 {
-  nMotorEncoder[DriveLeft]=0;
-  nMotorEncoder[DriveRight]=0;
+    nMotorEncoder[DriveLeft] = 0;
+    nMotorEncoder[DriveRight] = 0;
 
-  motor[DriveLeft] = speed;
-  motor[DriveRight]= speed;
-  while(abs(nMotorEncoder[DriveLeft])<vdistance||abs(nMotorEncoder[DriveRight])<vdistance)
-  {
-    //do nothing
-}
-  motor[DriveLeft]= 0;
-  motor[DriveRight]= 0;
+    motor[DriveLeft] = speed;
+    motor[DriveRight] = speed;
+    while (abs(nMotorEncoder[DriveLeft]) < vdistance || abs(nMotorEncoder[DriveRight]) < vdistance)
+    {
+        //do nothing
+    }
+    motor[DriveLeft] = 0;
+    motor[DriveRight] = 0;
 }
 
-void rightturn (int speed, int vdistance)
+void rightturn(int speed, int vdistance)
 {
-  nMotorEncoder[DriveLeft]=0;
-  nMotorEncoder[DriveRight]=0;
+    nMotorEncoder[DriveLeft] = 0;
+    nMotorEncoder[DriveRight] = 0;
 
-  motor[DriveLeft] = speed*(-1);
-  motor[DriveRight]= speed;
-  while(abs(nMotorEncoder[DriveLeft])<vdistance||abs(nMotorEncoder[DriveRight])<vdistance)
+    motor[DriveLeft] = speed * (-1);
+    motor[DriveRight] = speed;
+    while (abs(nMotorEncoder[DriveLeft]) < vdistance || abs(nMotorEncoder[DriveRight]) < vdistance)
+    {
+        //do nothing
+    }
+
+    motor[DriveLeft] = 0;
+    motor[DriveRight] = 0;
+}
+
+void leftturn(int speed, int vdistance)
 {
-  //do nothing
+    nMotorEncoder[DriveLeft] = 0;
+    nMotorEncoder[DriveRight] = 0;
+
+    motor[DriveLeft] = speed;
+    motor[DriveRight] = speed * (-1);
+    while (abs(nMotorEncoder[DriveLeft]) < vdistance || abs(nMotorEncoder[DriveRight]) < vdistance)
+    {
+        //do nothing
+    }
+
+    motor[DriveLeft] = 0;
+    motor[DriveRight] = 0;
 }
 
-  motor[DriveLeft]= 0;
-  motor[DriveRight]= 0;
-}
-
-void leftturn (int speed, int vdistance)
+void parkballfront(string vcolor, string vposition)
 {
-  nMotorEncoder[DriveLeft]=0;
-  nMotorEncoder[DriveRight]=0;
+    int vpostile = 1;
 
-  motor[DriveLeft]= speed;
-  motor[DriveRight]= speed*(-1);
-  while(abs(nMotorEncoder[DriveLeft])<vdistance||abs(nMotorEncoder[DriveRight])<vdistance)
-  {
-    //do nothing
-}
+    if (vposition =="in")
+    {
+        vpostile = vpostile + 1;
+    }
+    moveforward(50, 2000);
 
-  motor[DriveLeft]= 0;
-  motor[DriveRight]= 0;
-}
-
-void parkballfront (string vcolor, string vposition)
-{
-  int vpostile=1;
-
-  if (vposition=="in")
-{
-  vpostile=vpostile+1;
-}
-  moveforward (50,2000);
-
-  if (vcolor=="red")
-  {
-    leftturn (50,v90turn);
-  }
-  else
-  {
-  rightturn (50,v90turn);
-}
-  moveforward (50,vtile*vpostile);
-  if (vcolor=="red")
-  {
-    leftturn (50,v45turn);
-  }
-  else
-  {
-  rightturn (50,v45turn);
-}
-  moveforward (50,vtile*3);
+    if (vcolor =="red")
+    {
+        leftturn(50, v90turn);
+    }
+    else
+    {
+        rightturn(50, v90turn);
+    }
+    moveforward(50, vtile * vpostile);
+    if (vcolor =="red")
+    {
+        leftturn(50, v45turn);
+    }
+    else
+    {
+        rightturn(50, v45turn);
+    }
+    moveforward(50, vtile * 3);
 
 }
 
@@ -157,26 +156,26 @@ void parkballfront (string vcolor, string vposition)
 
 task main()
 {
-  initializeRobot();
+    initializeRobot();
 
-  //waitForStart(); // Wait for the beginning of autonomous phase.
+    //waitForStart(); // Wait for the beginning of autonomous phase.
 
-  ///////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////
-  ////                                                   ////
-  ////    Add your robot specific autonomous code here.  ////
-  ////                                                   ////
-  ///////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////
+    ////                                                   ////
+    ////    Add your robot specific autonomous code here.  ////
+    ////                                                   ////
+    ///////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////
 
-  ////////////////////////////////
-  // straight to back from blue //
-  ////////////////////////////////
-  //moveforward (50,vtile);
-  //ftturn(50,v90turn);
+    ////////////////////////////////
+    // straight to back from blue //
+    ////////////////////////////////
+//    moveforward (50,vtile);
+//    ftturn(50,v90turn);
 
-  //////////////////////////////////
-  //park with ball front from blue//
-  //////////////////////////////////
-  parkballfront ("red","in");
+    //////////////////////////////////
+    //park with ball front from blue//
+    //////////////////////////////////
+    parkballfront("red","in");
 }
