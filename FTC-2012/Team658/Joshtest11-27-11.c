@@ -1,10 +1,11 @@
 #pragma config(Hubs,  S1, HTMotor,  HTMotor,  HTServo,  none)
+#pragma config(Sensor, S1,     ,                    sensorI2CMuxController)
 #pragma config(Motor,  motorA,          Nxtrightmotor, tmotorNormal, PIDControl, encoder)
 #pragma config(Motor,  motorB,          Nxtleftmotor,  tmotorNormal, PIDControl, encoder)
 #pragma config(Motor,  mtr_S1_C1_1,     Leftmotor,     tmotorNormal, openLoop)
 #pragma config(Motor,  mtr_S1_C1_2,     Rightmotor,    tmotorNormal, openLoop)
 #pragma config(Motor,  mtr_S1_C2_1,     Ballmotor,     tmotorNormal, openLoop)
-#pragma config(Motor,  mtr_S1_C2_2,     Armmotor,      tmotorNormal, openLoop)
+#pragma config(Motor,  mtr_S1_C2_2,     Armmotor,      tmotorNormal, openLoop, reversed)
 #pragma config(Servo,  srvo_S1_C3_1,    Rightservo,           tServoStandard)
 #pragma config(Servo,  srvo_S1_C3_2,    Leftservo,            tServoStandard)
 #pragma config(Servo,  srvo_S1_C3_3,    Rotatorservo,         tServoStandard)
@@ -23,9 +24,16 @@
 task main()
 {
  int threshold = 20;
-nMotorEncoder[Armmotor]=0;
+ int location = 120;
+ bool btn1WP = false;
+ bool btn1IP = false;
+ bool btn4WP = false;
+ bool btn4IP = false;
+
  while (true)
   {
+    btn1IP = joy2Btn(1);
+    btn4IP = joy2Btn(4);
     nxtDisplayString(0, "encoder=%d", nMotorEncoder[Armmotor]);//Up is Positive
     getJoystickSettings(joystick);
       if(abs(joystick.joy1_y2) > threshold)
@@ -56,7 +64,8 @@ nMotorEncoder[Armmotor]=0;
         else
             motor[Ballmotor] = 0;
 
-            int armPos=nMotorEncoder[Armmotor];
+            //int armPos=nMotorEncoder[Armmotor];
+/*
       if(joy2Btn(6)  && armPos < 720)
         motor[Armmotor] = 80;
       else
@@ -64,6 +73,13 @@ nMotorEncoder[Armmotor]=0;
             motor[Armmotor] = -10;
         else
             motor[Armmotor] = 0;
+*/
+      if(joy2Btn(6))
+        motor[Armmotor] = 80;
+      else if(joy2Btn(8))
+        motor[Armmotor] = -10;
+      else
+         motor[Armmotor] = 0;
 
       if(joy2Btn(2))
       {
@@ -75,9 +91,21 @@ nMotorEncoder[Armmotor]=0;
            servo[Rightservo] = 0;
            servo[Leftservo] = 255;
       }
-      if(joy2Btn(5))
-         servo[Rotatorservo] = 225;
-        if(joy2Btn(7))
-          servo[Rotatorservo] = 0;
+     if(btn1IP && !btn1WP){
+        location = location + 10;
+        if(location > 255)
+          location = 255;
+        servo[Rotatorservo] = location;
+     }
+
+     else if(btn4WP && !btn4IP){
+        location = location - 10;
+        if(location <  0)
+          location = 0;
+        servo[Rotatorservo] = location;
+     }
+
+     btn1WP = btn1IP;
+     btn4WP = btn4IP;
   }
 }

@@ -1,13 +1,14 @@
 #pragma config(Hubs,  S1, HTMotor,  HTMotor,  HTServo,  none)
+#pragma config(Sensor, S1,     ,                    sensorI2CMuxController)
 #pragma config(Motor,  motorA,          Nxtrightmotor, tmotorNormal, PIDControl, encoder)
 #pragma config(Motor,  motorB,          Nxtleftmotor,  tmotorNormal, PIDControl, encoder)
-#pragma config(Motor,  mtr_S1_C1_1,     Leftmotor,     tmotorNormal, openLoop)
-#pragma config(Motor,  mtr_S1_C1_2,     Rightmotor,    tmotorNormal, openLoop)
+#pragma config(Motor,  mtr_S1_C1_1,     Leftmotor,    tmotorNormal, openLoop)
+#pragma config(Motor,  mtr_S1_C1_2,     Rightmotor,     tmotorNormal, openLoop)
 #pragma config(Motor,  mtr_S1_C2_1,     Ballmotor,     tmotorNormal, openLoop)
 #pragma config(Motor,  mtr_S1_C2_2,     Armmotor,      tmotorNormal, openLoop)
-#pragma config(Servo,  srvo_S1_C3_1,    Rightservo,           tServoStandard)
-#pragma config(Servo,  srvo_S1_C3_2,    Leftservo,            tServoStandard)
-#pragma config(Servo,  srvo_S1_C3_3,    Rotatorservo,         tServoStandard)
+#pragma config(Servo,  srvo_S1_C3_1,    Rightservo,               tServoStandard)
+#pragma config(Servo,  srvo_S1_C3_2,    Leftservo,               tServoNone)
+#pragma config(Servo,  srvo_S1_C3_3,    servo3,               tServoNone)
 #pragma config(Servo,  srvo_S1_C3_4,    servo4,               tServoNone)
 #pragma config(Servo,  srvo_S1_C3_5,    servo5,               tServoNone)
 #pragma config(Servo,  srvo_S1_C3_6,    servo6,               tServoNone)
@@ -23,10 +24,9 @@
 task main()
 {
  int threshold = 20;
-nMotorEncoder[Armmotor]=0;
+
  while (true)
   {
-    nxtDisplayString(0, "encoder=%d", nMotorEncoder[Armmotor]);//Up is Positive
     getJoystickSettings(joystick);
       if(abs(joystick.joy1_y2) > threshold)
           motor[Rightmotor] = joystick.joy1_y2;
@@ -48,36 +48,26 @@ nMotorEncoder[Armmotor]=0;
         else
           motor[Nxtrightmotor] = 0;
 
-      if(joy1Btn(6))
-        motor[Ballmotor] = 100;
+      if(joy1Btn(8))
+        motor[Ballmotor] = -100;
       else
-        if(joy1Btn(8))
-            motor[Ballmotor] = -100;
-        else
-            motor[Ballmotor] = 0;
+        motor[Ballmotor] = 0;
 
-            int armPos=nMotorEncoder[Armmotor];
-      if(joy2Btn(6)  && armPos < 720)
-        motor[Armmotor] = 80;
+      if(joy2Btn(8))
+        motor[Armmotor] = 30;
       else
-        if(joy2Btn(8) && armPos > 0)
-            motor[Armmotor] = -10;
-        else
-            motor[Armmotor] = 0;
+        motor[Armmotor] = 0;
 
-      if(joy2Btn(2))
+      if(joy2Btn(6))
       {
         servo[Rightservo] = 116;
         servo[Leftservo] = 128;
       }
-         if(joy2Btn(3))
+      else
       {
-           servo[Rightservo] = 0;
-           servo[Leftservo] = 255;
+        servo[Rightservo] = 0;
+        servo[Leftservo] = 255;
       }
-      if(joy2Btn(5))
-         servo[Rotatorservo] = 225;
-        if(joy2Btn(7))
-          servo[Rotatorservo] = 0;
+
   }
 }

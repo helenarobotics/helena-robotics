@@ -39,14 +39,15 @@ nMotorEncoder[Armmotor]=0;
           motor[Leftmotor] = 0;
 
       if(abs(joystick.joy2_y2) > threshold)
-         motor[Nxtleftmotor] = joystick.joy2_y2;
+        {
+          motor[Nxtleftmotor] = joystick.joy2_y2;
+          motor[Nxtrightmotor] = joystick.joy2_y2;
+        }
         else
+        {
           motor[Nxtleftmotor] = 0;
-
-      if(abs(joystick.joy2_y1) > threshold)
-          motor[Nxtrightmotor] = joystick.joy2_y1;
-        else
           motor[Nxtrightmotor] = 0;
+        }
 
       if(joy1Btn(6))
         motor[Ballmotor] = 100;
@@ -56,8 +57,8 @@ nMotorEncoder[Armmotor]=0;
         else
             motor[Ballmotor] = 0;
 
-            int armPos=nMotorEncoder[Armmotor];
-      if(joy2Btn(6)  && armPos < 720)
+          int armPos=nMotorEncoder[Armmotor];
+      if(joy2Btn(6))  //&& armPos < 720)
         motor[Armmotor] = 80;
       else
         if(joy2Btn(8) && armPos > 0)
