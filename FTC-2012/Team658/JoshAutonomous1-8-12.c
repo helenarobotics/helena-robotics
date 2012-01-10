@@ -16,7 +16,6 @@
 
 #include "JoystickDriver.c"  //Include file to "handle" the Bluetooth messages.
 
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //                                    initializeRobot
@@ -34,10 +33,10 @@
 
 void initializeRobot()
 {
-  // Place code here to sinitialize servos to starting positions.
-  // Sensors are automatically configured and setup by ROBOTC. They may need a brief time to stabilize.
+    // Place code here to sinitialize servos to starting positions.
+    // Sensors are automatically configured and setup by ROBOTC. They may need a brief time to stabilize.
 
-  return;
+    return;
 }
 
 
@@ -65,68 +64,69 @@ const float move_1_ft = 1600;
 
 void move1foot(float numfeet)
 {
-  float movetime=abs(numfeet) * move_1_ft;
-  if (numfeet > 0)
-  {
-   motor[Leftmotor] = 10 ;
-   motor[Rightmotor] = 10 ;
- }else if (numfeet < 0)
- {
-   motor[Leftmotor] = -10 ;
-   motor[Rightmotor] = -10 ;
-}
-  wait1Msec(movetime);
+    float movetime = abs(numfeet) * move_1_ft;
 
-  motor[Leftmotor] = 0 ;
-  motor[Rightmotor] = 0 ;
+    if (numfeet > 0)
+    {
+        motor[Leftmotor] = 10 ;
+        motor[Rightmotor] = 10 ;
+    }
+    else if (numfeet < 0)
+    {
+        motor[Leftmotor] = -10 ;
+        motor[Rightmotor] = -10 ;
+    }
+    wait1Msec(movetime);
+
+    motor[Leftmotor] = 0 ;
+    motor[Rightmotor] = 0 ;
 }
+
 const float turnright360 = 2700;
 
 void turnright(int degrees)
 {
-    float movetime=turnright360 * abs(degrees) / 360;
-  if (degrees > 0)
-  {
-   motor[Leftmotor] = 20 ;
-   motor[Rightmotor] = -20 ;
- }else if (degrees < 0)
- {
-   motor[Leftmotor] = -20 ;
-   motor[Rightmotor] = 20 ;
-}
-  wait1Msec(movetime);
+    float movetime = turnright360 * abs(degrees) / 360;
+    if (degrees > 0)
+    {
+        motor[Leftmotor] = 20 ;
+        motor[Rightmotor] = -20 ;
+    }
+    else if (degrees < 0)
+    {
+        motor[Leftmotor] = -20 ;
+        motor[Rightmotor] = 20 ;
+    }
+    wait1Msec(movetime);
 
-  motor[Leftmotor] = 0 ;
-  motor[Rightmotor] = 0 ;
+    motor[Leftmotor] = 0 ;
+    motor[Rightmotor] = 0 ;
 }
 
 task main()
 {
+    initializeRobot();
 
-  initializeRobot();
+    waitForStart(); // Wait for the beginning of autonomous phase.
 
-  waitForStart(); // Wait for the beginning of autonomous phase.
+    ///////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////
+    ////                                                   ////
+    ////    Add your robot specific autonomous code here.  ////
+    ////                                                   ////
+    ///////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////
 
-  ///////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////
-  ////                                                   ////
-  ////    Add your robot specific autonomous code here.  ////
-  ////                                                   ////
-  ///////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////
-
-
-  move1foot(1);
-  wait1Msec(1000);
- // move1foot(-1.5);
- // wait1Msec(1000);
- // move1foot(2);
-  //wait1Msec(1000);
-  turnright(-180);
-  wait1Msec(1000);
-  move1foot(1);
-  wait1Msec(1000);
-  turnright(360);
-  while (true)
-  {}
+    move1foot(1);
+    wait1Msec(1000);
+    move1foot(-1.5);
+//    wait1Msec(1000);
+//    move1foot(2);
+//    wait1Msec(1000);
+    turnright(-180);
+    wait1Msec(1000);
+    move1foot(1);
+    wait1Msec(1000);
+    turnright(360);
+    while (true) {}
 }
