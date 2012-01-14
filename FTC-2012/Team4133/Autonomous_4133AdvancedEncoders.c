@@ -28,12 +28,12 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "JoystickDriver.c"  //Include file to "handle" the Bluetooth messages.
-const int  vtile          = 2750; //based off of 4 in. diameter wheel
-const int  v90turn        = 1178;
-const int  v45turn        = 589;
-const int  vThreshHold    = 5;
-const long vSyncInterval  = 250;
+#include "JoystickDriver.c"  // Include file to "handle" the Bluetooth messages.
+const int vtile = 2750; // based off of 4 in. diameter wheel
+const int v90turn = 1178;
+const int v45turn = 589;
+const int vThreshHold = 5;
+const long vSyncInterval = 250;
 const long vSyncTickError = 50;
 
 typedef enum {
@@ -60,227 +60,227 @@ typedef enum {
 
 void initializeRobot()
 {
-  // Place code here to initialize servos to starting positions.
-  // Sensors are automatically configured and setup by ROBOTC. They may need a brief time to stabilize.
+    // Place code here to initialize servos to starting positions.
+    // Sensors are automatically configured and setup by ROBOTC. They may need a brief time to stabilize.
 
-  return;
+    return;
 }
 
 void move(int speed, int vdistance, cmdState cmd)
 {
-  int  vPrevLeftPos  = 0;
-  int  vPrevRightPos = 0;
-  int  vCurrLeftPos  = 0;
-  int  vCurrRightPos = 0;
-  int  vLeftPower    = speed;
-  int  vRightPower   = speed;
-  int  vRightOffset  = 1;
-  int  vLeftOffset   = 1;
-  long vNxtSyncTime  = nPgmTime + vSyncInterval;
+    int vPrevLeftPos = 0;
+    int vPrevRightPos = 0;
+    int vCurrLeftPos = 0;
+    int vCurrRightPos = 0;
+    int vLeftPower = speed;
+    int vRightPower = speed;
+    int vRightOffset = 1;
+    int vLeftOffset = 1;
+    long vNxtSyncTime = nPgmTime + vSyncInterval;
 
-  //Set our motor offsets based on the supplied command
-  switch (cmd)
-  {
-    case FORWARD:
-      //To move forward both motor powers should be positive
-      vRightOffset = 1;
-      vLeftOffset  = 1;
-      break;
-    case BACKWARD:
-      //To move backward both motor powers should be negative
-      vRightOffset = -1;
-      vLeftOffset  = -1;
-      break;
-    case LEFT:
-      //To turn left, the left motor must run backward and the right motor forward
-      vRightOffset = 1;
-      vLeftOffset  = -1;
-      break;
-    case RIGHT:
-      //To turn right, the right motor must run backward and the left motor forward
-      vRightOffset = -1;
-      vLeftOffset  = 1;
-      break;
-  }
-
-  //Reset our encoders prior to movement
-  nMotorEncoder[DriveLeft]  = 0;
-  nMotorEncoder[DriveRight] = 0;
-
-  //Start up the motors
-  motor[DriveLeft]  = vLeftPower * vLeftOffset;
-  motor[DriveRight] = vRightPower * vRightOffset;
-
-  //Loop until both motors have traveled the required distance
-  while(abs(nMotorEncoder[DriveLeft]) < vdistance || abs(nMotorEncoder[DriveRight]) < vdistance)
-  {
-    //Determine the current value of the encoders
-    vCurrLeftPos  = abs(nMotorEncoder[DriveLeft]);
-    vCurrRightPos = abs(nMotorEncoder[DriveRight]);
-
-    //We only perform error correction at specific intervals
-    if (nPgmTime >= vNxtSyncTime)
+    //Set our motor offsets based on the supplied command
+    switch (cmd)
     {
-      //See if we are far enough 'out of sync' to warrant speed corrections
-      //To do this, we average the encoder values and then compare each individual motor to that average
-      int avg = (vCurrLeftPos + vCurrRightPos) / 2;
-      if (abs(vCurrLeftPos - avg) > vSyncTickError || abs(vCurrRightPos - avg) > vSyncTickError)
-      {
-        //We are out of sync. Determine which side is falling behind the other and adjust the speed
-        //We default to slowing down the motors. The only time we speed up a motoro is if it was
-        //previously slowed
-        if (vCurrLeftPos < vCurrRightPos)
-        {
-          if (vLeftPower < speed)
-          {
-            vLeftPower = vLeftPower + 1;
-            motor[DriveLeft] = vLeftPower * vLeftOffset;
-          }
-          else
-          {
-            vRightPower = vRightPower - 1;
-            motor[DriveRight] = vRightPower * vRightOffset;
-          }
-        }
-        else
-        {
-          if (vRightPower < speed)
-          {
-            vRightPower = vRightPower + 1;
-            motor[DriveRight] = vRightPower * vRightOffset;
-          }
-          else
-          {
-            vLeftPower = vLeftPower - 1;
-            motor[DriveLeft] = vLeftPower * vLeftOffset;
-          }
-        }
-      }
-
-      //Now we check to ensure we have not run into an object preventing us from moving.
-      if ((vCurrLeftPos <= (vPrevLeftPos + vThreshHold)) || (vCurrRightPos <= (vPrevRightPos + vThreshHold)))
-      {
-        //At least one motor is stuck. Turn off motors and wait for a period of time to avoid motor burn out.
-        motor[DriveLeft] = 0;
-        motor[DriveRight] = 0;
-
-        wait1Msec(1000);
-
-        motor[DriveLeft] = vLeftPower * vLeftOffset;
-        motor[DriveRight] = vRightPower * vRightOffset;
-      }
-
-      vNxtSyncTime = nPgmTime + vSyncInterval;
-
-      vPrevLeftPos  = vCurrLeftPos;
-      vPrevRightPos = vCurrRightPos;
+    case FORWARD:
+        //To move forward both motor powers should be positive
+        vRightOffset = 1;
+        vLeftOffset = 1;
+        break;
+    case BACKWARD:
+        //To move backward both motor powers should be negative
+        vRightOffset = -1;
+        vLeftOffset = -1;
+        break;
+    case LEFT:
+        //To turn left, the left motor must run backward and the right motor forward
+        vRightOffset = 1;
+        vLeftOffset = -1;
+        break;
+    case RIGHT:
+        //To turn right, the right motor must run backward and the left motor forward
+        vRightOffset = -1;
+        vLeftOffset = 1;
+        break;
     }
-  }
 
-  motor[DriveLeft]  = 0;
-  motor[DriveRight] = 0;
+    //Reset our encoders prior to movement
+    nMotorEncoder[DriveLeft] = 0;
+    nMotorEncoder[DriveRight] = 0;
 
-  //The following line is used to pause the robot in between movements
-  wait1Msec(100);
+    //Start up the motors
+    motor[DriveLeft] = vLeftPower * vLeftOffset;
+    motor[DriveRight] = vRightPower * vRightOffset;
+
+    //Loop until both motors have traveled the required distance
+    while (abs(nMotorEncoder[DriveLeft]) < vdistance || abs(nMotorEncoder[DriveRight]) < vdistance)
+    {
+        //Determine the current value of the encoders
+        vCurrLeftPos = abs(nMotorEncoder[DriveLeft]);
+        vCurrRightPos = abs(nMotorEncoder[DriveRight]);
+
+        //We only perform error correction at specific intervals
+        if (nPgmTime >= vNxtSyncTime)
+        {
+            //See if we are far enough 'out of sync' to warrant speed corrections
+            //To do this, we average the encoder values and then compare each individual motor to that average
+            int avg = (vCurrLeftPos + vCurrRightPos) / 2;
+            if (abs(vCurrLeftPos - avg) > vSyncTickError || abs(vCurrRightPos - avg) > vSyncTickError)
+            {
+                //We are out of sync. Determine which side is falling behind the other and adjust the speed
+                //We default to slowing down the motors. The only time we speed up a motoro is if it was
+                //previously slowed
+                if (vCurrLeftPos < vCurrRightPos)
+                {
+                    if (vLeftPower < speed)
+                    {
+                        vLeftPower = vLeftPower + 1;
+                        motor[DriveLeft] = vLeftPower * vLeftOffset;
+                    }
+                    else
+                    {
+                        vRightPower = vRightPower - 1;
+                        motor[DriveRight] = vRightPower * vRightOffset;
+                    }
+                }
+                else
+                {
+                    if (vRightPower < speed)
+                    {
+                        vRightPower = vRightPower + 1;
+                        motor[DriveRight] = vRightPower * vRightOffset;
+                    }
+                    else
+                    {
+                        vLeftPower = vLeftPower - 1;
+                        motor[DriveLeft] = vLeftPower * vLeftOffset;
+                    }
+                }
+            }
+
+            //Now we check to ensure we have not run into an object preventing us from moving.
+            if ((vCurrLeftPos <= (vPrevLeftPos + vThreshHold)) || (vCurrRightPos <= (vPrevRightPos + vThreshHold)))
+            {
+                //At least one motor is stuck. Turn off motors and wait for a period of time to avoid motor burn out.
+                motor[DriveLeft] = 0;
+                motor[DriveRight] = 0;
+
+                wait1Msec(1000);
+
+                motor[DriveLeft] = vLeftPower * vLeftOffset;
+                motor[DriveRight] = vRightPower * vRightOffset;
+            }
+
+            vNxtSyncTime = nPgmTime + vSyncInterval;
+
+            vPrevLeftPos = vCurrLeftPos;
+            vPrevRightPos = vCurrRightPos;
+        }
+    }
+
+    motor[DriveLeft] = 0;
+    motor[DriveRight] = 0;
+
+    //The following line is used to pause the robot in between movements
+    wait1Msec(100);
 }
 
 void findBeacon()
 {
-  int speed         = 50;
-  int vEncoderVal;
+    int speed = 50;
+    int vEncoderVal;
 
-  //First we must turn the robot until the beacon is in front of us
-  while (SensorValue[irSeeker] < 5)
-  {
-    motor[DriveLeft]  = speed;
-    motor[DriveRight] = speed * (-1);
-  }
+    //First we must turn the robot until the beacon is in front of us
+    while (SensorValue[irSeeker] < 5)
+    {
+        motor[DriveLeft] = speed;
+        motor[DriveRight] = speed * (-1);
+    }
 
-  while (SensorValue[irSeeker] > 5)
-  {
-    motor[DriveLeft]  = speed * (-1);
-    motor[DriveRight] = speed;
-  }
+    while (SensorValue[irSeeker] > 5)
+    {
+        motor[DriveLeft] = speed * (-1);
+        motor[DriveRight] = speed;
+    }
 
-  //beacon should now be in front of us. As the IR sensor has a wide range for what it considers to be in front of us
-  //we need to sweep the robot first left then right to find the full range of where the beacon is
-  while (SensorValue[irSeeker] == 5)
-  {
-    motor[DriveLeft]  = speed * (-1);
-    motor[DriveRight] = speed;
-  }
+    //beacon should now be in front of us. As the IR sensor has a wide range for what it considers to be in front of us
+    //we need to sweep the robot first left then right to find the full range of where the beacon is
+    while (SensorValue[irSeeker] == 5)
+    {
+        motor[DriveLeft] = speed * (-1);
+        motor[DriveRight] = speed;
+    }
 
-  motor[DriveLeft]  = 0;
-  motor[DriveRight] = 0;
+    motor[DriveLeft] = 0;
+    motor[DriveRight] = 0;
 
-  //Reset the motor encoder at this position to note our furthest point to the left
-  nMotorEncoder[DriveLeft] = 0;
+    //Reset the motor encoder at this position to note our furthest point to the left
+    nMotorEncoder[DriveLeft] = 0;
 
-  while (SensorValue[irSeeker] <= 5)
-  {
-    motor[DriveLeft]  = speed;
-    motor[DriveRight] = speed * (-1);
-  }
+    while (SensorValue[irSeeker] <= 5)
+    {
+        motor[DriveLeft] = speed;
+        motor[DriveRight] = speed * (-1);
+    }
 
-  motor[DriveLeft]  = 0;
-  motor[DriveRight] = 0;
+    motor[DriveLeft] = 0;
+    motor[DriveRight] = 0;
 
-  vEncoderVal = nMotorEncoder[DriveLeft];
+    vEncoderVal = nMotorEncoder[DriveLeft];
 
-  //Now that we know the range, the beacon should be in the exact middle of the range.
-  vEncoderVal = vEncodeVal / 2;
+    //Now that we know the range, the beacon should be in the exact middle of the range.
+    vEncoderVal = vEncodeVal / 2;
 
-  //Turn to the middle of the range
-  while (nMotorEncoder[DriveLeft] > vEncodeVal)
-  {
-    motor[DriveLeft]  = speed * (-1);
-    motor[DriveRight] = speed;
-  }
+    //Turn to the middle of the range
+    while (nMotorEncoder[DriveLeft] > vEncodeVal)
+    {
+        motor[DriveLeft] = speed * (-1);
+        motor[DriveRight] = speed;
+    }
 
-  //The beacon should now be directly in front of us. Stop the motors
-  motor[DriveLeft]  = 0;
-  motor[DriveRight] = 0;
+    //The beacon should now be directly in front of us. Stop the motors
+    motor[DriveLeft] = 0;
+    motor[DriveRight] = 0;
 }
 
-void parkballfront (string vcolor, string vposition)
+void parkballfront(string vcolor, string vposition)
 {
-  int vpostile = 1;
+    int vpostile = 1;
 
-  if (vposition == "in")
-  {
-    vpostile = vpostile + 1;
-  }
+    if (vposition == "in")
+    {
+        vpostile = vpostile + 1;
+    }
 
-  //Start by moving down off the home zone
-  move(50, 4100, FORWARD);
+    //Start by moving down off the home zone
+    move(50, 4100, FORWARD);
 
-  //Next turn in toward the center of the field
-  if (vcolor == "red")
-  {
-    move(50, v90turn, LEFT);
-  }
-  else
-  {
-    move(50, v90turn, RIGHT);
-  }
+    //Next turn in toward the center of the field
+    if (vcolor == "red")
+    {
+        move(50, v90turn, LEFT);
+    }
+    else
+    {
+        move(50, v90turn, RIGHT);
+    }
 
-  //Move forward again to position robot by bowling ball
-  move(50, vtile * vpostile, FORWARD);
+    //Move forward again to position robot by bowling ball
+    move(50, vtile * vpostile, FORWARD);
 
-  //Turn toward the front parking zone
-  /*if (vcolor == "red")
-  {
-    move(50, v45turn, LEFT);
-  }
-  else
-  {
-    move(50, v45turn, RIGHT);
-  }*/
+    //Turn toward the front parking zone
+    /*if (vcolor == "red")
+      {
+      move(50, v45turn, LEFT);
+      }
+      else
+      {
+      move(50, v45turn, RIGHT);
+      }*/
 
-  findBeacon();
+    findBeacon();
 
-  //Move forward into parking zone
-  move(50, vtile * 3, FORWARD);
+    //Move forward into parking zone
+    move(50, vtile * 3, FORWARD);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -306,28 +306,28 @@ void parkballfront (string vcolor, string vposition)
 
 task main()
 {
-  initializeRobot();
+    initializeRobot();
 
-  waitForStart(); // Wait for the beginning of autonomous phase.
+    waitForStart(); // Wait for the beginning of autonomous phase.
 
-  ///////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////
-  ////                                                   ////
-  ////    Add your robot specific autonomous code here.  ////
-  ////                                                   ////
-  ///////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////
+    ////                                                   ////
+    ////    Add your robot specific autonomous code here.  ////
+    ////                                                   ////
+    ///////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////
 
-  ////////////////////////////////
-  // Testing                    //
-  ////////////////////////////////
-  //moveforward (50,4000);
-  //wait1Msec(5000);
-  //moveforward (50,vtile);
-  //leftturn(50,v90turn);
+    ////////////////////////////////
+    // Testing                    //
+    ////////////////////////////////
+    //moveforward (50,4000);
+    //wait1Msec(5000);
+    //moveforward (50,vtile);
+    //leftturn(50,v90turn);
 
-  //////////////////////////////////
-  //park with ball front          //
-  //////////////////////////////////
-  parkballfront ("blue","in");
+    //////////////////////////////////
+    //park with ball front          //
+    //////////////////////////////////
+    parkballfront("blue", "in");
 }
