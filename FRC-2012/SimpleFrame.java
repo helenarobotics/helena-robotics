@@ -7,14 +7,19 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Victor;
 
 public class SimpleFrame extends SimpleRobot {
+    // Drivetrain
     private Victor leftMotor;
     private Victor rightMotor;
     private Solenoid shifter;
+
+    // Shooter
+    private Victor shooterMotor;
 
     SimpleFrame() {
         System.out.println("Starting SimpleFrame");
         leftMotor = new Victor(1);
         rightMotor = new Victor(2);
+        shooterMotor = new Victor(3);
         disabled();
 
         // Setup the transmission shifter.
@@ -25,6 +30,7 @@ public class SimpleFrame extends SimpleRobot {
     protected void disabled() {
         leftMotor.set(0);
         rightMotor.set(0);
+        shooterMotor.set(0);
     }
 
     /**
@@ -39,7 +45,8 @@ public class SimpleFrame extends SimpleRobot {
     public void operatorControl() {
         System.out.println("Starting operatorControl");
 
-        Joystick joystick = new Joystick(2);
+        Joystick driveStick = new Joystick(1);
+        Joystick shootStick = new Joystick(2);
         RobotDrive drive = new RobotDrive(leftMotor, rightMotor);
 
         drive.setInvertedMotor(RobotDrive.MotorType.kFrontLeft, false);
@@ -50,12 +57,16 @@ public class SimpleFrame extends SimpleRobot {
         drive.setSafetyEnabled(false);
 
         while (isOperatorControl() && isEnabled()) {
-            // Ignore the dead-spot near the center of the joystick
-            if (Math.abs(joystick.getMagnitude()) > 0.05) {
+            // Ignore the dead-spot near the center of the drive joystick
+            if (Math.abs(driveStick.getMagnitude()) > 0.05) {
                 // Add greater sensitivity at lower magnitudes
-                drive.arcadeDrive(joystick, true);
+                drive.arcadeDrive(driveStick, true);
             }
-            joystickShifter(joystick);
+            joystickShifter(driveStick);
+
+            // Read the throttle to determine the speed of the shooter
+            // motor
+            shooterMotor.set(driveStick.getThrottle());
         }
     }
 
