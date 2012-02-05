@@ -26,8 +26,8 @@ public class ViewScreen extends JPanel implements Observer {
         // Turn on double-buffering
         super(true);
 //        setPreferredSize(new Dimension(1024, 768));
-//        setPreferredSize(new Dimension(800, 600));
-        setPreferredSize(new Dimension(640, 480));
+        setPreferredSize(new Dimension(800, 600));
+//        setPreferredSize(new Dimension(640, 480));
         setBackground(Color.BLACK);
         setForeground(Color.WHITE);
 

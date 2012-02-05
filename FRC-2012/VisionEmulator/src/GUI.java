@@ -1,31 +1,21 @@
 import java.awt.Container;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.Timer;
-
-import ctl.CameraPanPanel;
-import ctl.RobotMovePanel;
 
 import model.Camera;
 import model.Robot;
 
+import view.ControlPanel;
 import view.ViewScreen;
 
 public class GUI implements Runnable {
@@ -37,10 +27,6 @@ public class GUI implements Runnable {
         // invokeLater requires a class that implements the Runnable interface
         javax.swing.SwingUtilities.invokeLater(gui);
     }
-
-    // The field dimensions in inches
-    private static final int FIELD_LENGTH = 54 * 12;
-    private static final int FIELD_WIDTH = 27 * 12;
 
     // UI fields made global since it makes things easier.
     private Container content;
@@ -66,17 +52,14 @@ public class GUI implements Runnable {
         final Camera camera = new Camera();
         final Robot robot = new Robot();
 
-        // Top-level panel where the 'emulated camera images' will be displayed
+        // Top-level panel where the 'emulated camera images' will be
+        // displayed.
         final ViewScreen viewScreen = new ViewScreen(camera, robot);
-        addComponent(viewScreen, 0, 0, GridBagConstraints.NORTH);
+        addComponent(viewScreen, 0, 0, GridBagConstraints.NORTHWEST);
 
-        // Camera Pan panel
-        JPanel cameraPanPanel = new CameraPanPanel(camera);
-        addComponent(cameraPanPanel, 0, 1, GridBagConstraints.SOUTH);
-
-        // Robot Movement panel
-        JPanel robotMovePanel = new RobotMovePanel(robot);
-        addComponent(robotMovePanel, 0, 2, GridBagConstraints.SOUTH);
+        // Control panel to control the image
+        final JPanel controlPanel = new ControlPanel(camera, robot);
+        addComponent(controlPanel, 1, 0, GridBagConstraints.NORTHEAST);
 
         // Finally, an Exit button!
         final JButton exitButton = new JButton("Exit");
@@ -85,7 +68,7 @@ public class GUI implements Runnable {
                     System.exit(0);
                 }
             });
-        addComponent(exitButton, 0, 3, GridBagConstraints.SOUTH);
+        addComponent(exitButton, 1, 0, GridBagConstraints.SOUTH);
 
         // Make the frame visible.
         frame.pack();
@@ -99,7 +82,6 @@ public class GUI implements Runnable {
         gbc.gridx = gridx;
         gbc.gridy = gridy;
         gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = anchor;
         gb.setConstraints(c, gbc);
         content.add(c);
