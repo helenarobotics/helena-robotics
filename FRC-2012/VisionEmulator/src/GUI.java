@@ -20,6 +20,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import ctl.CameraPanPanel;
+import ctl.RobotMovePanel;
+
+import model.Camera;
+import model.Robot;
+
+import view.ViewScreen;
+
 public class GUI implements Runnable {
     public static void main(String[] args) {
         // Create an Application object
@@ -54,17 +62,21 @@ public class GUI implements Runnable {
         gb = new GridBagLayout();
         content.setLayout(gb);
 
+        // The models
+        final Camera camera = new Camera();
+        final Robot robot = new Robot();
+
         // Top-level panel where the 'emulated camera images' will be displayed
-        final CameraPanel cameraPanel = new CameraPanel();
-        addComponent(cameraPanel, 0, 0, GridBagConstraints.NORTH);
+        final ViewScreen viewScreen = new ViewScreen(camera, robot);
+        addComponent(viewScreen, 0, 0, GridBagConstraints.NORTH);
 
-        // Pan panel
-        JPanel panPanel = new PanPanel(cameraPanel);
-        addComponent(panPanel, 0, 1, GridBagConstraints.SOUTH);
+        // Camera Pan panel
+        JPanel cameraPanPanel = new CameraPanPanel(camera);
+        addComponent(cameraPanPanel, 0, 1, GridBagConstraints.SOUTH);
 
-        // Zoom panel
-        JPanel zoomPanel = new ZoomPanel(cameraPanel);
-        addComponent(zoomPanel, 0, 2, GridBagConstraints.SOUTH);
+        // Robot Movement panel
+        JPanel robotMovePanel = new RobotMovePanel(robot);
+        addComponent(robotMovePanel, 0, 2, GridBagConstraints.SOUTH);
 
         // Finally, an Exit button!
         final JButton exitButton = new JButton("Exit");
