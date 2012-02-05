@@ -1,4 +1,4 @@
-<project name="frcImage" default="jar" basedir=".">
+<project name="frcImage" default="compile" basedir=".">
   <property name="build.dir" location="build"/>
   <property name="image.dir" location="images"/>
   <property name="lib.dir" location="lib"/>
@@ -24,10 +24,10 @@
     </fileset>
   </path>
 
-  <!-- Classpath entry only needed if compiling -->
+  <!-- Classpath entry only needed if running -->
   <path id="proj.classpath">
     <path refid="lib.classpath"/>
-    <fileset dir="${lib.dir}" includes="*.jar"/>
+    <pathelement path="${build.dir}"/>
   </path>
 
   <target name="init">
