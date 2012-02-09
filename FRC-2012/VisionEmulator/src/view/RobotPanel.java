@@ -36,28 +36,28 @@ public class RobotPanel extends GridBagJPanel implements Observer {
 
         // Label the panel!
         JLabel positionLabel = new JLabel("Robot Position");
-        addComponent(positionLabel, 0, gridRow++, GridBagConstraints.SOUTH);
+        addComponent(positionLabel, 0, gridRow++, 3, 1, GridBagConstraints.NORTH);
 
         // Movement controls
         JPanel robotMoveCtl = new RobotMoveCtl(robot);
-        addComponent(robotMoveCtl, 0, gridRow++, GridBagConstraints.SOUTH);
+        addComponent(robotMoveCtl, 0, gridRow++, 3, 1, GridBagConstraints.NORTH);
 
         // Show the user the state of the robot
-        JLabel xLabel = new JLabel("X-Position:");
+        JLabel xLabel = new JLabel("X-Position:  ");
         xPosLabel = new PositionJLabel(robot.getXOffset());
         addComponent(xLabel, 0, gridRow, GridBagConstraints.NORTHWEST);
         addComponent(xPosLabel, 1, gridRow++, GridBagConstraints.WEST);
 
-        JLabel yLabel = new JLabel("Y-Position:");
+        JLabel yLabel = new JLabel("Y-Position:  ");
         yPosLabel = new PositionJLabel(robot.getYOffset());
         addComponent(yLabel, 0, gridRow, GridBagConstraints.NORTHWEST);
         addComponent(yPosLabel, 1, gridRow++, GridBagConstraints.WEST);
 
-        JLabel rotLabel = new JLabel("Rotation  :");
+        JLabel rotLabel = new JLabel("Rotation:   ");
         rotPosLabel = new PositionJLabel(robot.getRotation());
         addComponent(rotLabel, 0, gridRow, GridBagConstraints.NORTHWEST);
         addComponent(rotPosLabel, 1, gridRow++, GridBagConstraints.WEST);
-        
+
         // Watch the state of the robot so we can update the position
         // labels.
         robot.addObserver(this);
@@ -73,24 +73,14 @@ public class RobotPanel extends GridBagJPanel implements Observer {
         }
 
         void updatePos(int pos) {
-            // Make sure we keep space for 4 characters
-            StringBuffer sb = new StringBuffer();
-            sb.append(pos);
-            while (sb.length() < 4)
-                sb.insert(0, " ");
-            
-            setText(sb.toString());
+            setText("" + pos);
         }
     }
 
-    // One of the models (Camera or Robot) was updated, so repaint
-    // the screen.
+    // The Robot model was updated, so update the information.
     public void update(Observable o, Object arg) {
-//        if (o instanceof Robot) {
-            xPosLabel.updatePos(robot.getXOffset());
-            yPosLabel.updatePos(robot.getYOffset());
-            rotPosLabel.updatePos(robot.getRotation());
-//            repaint();
-//        }
+        xPosLabel.updatePos(robot.getXOffset());
+        yPosLabel.updatePos(robot.getYOffset());
+        rotPosLabel.updatePos(robot.getRotation());
     }
 }
