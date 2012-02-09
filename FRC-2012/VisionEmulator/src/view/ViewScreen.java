@@ -66,24 +66,17 @@ public class ViewScreen extends JPanel implements Observer {
         // Parent constructor first...
         super.paint(g);
 
-        // Find the center of the screen
-        int xPos = getWidth() / 2;
-        int yPos = getHeight() / 2;
+        try {
+            // Make the center of the screen 0, 0
+            g.translate(getWidth() / 2, getHeight() / 2);
 
-        // XXX - Calculate how to display based on scale, azimuth, and
-        // inclination.
 
-        // Calculate the robot distance from the basket.
-        double dist = Math.sqrt(Math.pow(robot.getXOffset(), 2) +
-                                Math.pow(robot.getYOffset(), 2));
-
-        // @ 10' (120"), scale is ~8, and at 5' (60"), it should be 16.
-        double scale = 960 / dist;
-        xPos -= (int)(5 * camera.getAzimuthAngle() / scale);
-        yPos += (int)(5 * camera.getInclineAngle() / scale);
-
-        // Draw the hoops
-        for (Hoop h: hoops)
-            h.paint(g, xPos, yPos, scale);
+            // Draw the hoops
+            for (Hoop h: hoops)
+                h.paint(g, robot, camera);
+        } finally {
+            // Back to standard locations.
+            g.translate(-getWidth() / 2, -getHeight() / 2);
+        }
     }
 }

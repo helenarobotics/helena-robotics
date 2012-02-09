@@ -5,6 +5,9 @@ import java.awt.Graphics;
 
 import javax.swing.JPanel;
 
+import model.Camera;
+import model.Robot;
+
 class Hoop {
     // What color is the tape?
     private static final Color TAPE_COLOR = Color.RED;
@@ -30,15 +33,37 @@ class Hoop {
         yOffset = _yOffset;
     }
 
-    void paint(Graphics g, int xOrigin, int yOrigin, double scale) {
+    void paint(Graphics g, Robot robot, Camera camera) {
+        // Calculate the robot's distance from the center of the hoops
+        double distance = Math.sqrt(Math.pow(robot.getXOffset(), 2) +
+                                    Math.pow(robot.getYOffset(), 2));
+
+        // XXX - @ 10' (120"), scale is ~8, and at 5' (60"), it should be 16.
+        double scale = 960 / distance;
+
+        // The origin is based on where the robot's location
+        int xOrigin = -(int)(robot.getXOffset() * scale);
+        int yOrigin = 0;
+
+        // The rotation of the robots will move the location of the
+        // backboard from the robot's perpective.  The math used is
+        // based on: 1 = sin(x)^2 + cos(x)^2
+
+        // XXX - Have the camera affect the display
+//        xOrigin -= (int)(5 * camera.getAzimuthAngle() / scale);
+//        yOrigin += (int)(5 * camera.getInclineAngle() / scale);
+
+        // Now that we have the center of all the hoops at the
+        // correct position, calculate the offset from the center
+        // for this particular hoop.
+        xOrigin += (int)(xOffset * scale);
+        yOrigin += (int)(yOffset * scale);
+
+        // Draw the hoop now!
         Color origColor = null;
         try {
             // Grab the current color
             origColor = g.getColor();
-
-            // Scale the offset by the scale amount
-            xOrigin += (int)(xOffset * scale);
-            yOrigin += (int)(yOffset * scale);
 
             // Draw the backboard!
             int width = (int)(backboardOutsideWidth * scale);
