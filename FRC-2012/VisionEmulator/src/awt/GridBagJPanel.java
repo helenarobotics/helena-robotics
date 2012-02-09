@@ -19,9 +19,17 @@ public class GridBagJPanel extends JPanel {
 
     // Convenience method to help us layout the components.
     protected void addComponent(Component c, int gridx, int gridy, int anchor) {
+        addComponent(c, gridx, gridy, 1, 1, anchor);
+    }
+
+    // Convenience method to help us layout the components.
+    protected void addComponent(Component c, int gridx, int gridy,
+                                int gridwidth, int gridheight, int anchor) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = gridx;
         gbc.gridy = gridy;
+        gbc.gridwidth = gridwidth;
+        gbc.gridheight = gridheight;
         gbc.anchor = anchor;
         gb.setConstraints(c, gbc);
         add(c);
