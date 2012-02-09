@@ -25,8 +25,8 @@ public class ControlPanel extends GridBagJPanel {
         int gridRow = 0;
 
         // Camera controls
-        JPanel cameraPanel = new CameraPanel(camera);
-        addComponent(cameraPanel, 0, gridRow++, GridBagConstraints.NORTH);
+//        JPanel cameraPanel = new CameraPanel(camera);
+//        addComponent(cameraPanel, 0, gridRow++, GridBagConstraints.NORTH);
 
         // Robot controls
         JPanel robotPanel = new RobotPanel(robot);
