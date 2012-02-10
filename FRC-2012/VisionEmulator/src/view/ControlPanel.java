@@ -31,5 +31,9 @@ public class ControlPanel extends GridBagJPanel {
         // Robot controls
         JPanel robotPanel = new RobotPanel(robot);
         addComponent(robotPanel, 0, gridRow++, GridBagConstraints.NORTH);
+
+        // Field control
+        JPanel fieldPanel = new FieldPanel(robot);
+        addComponent(fieldPanel, 0, gridRow++, GridBagConstraints.SOUTH);
     }
 }
