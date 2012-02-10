@@ -70,7 +70,6 @@ public class ViewScreen extends JPanel implements Observer {
             // Make the center of the screen 0, 0
             g.translate(getWidth() / 2, getHeight() / 2);
 
-
             // Draw the hoops
             for (Hoop h: hoops)
                 h.paint(g, robot, camera);
