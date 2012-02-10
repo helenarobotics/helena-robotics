@@ -152,7 +152,7 @@ public class RobotMoveCtl extends GridBagJPanel {
                     robot.rotateLeft();
 
                     // Keep moving as long as the button is clicked
-                    timer = new Timer(25, rotateLtAction);
+                    timer = new Timer(100, rotateLtAction);
                     timer.start();
                 }
                 public void mouseReleased(MouseEvent e) {
@@ -177,7 +177,7 @@ public class RobotMoveCtl extends GridBagJPanel {
                     robot.rotateRight();
 
                     // Keep moving as long as the button is clicked
-                    timer = new Timer(25, rotateRtAction);
+                    timer = new Timer(100, rotateRtAction);
                     timer.start();
                 }
                 public void mouseReleased(MouseEvent e) {
