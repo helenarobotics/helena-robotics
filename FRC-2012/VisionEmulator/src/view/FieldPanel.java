@@ -221,6 +221,11 @@ public class FieldPanel extends JPanel {
             recW = (int)(KEY_WIDTH * scale);
             recH = (int)(KEY_LENGTH * scale);
             ovlH = (int)(KEY_RADIUS * scale);
+
+            // Note, we're doing a half-height circle, but the height is
+            // normally the diameter, so multiply times 2.  Thanks Dan!
+            ovlH *= 2;
+
             recX = -recW / 2;
             recY = -fieldHeight / 2;
 
