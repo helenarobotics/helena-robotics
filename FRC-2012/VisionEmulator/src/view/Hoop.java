@@ -41,14 +41,25 @@ class Hoop {
         // XXX - @ 10' (120"), scale is ~8, and at 5' (60"), it should be 16.
         double scale = 960 / distance;
 
-        // The origin is based on where the robot's location
-        int xOrigin = -(int)(robot.getXOffset() * scale);
-        int yOrigin = 0;
-
         // The rotation of the robots will move the location of the
         // backboard from the robot's perpective.  The math used is
-        // based on: 1 = sin(x)^2 + cos(x)^2
+        //   cos(x) = adj/hyp  (where hype = distance and adj = deltaY).
+        // Solving for deltaY, we end up with;
+        //   deltaY = distance * cos(x)
+        //
+        // Finally, using the pythagorean theorem, we know that c =
+        // distance, and a = deltaY.  Solving for b we end up with:
+        //   b = sqrt(c^2 - a^2)
+        // which is the deltaX  
+        double rotYAmt = distance * Math.cos(Math.toRadians(robot.getRotation()));
+        double rotXAmt = Math.sqrt(Math.pow(distance, 2) -
+                                   Math.pow(rotYAmt, 2));
+        if (robot.getRotation() < 0)
+            rotXAmt *= -1;
 
+        int xOrigin = -(int)((robot.getXOffset() + rotXAmt) * scale);
+        int yOrigin = 0;
+        
         // XXX - Have the camera affect the display
 //        xOrigin -= (int)(5 * camera.getAzimuthAngle() / scale);
 //        yOrigin += (int)(5 * camera.getInclineAngle() / scale);
