@@ -5,7 +5,7 @@ import java.util.Observable;
 // This class keeps track of the state of the camera on the robot
 public class Robot extends Observable {
     // The field length in inches
-    private static final int MAX_Y_OFFSET = 57 * 12;
+    private static final int MAX_Y_OFFSET = 54 * 12;
 
     // The fender limits how close we can get
     private static final int MIN_Y_OFFSET = 39;
