@@ -40,8 +40,36 @@ public class Robot extends Observable {
         return xOffset;
     }
 
+    public void setXOffset(int _xOffset) {
+        // Limit the robot to the field
+        if (_xOffset < MIN_X_OFFSET)
+            _xOffset = MIN_X_OFFSET;
+        else if (_xOffset > MAX_X_OFFSET)
+            _xOffset = MAX_X_OFFSET;
+
+        if (xOffset != _xOffset) {
+            xOffset = _xOffset;
+            setChanged();
+            notifyObservers(xOffset);
+        }
+    }
+
     public int getYOffset() {
         return yOffset;
+    }
+
+    public void setYOffset(int _yOffset) {
+        // Fender limits us getting any closer than 39"
+        if (_yOffset < MIN_Y_OFFSET)
+            _yOffset = MIN_Y_OFFSET;
+        else if (_yOffset > MAX_Y_OFFSET)
+            _yOffset = MAX_Y_OFFSET;
+
+        if (yOffset != _yOffset) {
+            yOffset = _yOffset;
+            setChanged();
+            notifyObservers(yOffset);
+        }
     }
 
     public int getRotation() {
@@ -58,54 +86,20 @@ public class Robot extends Observable {
         notifyObservers(rotation);
     }
 
-    // Move the robot!
     public void moveIn() {
-        if (yOffset > 0) {
-            yOffset -= MOVE_AMT;
-            // Fender limits us getting any closer than 39"
-            if (yOffset < MIN_Y_OFFSET)
-                yOffset = MIN_Y_OFFSET;
-            setChanged();
-            notifyObservers(yOffset);
-        }
+        setYOffset(yOffset - MOVE_AMT);
     }
 
-    // Move the robot!
     public void moveOut() {
-        if (yOffset < MAX_Y_OFFSET) {
-            yOffset += MOVE_AMT;
-            // Since we can move in MOVE_AMT increments, limit us to
-            // being inside the field.
-            if (yOffset > MAX_Y_OFFSET)
-                yOffset = MAX_Y_OFFSET;
-            setChanged();
-            notifyObservers(yOffset);
-        }
-    }
-
-    // Move the robot!
-    public void strafeRight() {
-        if (xOffset < MAX_X_OFFSET) {
-            xOffset += MOVE_AMT;
-            // Since we can move in MOVE_AMT increments, limit us to
-            // being inside the field.
-            if (xOffset > MAX_X_OFFSET)
-                xOffset = MAX_X_OFFSET;
-            setChanged();
-            notifyObservers(xOffset);
-        }
+        setYOffset(yOffset + MOVE_AMT);
     }
 
     public void strafeLeft() {
-        if (xOffset > MIN_X_OFFSET) {
-            xOffset -= MOVE_AMT;
-            // Since we can move in MOVE_AMT increments, limit us to
-            // being inside the field.
-            if (xOffset < MIN_X_OFFSET)
-                xOffset = MIN_X_OFFSET;
-            setChanged();
-            notifyObservers(xOffset);
-        }
+        setXOffset(xOffset - MOVE_AMT);
+    }
+
+    public void strafeRight() {
+        setXOffset(xOffset + MOVE_AMT);
     }
 
     // We normalize the rotation angle to +- 180 degrees
