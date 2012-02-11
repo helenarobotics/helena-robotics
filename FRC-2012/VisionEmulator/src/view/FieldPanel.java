@@ -3,12 +3,17 @@ package view;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Polygon;
+
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.JPanel;
 
 import model.Robot;
 
-public class FieldPanel extends JPanel {
+public class FieldPanel extends JPanel implements Observer {
     static final long serialVersionUID = -5499028701932093871L;
 
     // Robot information.
@@ -28,6 +33,10 @@ public class FieldPanel extends JPanel {
     private static final double KEY_WIDTH = 101;
     private static final double KEY_RADIUS = 48;
 
+    // Robot Sprite size (arbitrarily chosen)
+    private static final double ROBOT_LENGTH = 48;
+    private static final double ROBOT_WIDTH = 32;
+
     // To make it fit on the screen, we scale the field.
     private static final double scale = 7.0 / 12.0;
 
@@ -36,10 +45,14 @@ public class FieldPanel extends JPanel {
     private Bumper bumpers[];
     private Bridge bridges[];
     private Key keys[];
+    private RobotSprite rs;
 
     public FieldPanel(Robot _robot) {
         // Turn on double-buffering
         super(true);
+
+        // Keep track of the objects we're controlling
+        robot = _robot;
 
         int width = (int)(FIELD_WIDTH * scale);
         int height = (int)(FIELD_LENGTH * scale);
@@ -71,8 +84,18 @@ public class FieldPanel extends JPanel {
         bumpers[0] = new Bumper(width, height, true);
         bumpers[1] = new Bumper(width, height, false);
 
-        // Keep track of the objects we're controlling
-        robot = _robot;
+        // Finally, add the robot!
+        rs = new RobotSprite(width, height, robot);
+
+        // Watch the state of the robot so we can update the position
+        // labels.
+        robot.addObserver(this);
+    }
+
+    // The Robot model was updated, so update the information.
+    public void update(Observable o, Object arg) {
+        // The robot moved, so repaint the screen.
+        repaint();
     }
 
     public void paint(Graphics g) {
@@ -105,9 +128,59 @@ public class FieldPanel extends JPanel {
             // The bumper/hoops at each end
             for (Bumper b: bumpers)
                 b.draw(g);
+
+            // Finally, the robot!
+            rs.draw(g);
         } finally {
             // Back to standard locations.
             g.translate(-getWidth() / 2, 0);
+        }
+    }
+
+    private class RobotSprite {
+        Robot robot;
+        int w, h;
+
+        // Arbritrarily chosen
+        Color color = Color.YELLOW;
+
+        RobotSprite(int fieldWidth, int fieldHeight, Robot _robot) {
+            robot = _robot;
+            w = (int)(ROBOT_WIDTH * scale);
+            h = (int)(ROBOT_LENGTH * scale);
+        }
+
+        void draw(Graphics g) {
+            // Convert robot position to x/y in current co-ordinates.
+            int x = (int)(robot.getXOffset() * scale);
+            int y = (int)(robot.getYOffset() * scale);
+
+            // Draw the robot!
+            Graphics2D g2d = (Graphics2D)g;
+
+            // Set the origin to the center of the robot and rotate the
+            // robot's rotation.
+            g2d.translate(x, y);
+            g2d.rotate(Math.toRadians(robot.getRotation()));
+
+            // Draw the robot.
+            g2d.setColor(color);
+            int recX = -w / 2;
+            int recY = -h / 2;
+            g2d.fillRect(recX, recY, w, h);
+
+            // Provide a triangle indicating robot direction
+            Polygon dirPoly = new Polygon();
+            dirPoly.addPoint(recX, recY);
+            dirPoly.addPoint(recX + w / 2, recY - h / 4);
+            // XXX - We subtract otherwise it draws one-pixel outside
+            // the rectangle
+            dirPoly.addPoint(recX + w - 1, recY);
+            g2d.drawPolygon(dirPoly);
+
+            // Restore the previous graphics context
+            g2d.rotate(Math.toRadians(-robot.getRotation()));
+            g2d.translate(-x, -y);
         }
     }
 
