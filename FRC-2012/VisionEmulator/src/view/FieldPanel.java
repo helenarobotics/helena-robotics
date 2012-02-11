@@ -173,7 +173,6 @@ public class FieldPanel extends JPanel implements Observer {
 
         public void mouseDragged(MouseEvent e) {
             Point field = pixelToFieldLocation(e.getPoint());
-            System.out.println("RSDragged:" + e.getPoint() + ":" + field);
             robot.setXOffset((int)field.getX());
             robot.setYOffset((int)field.getY());
         }
