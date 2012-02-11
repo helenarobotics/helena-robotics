@@ -4,9 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 
-import java.util.Observable;
-import java.util.Observer;
-
 import javax.swing.JPanel;
 
 import model.Robot;
@@ -69,7 +66,7 @@ public class FieldPanel extends JPanel {
         keys[0] = new Key(width, height, true);
         keys[1] = new Key(width, height, false);
 
-        // Finally, the end bumper/hoops
+        // The end bumper/hoops
         bumpers = new Bumper[2];
         bumpers[0] = new Bumper(width, height, true);
         bumpers[1] = new Bumper(width, height, false);
@@ -83,13 +80,15 @@ public class FieldPanel extends JPanel {
         super.paint(g);
 
         try {
-            // Make the center of the screen 0, 0
-            g.translate(getWidth() / 2, getHeight() / 2);
+            // Recenter the origin to the center of the top of the field
+            // to match the robot's perspective.
+            g.translate(getWidth() / 2, 0);
 
             // Draw a mid-line marker of three pixels wide.
             int edge = getWidth() / 2;
+            int center = getHeight() / 2;
             g.setColor(Color.WHITE);
-            g.fillRect(-edge, 1, getWidth(), 3);
+            g.fillRect(-edge, center - 1, getWidth(), 3);
 
             // Draw the bridges
             for (Bridge b: bridges)
@@ -103,12 +102,12 @@ public class FieldPanel extends JPanel {
             for (Alley a: alleys)
                 a.draw(g);
 
-            // Finally, the bumper/hoops
+            // The bumper/hoops at each end
             for (Bumper b: bumpers)
                 b.draw(g);
         } finally {
             // Back to standard locations.
-            g.translate(-getWidth() / 2, -getHeight() / 2);
+            g.translate(-getWidth() / 2, 0);
         }
     }
 
@@ -129,7 +128,7 @@ public class FieldPanel extends JPanel {
             } else {
                 alleyColor = Color.RED;
                 recX = -fieldWidth / 2;
-                recY = -fieldHeight / 2;
+                recY = fieldHeight / 2;
             }
         }
 
@@ -154,11 +153,11 @@ public class FieldPanel extends JPanel {
             crcX = -crcR / 2;
             if (isBlue) {
                 color = Color.BLUE;
-                recY = -fieldHeight / 2;
+                recY = 0;
                 crcY = recY;
             } else {
                 color = Color.RED;
-                recY = fieldHeight / 2 - recH;
+                recY = fieldHeight - recH;
                 crcY = recY;
             }
         }
@@ -181,7 +180,7 @@ public class FieldPanel extends JPanel {
             w = (int)(BRIDGE_WIDTH * scale);
             h = (int)(BRIDGE_LENGTH * scale);
 
-            y = -h / 2;
+            y = (fieldHeight - h) / 2;
             switch (location) {
             case 0:
                 // Left (Red)
@@ -227,18 +226,18 @@ public class FieldPanel extends JPanel {
             ovlH *= 2;
 
             recX = -recW / 2;
-            recY = -fieldHeight / 2;
 
             ovlX = recX;
             ovlW = recW;
 
             if (isBlue) {
                 fieldColor = Color.BLUE;
+                recY = 0;
                 ovlY = recY + recH - ovlH / 2;
                 ovlArc = -180;
             } else {
                 fieldColor = Color.RED;
-                recY = -(recY + recH);
+                recY = fieldHeight - recH;
                 ovlY = recY - ovlH / 2;
                 ovlArc = 180;
             }
