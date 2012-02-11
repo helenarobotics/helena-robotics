@@ -4,7 +4,11 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Polygon;
+
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -94,7 +98,6 @@ public class FieldPanel extends JPanel implements Observer {
 
     // The Robot model was updated, so update the information.
     public void update(Observable o, Object arg) {
-        // The robot moved, so repaint the screen.
         repaint();
     }
 
@@ -137,7 +140,22 @@ public class FieldPanel extends JPanel implements Observer {
         }
     }
 
-    private class RobotSprite {
+    private Point pixelToFieldLocation(Point pixel) {
+        int width = getWidth();
+        int height = getHeight();
+
+        // The ratio of the pixels to the total with determines the
+        // location, but the X axis is centered, so we subtract half of
+        // the width to center it.
+        int fieldX = (int)FIELD_WIDTH * pixel.x / width;
+        fieldX -= (int)(FIELD_WIDTH / 2);
+
+        // Simple ratio
+        int fieldY = (int)FIELD_LENGTH * pixel.y / height;
+        return new Point(fieldX, fieldY);
+    }
+
+    private class RobotSprite implements MouseMotionListener {
         Robot robot;
         int w, h;
 
@@ -148,7 +166,19 @@ public class FieldPanel extends JPanel implements Observer {
             robot = _robot;
             w = (int)(ROBOT_WIDTH * scale);
             h = (int)(ROBOT_LENGTH * scale);
+
+            // Keep track of mouse events
+            addMouseMotionListener(this);
         }
+
+        public void mouseDragged(MouseEvent e) {
+            Point field = pixelToFieldLocation(e.getPoint());
+            System.out.println("RSDragged:" + e.getPoint() + ":" + field);
+            robot.setXOffset((int)field.getX());
+            robot.setYOffset((int)field.getY());
+        }
+
+        public void mouseMoved(MouseEvent ignored) { }
 
         void draw(Graphics g) {
             // Convert robot position to x/y in current co-ordinates.
