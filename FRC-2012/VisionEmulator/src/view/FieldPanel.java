@@ -197,7 +197,7 @@ public class FieldPanel extends JPanel implements Observer {
             if (isBlue) {
                 alleyColor = Color.BLUE;
                 recX = fieldWidth / 2 - recW;
-                recY = heightHeight / 2;
+                recY = fieldHeight / 2;
             } else {
                 alleyColor = Color.RED;
                 recX = -fieldWidth / 2;
