@@ -38,8 +38,8 @@ public class FieldPanel extends JPanel implements Observer {
     private static final double KEY_RADIUS = 48;
 
     // Robot Sprite size (arbitrarily chosen)
-    private static final double ROBOT_LENGTH = 48;
-    private static final double ROBOT_WIDTH = 32;
+    private static final double ROBOT_LENGTH = 38;
+    private static final double ROBOT_WIDTH = 27;
 
     // To make it fit on the screen, we scale the field.
     private static final double scale = 7.0 / 12.0;
