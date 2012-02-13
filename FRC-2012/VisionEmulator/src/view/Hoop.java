@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 import model.Camera;
 import model.Robot;
 
+# Draws hoop 
 class Hoop {
     // What color is the tape?
     private static final Color TAPE_COLOR = Color.RED;
