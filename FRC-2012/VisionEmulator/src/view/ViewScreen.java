@@ -20,7 +20,7 @@ public class ViewScreen extends JPanel implements Observer {
     private Robot robot;
 
     // XXX - Doesn't belong here, but for now this works
-    private final int cameraHeight = 20;
+    private static final double CAMERA_HEIGHT = 20.0 ;
 
     // The hoop display objects.
     private Hoop hoops[];
@@ -41,14 +41,14 @@ public class ViewScreen extends JPanel implements Observer {
         hoops = new Hoop[4];
 
         // Bottom hoop
-        hoops[0] = new Hoop(0, 35.0, 28.0);
+        hoops[0] = new Hoop(0, 35.0, 28.0 - CAMERA_HEIGHT);
 
         // Middle two hoops
-        hoops[1] = new Hoop(-27.375, 1.5, 61.0);
-        hoops[2] = new Hoop(+27.375, 1.5, 61.0);
+        hoops[1] = new Hoop(-27.375, 1.5, 61.0 - CAMERA_HEIGHT);
+        hoops[2] = new Hoop(+27.375, 1.5, 61.0 - CAMERA_HEIGHT);
 
         // Top hoop
-        hoops[3] = new Hoop(0, -35.0, 98.0);
+        hoops[3] = new Hoop(0, -35.0, 98.0 - CAMERA_HEIGHT);
 
         // Keep track of the objects we're monitoring.
         camera = _camera;
