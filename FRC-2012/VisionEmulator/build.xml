@@ -55,6 +55,17 @@
     </java>
   </target>
 
+  <target name="image" depends="compile">
+    <java classname="JavaImage" fork="true"
+      failonerror="true" inputstring="">
+      <classpath>
+        <path refid="proj.classpath"/>
+      </classpath>
+      <arg line="images/10Feet.jpg"/>
+      <arg line="images/10ft2.jpg"/>
+    </java>
+  </target>
+
   <target name="clean">
     <delete dir="${build.dir}"/>
   </target>

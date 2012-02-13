@@ -179,6 +179,11 @@ public class FieldPanel extends JPanel implements Observer {
 
         public void mouseMoved(MouseEvent ignored) { }
 
+        // Pre-calculate the math for drawing a line at 27 degrees to
+        // each side to indicate the 54 degree FOV for the camera.
+        // (90 - 27 = 63).
+        private final double FOV_MATH = 2.0 / Math.tan(Math.toRadians(63));
+
         void draw(Graphics g) {
             // Convert robot position to x/y in current co-ordinates.
             int x = (int)(robot.getXOffset() * scale);
@@ -206,6 +211,15 @@ public class FieldPanel extends JPanel implements Observer {
             // the rectangle
             dirPoly.addPoint(recX + w - 1, recY);
             g2d.drawPolygon(dirPoly);
+
+            // Draw a line at 27 degrees to each side to indicate the
+            // FOV for the camera.  (90 - 27 = 63).
+            // Choose a really big number like 2y for deltaY.
+            int dx = (int)(y * FOV_MATH);
+            g2d.translate(recX + w / 2, recY);
+            g2d.drawLine(0, 0, -dx, -y * 2);
+            g2d.drawLine(0, 0, dx, -y * 2);
+            g2d.translate(-(recX + w / 2), -recY);
 
             // Restore the previous graphics context
             g2d.rotate(Math.toRadians(-robot.getRotation()));
