@@ -29,9 +29,18 @@ class Hoop {
     private final double xOffset;
     private final double yOffset;
 
-    Hoop(double _xOffset, double _yOffset) {
+    // We also need to keep track of how high the hoop is above the
+    // camera
+    private final double zOffset;
+
+    Hoop(double _xOffset, double _yOffset, double _zOffset) {
         xOffset = _xOffset;
         yOffset = _yOffset;
+
+        // We place the offsets at the center of the hoop, so since
+        // the hoop is on the bottom of the backboard, increase the
+        // zOffset by half the height of the backboard.
+        zOffset = _zOffset + backboardOutsideHeight / 2;
     }
 
     void paint(Graphics g, Robot robot, Camera camera) {
