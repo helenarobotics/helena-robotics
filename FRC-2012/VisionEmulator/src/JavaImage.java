@@ -99,7 +99,7 @@ public class JavaImage {
                 ImageIO.write(xImgL, "jpg", new File("xEdgeL" + fileNum));
                 ImageIO.write(xImgR, "jpg", new File("xEdgeR" + fileNum));
 
-		BufferedImage iout = addGrayImages(xImgR, yImgD);
+		BufferedImage iout = addGrayImages(xImgR, xImgL, yImgD, yImgU);
 
 		ImageIO.write(iout, "jpg", new File("Sum_" + fileNum));
 
@@ -155,7 +155,11 @@ public class JavaImage {
 	 Raster r3 = img3.getData();
 	 Raster r4 = img4.getData();
 
-	 int [] buffer = new int [1];
+	 int [] buffer1 = new int [1];
+	 int [] buffer2 = new int [1];
+	 int [] buffer3 = new int [1];
+	 int [] buffer4 = new int [1];
+
 	 int [] pixel1 = new int [1];
 	 int [] pixel2 = new int [1];
 	 int [] pixel3 = new int [1];
@@ -163,10 +167,10 @@ public class JavaImage {
 
 	 for (int x = 0; x < out.getWidth(); x++){
 	     for (int y = 0; y < out.getHeight(); y++){
-		 pixel1 = r1.getPixel(x, y, buffer);
-		 pixel2 = r2.getPixel(x, y, buffer);
-		 pixel3 = r3.getPixel(x, y, buffer);
-		 pixel4 = r4.getPixel(x, y, buffer);
+		 pixel1 = r1.getPixel(x, y, buffer1);
+		 pixel2 = r2.getPixel(x, y, buffer2);
+		 pixel3 = r3.getPixel(x, y, buffer3);
+		 pixel4 = r4.getPixel(x, y, buffer4);
 		 int sum = pixel1[0] + pixel2[0] + pixel3[0] + pixel4[0];
 		 if (sum > 255) sum = 255;
 		 o.setSample(x, y, 0, sum);
@@ -184,14 +188,15 @@ public class JavaImage {
 	 Raster r1 = img1.getData();
 	 Raster r2 = img2.getData();
 
-	 int [] buffer = new int [1];
+	 int [] buffer1  = new int [1];
+	 int [] buffer2 = new int [1];
 	 int [] pixel1 = new int [1];
 	 int [] pixel2 = new int [1];
 
 	 for (int x = 0; x < out.getWidth(); x++){
 	     for (int y = 0; y < out.getHeight(); y++){
-		 pixel1 = r1.getPixel(x, y, buffer);
-		 pixel2 = r2.getPixel(x, y, buffer);
+		 pixel1 = r1.getPixel(x, y, buffer1);
+		 pixel2 = r2.getPixel(x, y, buffer2);
 		 int sum = pixel1[0] + pixel2[0];
 		 if (sum > 255) sum = 255;
 		 o.setSample(x, y, 0, sum);
