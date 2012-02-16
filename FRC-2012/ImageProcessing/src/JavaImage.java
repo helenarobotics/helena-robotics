@@ -94,14 +94,14 @@ public class JavaImage {
 
                 // Write out new image set
 
-                ImageIO.write(yImgU, "jpg", new File("yEdgeU" + fileNum));
-                ImageIO.write(yImgD, "jpg", new File("yEdgeD" + fileNum));
-                ImageIO.write(xImgL, "jpg", new File("xEdgeL" + fileNum));
-                ImageIO.write(xImgR, "jpg", new File("xEdgeR" + fileNum));
+                ImageIO.write(yImgU, "jpg", new File("yEdgeU" + fileNum + ".jpg"));
+                ImageIO.write(yImgD, "jpg", new File("yEdgeD" + fileNum + ".jpg"));
+                ImageIO.write(xImgL, "jpg", new File("xEdgeL" + fileNum + ".jpg"));
+                ImageIO.write(xImgR, "jpg", new File("xEdgeR" + fileNum + ".jpg"));
 
 		BufferedImage iout = addGrayImages(xImgR, xImgL, yImgD, yImgU);
 
-		ImageIO.write(iout, "jpg", new File("Sum_" + fileNum));
+		ImageIO.write(iout, "jpg", new File("Sum_" + fileNum + ".jpg"));
 
 		/*
 		BufferedImage grayscale_image = new BufferedImage(img.getWidth(), img.getHeight(), 
@@ -109,11 +109,11 @@ public class JavaImage {
 		Graphics g = grayscale_image.getGraphics();  
 		g.drawImage(img, 0, 0, null);  
 		g.dispose();
-		String gFile = "Grayscale_" + fileNum;
+		String gFile = "Grayscale_" + fileNum  + ".jpg";
                 ImageIO.write(grayscale_image, "jpg", new File(gFile));
 		*/
 
-		ImageIO.write(img, "jpg", new File("Grayscale_" + fileNum));
+		ImageIO.write(img, "jpg", new File("Grayscale_" + fileNum + ".jpg"));
 
 	    
             } catch (IOException e) {
