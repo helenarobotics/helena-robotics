@@ -4,6 +4,10 @@ import java.util.Observable;
 
 // This class keeps track of the state of the camera on the robot
 public class Robot extends Observable {
+    // Height of the robot (really, the height of the camera on the
+    // robot).
+    private static final int CAMERA_HEIGHT = 20;
+
     // The field length in inches
     private static final int MAX_Y_OFFSET = 54 * 12;
 
@@ -30,10 +34,28 @@ public class Robot extends Observable {
     private int xOffset;
     private int yOffset;
     private int rotation;
+    private int height;
 
     public Robot() {
+        // Height is a constant
+        height = CAMERA_HEIGHT;
+
         // Set the starting position of the robot!
         resetPosition();
+    }
+
+    // Reset the camera back to 'zero' position
+    public void resetPosition() {
+        // Center court, 20 feet away, facing the basket
+        xOffset = 0;
+        yOffset = 20 * 12;
+        rotation = 0;
+        setChanged();
+        notifyObservers(rotation);
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     public int getXOffset() {
@@ -74,16 +96,6 @@ public class Robot extends Observable {
 
     public int getRotation() {
         return rotation;
-    }
-
-    // Reset the camera back to 'zero' position
-    public void resetPosition() {
-        // Center court, 20 feet away, facing the basket
-        xOffset = 0;
-        yOffset = 20 * 12;
-        rotation = 0;
-        setChanged();
-        notifyObservers(rotation);
     }
 
     public void moveIn() {
