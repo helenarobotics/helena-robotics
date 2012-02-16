@@ -213,23 +213,17 @@ class DistortHoop {
 
         // Go through each point and calculate the hypotenuse distance.
         for (int i = 0; i < cornerPts.length; i++) {
-            // Calculate the distance from the robot to the corner point
-            // to give us the hypotenuse of the right triangle.
-            Point2D translatedPt;
-            if (isHorizontalAngle) {
-                // From above, the corner point's Y offset is always
-                // zero, since it's at the backboard.
-                translatedPt = new Point2D.Double(cornerPts[i].getX(), 0);
-            } else {
-                // From the side, the X offset is always zero since it's
-                // at the backboard.
-                translatedPt = new Point2D.Double(0, cornerPts[i].getY());
-            }
-
-            // Calculate the distance (hypotenuse), and then generate
-            // the angle.
-            double hypLen = translatedPt.distance(robotPt);
-            angles[i] = Math.toDegrees(Math.acos(adjLen / hypLen));
+            // Grab the opposite length.
+            double oppLen;
+            if (isHorizontalAngle)
+                // From the top, the length is the difference between
+                // the robot and the backboard (delta X)
+                oppLen = Math.abs(robot.getXOffset() - cornerPts[i].getX());
+            else
+                // From the side, the length is the difference between
+                // the robot's height and the backboard (delta Y)
+                oppLen = Math.abs(robot.getHeight() - cornerPts[i].getY());
+            angles[i] = Math.toDegrees(Math.atan(oppLen / adjLen));
 
             // Determine if the angle is positive or negative based on
             // if the corner point is left/right or above/below the
