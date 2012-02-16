@@ -1,5 +1,3 @@
-
-
 import java.awt.image.BufferedImage; 
  
 /** 
@@ -9,7 +7,6 @@ import java.awt.image.BufferedImage;
  * @author Olly Oechsle, University of Essex, Date: 13-Mar-2008 
  * @version 1.0 
  */ 
-
 public class HoughLine { 
  
     protected double theta; 
