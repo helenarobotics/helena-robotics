@@ -1,6 +1,3 @@
-
-package ac.essex.ooechs.imaging.commons.edge.hough; 
-
 import java.awt.image.BufferedImage; 
 import java.awt.*; 
 import java.util.Vector; 
@@ -45,8 +42,6 @@ import java.io.File;
  * 
  * @author Olly Oechsle, University of Essex 
  */ 
-
-
 public class HoughTransform extends Thread { 
  
     public static void main(String[] args) throws Exception { 
@@ -209,7 +204,7 @@ public class HoughTransform extends Thread {
  
         // Search for local peaks above threshold to draw 
         for (int t = 0; t < maxTheta; t++) { 
-            loop: 
+        loop: 
             for (int r = neighbourhoodSize; r < doubleHeight - neighbourhoodSize; r++) { 
  
                 // Only consider points above threshold 
@@ -268,11 +263,12 @@ public class HoughTransform extends Thread {
         for (int t = 0; t < maxTheta; t++) { 
             for (int r = 0; r < doubleHeight; r++) { 
                 double value = 255 * ((double) houghArray[t][r]) / max; 
-		int v = 255 - (int) value; 
+                int v = 255 - (int) value; 
                 int c = new Color(v, v, v).getRGB(); 
                 image.setRGB(t, r, c); 
             } 
         } 
-        return image; 
-    } 
+        return image;
+    }
+}
 
