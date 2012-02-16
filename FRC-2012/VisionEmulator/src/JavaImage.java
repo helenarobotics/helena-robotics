@@ -134,7 +134,7 @@ public class JavaImage {
 	 for (int x = 0; x < img.getWidth(); x++){
 	     for (int y = 0; y < img.getHeight(); y++){
 		 int rgb[] = getPixelData(img, x, y);
-		 int pixelValue = rgb[0] - Math.abs(rgb[1] - rgb[2]) - rgb[1]/2 - rgb[2]/2;
+		 int pixelValue = rgb[0] - Math.abs(rgb[1] - rgb[2]) - (rgb[1] + rgb[2])/4;
 		 if (pixelValue > 255) pixelValue = 255;
 		 else if (pixelValue < 0) pixelValue = 0;
 		 raster.setSample(x, y, 0, pixelValue);
