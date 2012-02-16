@@ -15,12 +15,22 @@ import model.Robot;
 public class ViewScreen extends JPanel implements Observer {
     static final long serialVersionUID = -7075535651446670324L;
 
+    // Hoop information
+    private static final double BOTTOM_HOOP_HEIGHT = 28.0;
+    private static final double BOTTOM_HOOP_OFFSET = 0;
+
+    private static final double MIDDLE_HOOP_HEIGHT = 61.0;
+    private static final double MIDDLE_HOOP_OFFSET = 54.475 / 2.0;
+
+    private static final double TOP_HOOP_HEIGHT = 98.0;
+    private static final double TOP_HOOP_OFFSET = 0;
+
     // Camera and Robot information.
     private Camera camera;
     private Robot robot;
 
     // The hoop display objects
-    private DistortHoop hoop;
+    private DistortHoop hoops[];
 //    private Hoop hoops[];
 
     public ViewScreen(Camera _camera, Robot _robot) {
@@ -37,21 +47,19 @@ public class ViewScreen extends JPanel implements Observer {
         // We'll be drawing images onto this, so no layout!
         setLayout(null);
 
-        hoop = new DistortHoop(0, robot.getHeight());
-/*
         // Create the hoops
-        hoops = new Hoop[4];
+        hoops = new DistortHoop[4];
 
         // Bottom hoop
-        hoops[0] = new Hoop(0, 35.0, 28.0 - robot.getHeight());
+        hoops[0] = new DistortHoop(BOTTOM_HOOP_OFFSET, BOTTOM_HOOP_HEIGHT);
 
         // Middle two hoops
-        hoops[1] = new Hoop(-27.375, 1.5, 61.0 - robot.getHeight());
-        hoops[2] = new Hoop(+27.375, 1.5, 61.0 - robot.getHeight());
+        hoops[1] = new DistortHoop(-MIDDLE_HOOP_OFFSET, MIDDLE_HOOP_HEIGHT);
+        hoops[2] = new DistortHoop(MIDDLE_HOOP_OFFSET, MIDDLE_HOOP_HEIGHT);
 
         // Top hoop
-        hoops[3] = new Hoop(0, -35.0, 98.0 - robot.getHeight());
-*/
+        hoops[3] = new DistortHoop(TOP_HOOP_OFFSET, TOP_HOOP_HEIGHT);
+
         // Subscribe to changes in the model
         camera.addObserver(this);
         robot.addObserver(this);
@@ -71,10 +79,9 @@ public class ViewScreen extends JPanel implements Observer {
             // Make the center of the screen 0, 0
             g.translate(getWidth() / 2, getHeight() / 2);
 
-            hoop.paint(g, getWidth(), getHeight(), robot, camera);
             // Draw the hoops
-//            for (Hoop h: hoops)
-//                h.paint(g, robot, camera);
+            for (DistortHoop h: hoops)
+                h.paint(g, getSize(), robot, camera);
         } finally {
             // Back to standard locations.
             g.translate(-getWidth() / 2, -getHeight() / 2);

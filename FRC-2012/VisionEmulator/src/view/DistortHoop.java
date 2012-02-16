@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Polygon;
 import java.awt.geom.Point2D;
@@ -83,7 +84,8 @@ class DistortHoop {
 
     // XXX - We don't yet take into account the height distortion that
     // occurs from the different distances.
-    void paint(Graphics g, int screenWidth, int screenHeight, Robot robot, Camera camera) {
+    void paint(Graphics g, Dimension screenDimension,
+               Robot robot, Camera camera) {
         // Calculate the horizontal angle from the robot to the four
         // corners.
         double bbHorizAngles[] = calcAngles(robot, bbPts, true);
@@ -126,9 +128,9 @@ class DistortHoop {
         // than the camera view, so scale the visual screen to what is
         // being shown.
         double scaledHorizPixels =
-            degreeHorizPixels * (double)screenWidth / 640.0;
+            degreeHorizPixels * screenDimension.getWidth() / 640.0;
         double scaledVertPixels =
-            degreeVertPixels * (double)screenHeight / 480.0;
+            degreeVertPixels * screenDimension.getHeight() / 480.0;
 
         // Create the 3 Polygons that make up the 4 points of the
         // 'rectangle'.
@@ -234,7 +236,8 @@ class DistortHoop {
             // robot.
             if (isHorizontalAngle && cornerPts[i].getX() < robotPt.getX())
                 angles[i] *= -1;
-            else if (!isHorizontalAngle && cornerPts[i].getY() < robotPt.getY())
+            else if (!isHorizontalAngle && cornerPts[i].getY() > robotPt.getY())
+                // Positive Y == down in Java, so we reverse it!
                 angles[i] *= -1;
         }
         return angles;
