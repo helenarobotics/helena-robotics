@@ -66,7 +66,7 @@ public class SimpleFrame extends SimpleRobot {
 
             // Read the throttle to determine the speed of the shooter
             // motor
-            shooterMotor.set(driveStick.getThrottle());
+            shooterMotor.set(shootStick.getThrottle());
         }
     }
 
