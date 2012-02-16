@@ -79,7 +79,7 @@ class DistortHoop {
         // a 54 degree Field Of View (FOV), and generates a 640x480
         // picture.  We calculate the pixel to degree value here.
         degreeHorizPixels = 640.0 / 54.0;
-        degreeVertPixels = 480.0 / 54.0;
+        degreeVertPixels = 480.0 / 40.5;
     }
 
     // XXX - We don't yet take into account the height distortion that
