@@ -11,6 +11,7 @@ public class HoughLine {
  
     protected double theta; 
     protected double r; 
+    protected int peak;
  
     /** 
      * Initialises the hough line 
@@ -18,6 +19,13 @@ public class HoughLine {
     public HoughLine(double theta, double r) { 
         this.theta = theta; 
         this.r = r; 
+	peak = 0;
+    } 
+ 
+    public HoughLine(double _theta, double _r, int _peak) { 
+        this.theta = _theta; 
+        this.r = _r; 
+	this.peak = _peak;
     } 
  
     /** 
