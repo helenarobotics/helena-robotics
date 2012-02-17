@@ -2,7 +2,10 @@ import java.awt.image.BufferedImage;
 import java.awt.*; 
 import java.util.Vector; 
 import java.io.File; 
- 
+import javax.imageio.ImageIO;
+import java.io.IOException; 
+import java.awt.image.Raster;
+
 /** 
  * <p/> 
  * Java Implementation of the Hough Transform.<br /> 
@@ -57,20 +60,27 @@ public class HoughTransform extends Thread {
         h.addPoints(image); 
  
         // get the lines out 
-        Vector<HoughLine> lines = h.getLines(30); 
+	int thresh = image.getWidth() / 8;
+        Vector<HoughLine> lines = h.getLines(thresh);  // XXX was 30 
+	System.out.println("Threshold = " + thresh);
  
+	System.out.println("Found " + lines.size() + "lines above threshold " + thresh);
+
         // draw the lines back onto the image 
         for (int j = 0; j < lines.size(); j++) { 
             HoughLine line = lines.elementAt(j); 
             line.draw(image, Color.RED.getRGB()); 
-        } 
-    } 
+	    System.out.println(j + ": " + line.peak + " [" + (int)((180/Math.PI)*line.theta) + ", " + line.r + "]");
+	} 
+	ImageIO.write(image, "jpg", new File("houghout.jpg"));
+    }
+
  
     // The size of the neighbourhood in which to search for other local maxima 
-    final int neighbourhoodSize = 4; 
+    final int neighbourhoodSize = 8; 
  
     // How many discrete values of theta shall we check? 
-    final int maxTheta = 180; 
+    final int maxTheta = 90;   // was 180
  
     // Using maxTheta, work out the step 
     final double thetaStep = Math.PI / maxTheta; 
@@ -152,15 +162,22 @@ public class HoughTransform extends Thread {
      */ 
     public void addPoints(BufferedImage image) { 
  
+	Raster r = image.getData();
+
+        int [] buffer = new int [1];
+	int [] pixel = new int [1];
+
         // Now find edge points and update the hough array 
         for (int x = 0; x < image.getWidth(); x++) { 
             for (int y = 0; y < image.getHeight(); y++) { 
-                // Find non-black pixels 
-                if ((image.getRGB(x, y) & 0x000000ff) != 0) { 
-                    addPoint(x, y); 
-                } 
-            } 
-        } 
+                // Find non-black pixels (this code works only on color imagery, methinks)
+		//                if ((image.getRGB(x, y) & 0x000000ff) != 0) { 
+		// grayscale operation:
+		pixel = r.getPixel(x, y, buffer);
+		if (pixel[0] > 0)
+                    addPoint(x, y);
+            }
+        }
     } 
  
     /** 
@@ -213,16 +230,17 @@ public class HoughTransform extends Thread {
                     int peak = houghArray[t][r]; 
  
                     // Check that this peak is indeed the local maxima 
+		    // THIS CODE HAS A BUG -- WILL DETECT NEAR-DUPLICATE PEAKS IF THEY HAVE PRECISELY THE SAME SCORE
                     for (int dx = -neighbourhoodSize; dx <= neighbourhoodSize; dx++) { 
                         for (int dy = -neighbourhoodSize; dy <= neighbourhoodSize; dy++) { 
                             int dt = t + dx; 
                             int dr = r + dy; 
                             if (dt < 0) dt = dt + maxTheta; 
                             else if (dt >= maxTheta) dt = dt - maxTheta; 
-                            if (houghArray[dt][dr] > peak) { 
-                                // found a bigger point nearby, skip 
-                                continue loop; 
-                            } 
+                            if (houghArray[dt][dr] > peak) {
+				    // found a bigger point nearby, skip 
+				continue loop; 
+			    }
                         } 
                     } 
  
@@ -230,9 +248,8 @@ public class HoughTransform extends Thread {
                     double theta = t * thetaStep; 
  
                     // add the line to the vector 
-                    lines.add(new HoughLine(theta, r)); 
- 
-                } 
+                    lines.add(new HoughLine(theta, r, peak)); 
+                 } 
             } 
         } 
  
