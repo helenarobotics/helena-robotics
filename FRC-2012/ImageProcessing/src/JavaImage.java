@@ -63,6 +63,7 @@ public class JavaImage {
         BufferedImageOp yopU = new ConvolveOp(sobelYKernU);
         BufferedImageOp yopD = new ConvolveOp(sobelYKernD);
 
+
         long totalTime = 0;
         
         // Iterate through all the provided images!
@@ -103,6 +104,27 @@ public class JavaImage {
 
 		ImageIO.write(iout, "jpg", new File("Sum_" + fileNum + ".jpg"));
 
+		// threshold and write again:
+
+		BufferedImage thresholded = thresholdImage(iout, 100);
+		ImageIO.write(thresholded, "jpg", new File("Threshold_" + fileNum + ".jpg"));
+
+
+		// Look for corners
+		Kernel cornerKernel = new Kernel(3, 3, new float[] {
+			-2.0f, -1.5f, -1.0f, -1.0f, -1.0f
+			-1.5f, 2.0f, 2.0f, 1.50f, 1.0f,
+			-1.0f, 2.0f, 0.0f, 0.0f, 0.0f,
+			-1.0f, 1.5f, 0.0f, 0.0f, 0.0f,
+			-1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+		    });
+
+		BufferedImageOp curOp = new ConvolveOp(cornerKernel);;
+                BufferedImage corners = deepCopy(thresholded);
+		curOp.filter(thresholded, corners);
+		ImageIO.write(corners, "jpg", new File("Corners" + fileNum + ".jpg"));
+		
+
 		/*
 		BufferedImage grayscale_image = new BufferedImage(img.getWidth(), img.getHeight(), 
 							BufferedImage.TYPE_BYTE_GRAY);  
@@ -113,7 +135,7 @@ public class JavaImage {
                 ImageIO.write(grayscale_image, "jpg", new File(gFile));
 		*/
 
-		ImageIO.write(img, "jpg", new File("Grayscale_" + fileNum + ".jpg"));
+	ImageIO.write(img, "jpg", new File("Grayscale_" + fileNum + ".jpg"));
 
 	    
             } catch (IOException e) {
@@ -222,5 +244,27 @@ public class JavaImage {
         boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
         WritableRaster raster = bi.copyData(null);
         return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+    }
+
+
+    private static BufferedImage thresholdImage(BufferedImage img, int thresh) {
+
+	 BufferedImage out = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+	 Raster  r = img.getData();
+	 WritableRaster o = out.getRaster();
+
+	 int [] pixel = new int [1];
+	 int [] buffer = new int [1];
+
+	 for (int x = 0; x < img.getWidth(); x++){
+	     for (int y = 0; y < img.getHeight(); y++){
+		 pixel = r.getPixel(x, y, buffer);
+      		 if (pixel[0] >= thresh)
+		     o.setSample(x, y, 0, 255);
+		 else
+		     o.setSample(x, y, 0, 0);
+	     }
+	 }
+	 return out;
     }
 }
