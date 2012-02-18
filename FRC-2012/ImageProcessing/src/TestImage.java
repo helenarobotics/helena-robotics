@@ -16,38 +16,20 @@ import javax.imageio.ImageIO;
 
 public class TestImage {
 
+    static int width = 320; 
+    static int height = 240;
+    static BufferedImage img;
+
     public static void main(String args[]) {
 
-	int width = 320; 
-	int height = 240;
 
-	BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY); 
+	img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY); 
 
-	WritableRaster o = img.getRaster();
-	int [] buffer = new int [1];
-	int [] pixel = new int [1];
+	// Top rectangle
+	drawrect(width/2 - 40, 20, 80, 60);
 
-	// Draw a box.
-	int xleft = width/2 - 40;
-	int xright = width/2 + 40;
-	int ytop = height/2 + 30;
-	int ybottom = height/2 - 30;
-	//	double slant = (double) (xend - xstart) / (double) (yend - ystart);
-
-	// draw sides of a rectangle
-	for (int y = ybottom; y <= ytop; y++){
-	    o.setSample(xleft, y, 0, 255);
-	    o.setSample(xleft+1, y, 0, 255);
-	    o.setSample(xright, y, 0, 255);
-	    o.setSample(xright+1, y, 0, 255);
-	}
-
-	for (int x = xleft; x < xright; x++){
-	    o.setSample(x, ybottom, 0, 255);
-	    o.setSample(x, ybottom+1, 0, 255);
-	    o.setSample(x, ytop, 0, 255);
-	    o.setSample(x, ytop+1, 0, 255);
-	}
+	// lower rectangle
+	//	drawrect(width/2 - 40, height - 20 - 60, 80, 60);
 
 	try {
 	    ImageIO.write(img, "jpg", new File("testfile.jpg"));
@@ -56,5 +38,29 @@ public class TestImage {
 	    System.exit(-1);
 	}
 	System.out.println("wrote test file");
+    }
+
+
+    static void drawrect(int x0, int y0, int width, int height) {
+
+	WritableRaster o = img.getRaster();
+
+	// draw sides of a rectangle
+	// vertical lines
+	for (int y = y0; y < y0 + height; y++){
+	    writePixel(o, x0, y, 255);
+	    writePixel(o, x0 + width, y, 255);
+	}
+
+	// horizontal lines
+	for (int x = x0; x < x0 + width; x++){
+	    writePixel(o, x, y0, 255);
+	    writePixel(o, x, y0+ height, 255);
+	}
+    }
+    
+    static void writePixel(WritableRaster o, int x, int y, int val) {
+	if ((x >=0) && (x < width) && (y >= 0) && (y < height))
+	    o.setSample(x, y, 0, 255);
     }
 }
