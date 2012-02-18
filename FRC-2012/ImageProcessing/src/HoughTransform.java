@@ -5,6 +5,7 @@ import java.io.File;
 import javax.imageio.ImageIO;
 import java.io.IOException; 
 import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 
 /** 
  * <p/> 
@@ -72,12 +73,16 @@ public class HoughTransform extends Thread {
             line.draw(image, Color.RED.getRGB()); 
 	    System.out.println(j + ": " + line.peak + " [" + (int)((180/Math.PI)*line.theta) + ", " + line.r + "]");
 	} 
+	// Write out markup'd image
 	ImageIO.write(image, "jpg", new File("houghout.jpg"));
+
+	// Create and write out hough space image (theta, r)
+	ImageIO.write(h.getHoughArrayImage(), "jpg", new File("houghspace.jpg"));
     }
 
  
     // The size of the neighbourhood in which to search for other local maxima 
-    final int neighbourhoodSize = 8; 
+    final int neighbourhoodSize = 4; 
  
     // How many discrete values of theta shall we check? 
     final int maxTheta = 90;   // was 180
@@ -190,7 +195,7 @@ public class HoughTransform extends Thread {
         for (int t = 0; t < maxTheta; t++) { 
  
             //Work out the r values for each theta step 
-            int r = (int) (((x - centerX) * cosCache[t]) + ((y - centerY) * sinCache[t])); 
+            int r = (int) Math.round((((x - centerX) * cosCache[t]) + ((y - centerY) * sinCache[t])));
  
             // this copes with negative values of r 
             r += houghHeight; 
@@ -230,19 +235,22 @@ public class HoughTransform extends Thread {
                     int peak = houghArray[t][r]; 
  
                     // Check that this peak is indeed the local maxima 
-		    // THIS CODE HAS A BUG -- WILL DETECT NEAR-DUPLICATE PEAKS IF THEY HAVE PRECISELY THE SAME SCORE
                     for (int dx = -neighbourhoodSize; dx <= neighbourhoodSize; dx++) { 
                         for (int dy = -neighbourhoodSize; dy <= neighbourhoodSize; dy++) { 
                             int dt = t + dx; 
                             int dr = r + dy; 
                             if (dt < 0) dt = dt + maxTheta; 
                             else if (dt >= maxTheta) dt = dt - maxTheta; 
-                            if (houghArray[dt][dr] > peak) {
+			    int v = houghArray[dt][dr];
+			    // Some ugly logic to avoid multiple detections of equal peaks in neighborhood
+                            if (v > peak)
 				    // found a bigger point nearby, skip 
 				continue loop; 
-			    }
-                        } 
-                    } 
+			    else if (v == peak)   // avoid multiple detection of equal peaks in neighborhood; just take first
+				if ((dx < 0) | (dx == 0) & (dy < 0))
+				    continue loop;
+			}
+		    } 
  
                     // calculate the true value of theta 
                     double theta = t * thetaStep; 
@@ -275,6 +283,39 @@ public class HoughTransform extends Thread {
      * Gets the hough array as an image, in case you want to have a look at it. 
      */ 
     public BufferedImage getHoughArrayImage() { 
+
+
+        BufferedImage image = new BufferedImage(maxTheta, doubleHeight, BufferedImage.TYPE_BYTE_GRAY); 
+	WritableRaster raster = image.getRaster();
+
+        int max = getHighestValue();   // scale image to highest value
+	System.out.println("creating " + maxTheta + " (theta) X" + doubleHeight + " (r) hough space image ");
+
+        for (int t = 0; t < maxTheta; t++) { 
+            for (int r = 0; r < doubleHeight; r++) { 
+                double value = 255 * ((double) houghArray[t][r]) / max; 
+                int v = 255 - (int) value; 
+		raster.setSample(t, r, 0, v);
+            } 
+        } 
+        return image;
+    }
+
+
+    // TBD
+    public BufferedImage CreateEnhancedHT(int we, int wh) {
+
+	BufferedImage eh = new BufferedImage(maxTheta, doubleHeight, BufferedImage.TYPE_BYTE_GRAY);
+
+	return eh;
+    }
+
+	/*
+	  enhanced = h[t][r]**2 / (summation over we x wh neighborhood)
+	*/
+
+    /*
+    public BufferedImage getHoughArrayImage() { 
         int max = getHighestValue(); 
         BufferedImage image = new BufferedImage(maxTheta, doubleHeight, BufferedImage.TYPE_INT_ARGB); 
         for (int t = 0; t < maxTheta; t++) { 
@@ -287,5 +328,5 @@ public class HoughTransform extends Thread {
         } 
         return image;
     }
+    */
 }
-
