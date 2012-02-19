@@ -8,6 +8,8 @@ import java.awt.Point;
 import java.awt.Polygon;
 
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.event.MouseMotionListener;
 
 import java.util.Observable;
@@ -18,7 +20,7 @@ import javax.swing.JPanel;
 import model.Robot;
 
 public class FieldPanel extends JPanel implements Observer {
-    static final long serialVersionUID = -5499028701932093871L;
+    static final long serialVersionUID = -6058652728550317910L;
 
     // Robot information.
     private Robot robot;
@@ -90,6 +92,22 @@ public class FieldPanel extends JPanel implements Observer {
 
         // Finally, add the robot!
         rs = new RobotSprite(width, height, robot);
+
+        // Watch for mouse-wheel events for robot rotation.
+        addMouseWheelListener(new MouseWheelListener() {
+                public void mouseWheelMoved(MouseWheelEvent e) {
+                    boolean rotateLeft = true;
+                    int notches = e.getWheelRotation();
+                    if (notches < 0)
+                        rotateLeft = false;
+                    for (int i = Math.abs(e.getWheelRotation()); i > 0; i--) {
+                        if (rotateLeft)
+                            robot.rotateLeft();
+                        else
+                            robot.rotateRight();
+                    }
+                }
+            });
 
         // Watch the state of the robot so we can update the position
         // labels.
