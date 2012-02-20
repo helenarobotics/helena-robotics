@@ -41,8 +41,7 @@ import java.awt.image.WritableRaster;
  * <p/> 
  * Once all the points have been added should be full of curves. The algorithm then searches for 
  * local peaks in the array. The higher the peak the more values of x and y crossed along that curve, 
- * so high peaks give good indications of a line. 
- * </p> 
+ * so high peaks give good indications of a line.  * </p> 
  * 
  * @author Olly Oechsle, University of Essex 
  */ 
@@ -59,25 +58,53 @@ public class HoughTransform extends Thread {
  
         // add the points from the image (or call the addPoint method separately if your points are not in an image 
         h.addPoints(image); 
+
+	// ImageIO.write(h.enhance(7), "jpg", new File("blurredHT.jpg"));
  
         // get the lines out 
-	int thresh = image.getWidth() / 8;
-        Vector<HoughLine> lines = h.getLines(thresh);  // XXX was 30 
+	int thresh = 30;
+	Vector<HoughLine> lines = h.getLines(thresh);  // XXX thresh was 30 
+        
 	System.out.println("Threshold = " + thresh);
  
 	System.out.println("Found " + lines.size() + "lines above threshold " + thresh);
+
+
+	// Create and write out hough space image (theta, r)
+	BufferedImage himage = h.getHoughArrayImage();
+	ImageIO.write(himage, "jpg", new File("houghspace.jpg"));
+
+	// Create a color image from the hough results, and highlight the peaks in red
+	BufferedImage cimage = new BufferedImage(h.maxTheta, h.doubleHeight,  BufferedImage.TYPE_INT_RGB);
+	Graphics g = cimage.getGraphics();  
+	g.drawImage(himage, 0, 0, null);
+	g.dispose(); 
 
         // draw the lines back onto the image 
         for (int j = 0; j < lines.size(); j++) { 
             HoughLine line = lines.elementAt(j); 
             line.draw(image, Color.RED.getRGB()); 
 	    System.out.println(j + ": " + line.peak + " [" + (int)((180/Math.PI)*line.theta) + ", " + line.r + "]");
-	} 
-	// Write out markup'd image
+	    System.out.println("Neighborhood:");
+	    for (int t = -2; t <=2; t++) {
+		for (int r = -2; r <= 2; r++)
+		    {
+			int it = t + line.itheta;
+			int ir = r + line.r;
+			if (it < 0) it = h.maxTheta + it;
+			if (it >= h.maxTheta) it = it - h.maxTheta;
+			if (ir < 0) ir = h.doubleHeight + r;
+			if (ir >= h.doubleHeight) ir = ir - h.doubleHeight;
+			cimage.setRGB(it, ir, Color.RED.getRGB());
+			System.out.print(h.houghArray[it][ir] + " ");
+		    }
+		System.out.println("");
+	    }
+	    System.out.println("");
+	}
+	// Write out markup'd images
 	ImageIO.write(image, "jpg", new File("houghout.jpg"));
-
-	// Create and write out hough space image (theta, r)
-	ImageIO.write(h.getHoughArrayImage(), "jpg", new File("houghspace.jpg"));
+	ImageIO.write(cimage, "jpg", new File("houghspaceoverlay.jpg"));
     }
 
  
@@ -85,7 +112,7 @@ public class HoughTransform extends Thread {
     final int neighbourhoodSize = 4; 
  
     // How many discrete values of theta shall we check? 
-    final int maxTheta = 90;   // was 180
+    final int maxTheta = 180;
  
     // Using maxTheta, work out the step 
     final double thetaStep = Math.PI / maxTheta; 
@@ -97,7 +124,8 @@ public class HoughTransform extends Thread {
     protected int[][] houghArray; 
  
     // the coordinates of the centre of the image 
-    protected float centerX, centerY; 
+    protected int centerX, centerY; 
+    //    protected float centerX, centerY; 
  
     // the height of the hough array 
     protected int houghHeight; 
@@ -153,7 +181,7 @@ public class HoughTransform extends Thread {
  
         // cache the values of sin and cos for faster processing 
         sinCache = new double[maxTheta]; 
-        cosCache = sinCache.clone(); 
+        cosCache = new double[maxTheta];
         for (int t = 0; t < maxTheta; t++) { 
             double realTheta = t * thetaStep; 
             sinCache[t] = Math.sin(realTheta); 
@@ -175,14 +203,15 @@ public class HoughTransform extends Thread {
         // Now find edge points and update the hough array 
         for (int x = 0; x < image.getWidth(); x++) { 
             for (int y = 0; y < image.getHeight(); y++) { 
-                // Find non-black pixels (this code works only on color imagery, methinks)
-		//                if ((image.getRGB(x, y) & 0x000000ff) != 0) { 
-		// grayscale operation:
-		pixel = r.getPixel(x, y, buffer);
-		if (pixel[0] > 0)
+		// avoid the JPEG error-filled pixels (we anticipate thresholded values of 255)
+		//		pixel = r.getPixel(x, y, buffer);
+		//if ((pixel[0] & 0x000000ff) == 255)
+		if ((image.getRGB(x, y) & 0x000000ff) > 220) {      
                     addPoint(x, y);
-            }
-        }
+		    System.out.println("point [" + x + ", " + y + "] = " + (image.getRGB(x, y) & 0x000000ff));
+		}
+	    }
+	}
     } 
  
     /** 
@@ -190,25 +219,47 @@ public class HoughTransform extends Thread {
      * if your data isn't represented as a buffered image. 
      */ 
     public void addPoint(int x, int y) { 
- 
         // Go through each value of theta 
         for (int t = 0; t < maxTheta; t++) { 
  
             //Work out the r values for each theta step 
-            int r = (int) Math.round((((x - centerX) * cosCache[t]) + ((y - centerY) * sinCache[t])));
+	    //int r = (int) (((x - centerX) * cosCache[t]) + ((y - centerY) * sinCache[t]));
+	    int r = (int) Math.round((((x - centerX) * cosCache[t]) + ((y - centerY) * sinCache[t])));
  
-            // this copes with negative values of r 
+	    // XXX DEBUG
+	    if (t == 0)
+		System.out.println("{" + x + ", " + y + "} r = " + r);
+            
+	    // this copes with negative values of r 
             r += houghHeight; 
  
             if (r < 0 || r >= doubleHeight) continue; 
  
             // Increment the hough array 
             houghArray[t][r]++; 
+	    numPoints++; 
+	}
+    }
  
-        } 
- 
-        numPoints++; 
-    } 
+    /*
+    public void addPoint(int u, int v) {
+	int x = u - centerX;
+	int y = v - centerY;
+	double dAng = Math.PI / maxTheta;
+
+	for (int ai = 0; ai < maxTheta; ai++) {
+	    double theta = dAng * ai;
+	    double r = x * Math.cos(theta) + y * Math.sin(theta);
+	    int ri =  (int) ((double)houghHeight + r);
+	    if (ri >= 0 && ri < doubleHeight) {
+		houghArray[ai][ri]++;
+		numPoints++; 
+	    }
+	}
+    }
+    */
+
+
  
     /** 
      * Once points have been added in some way this method extracts the lines and returns them as a Vector 
@@ -216,8 +267,10 @@ public class HoughTransform extends Thread {
      * 
      * @param percentageThreshold The percentage threshold above which lines are determined from the hough array 
      */ 
+
+
     public Vector<HoughLine> getLines(int threshold) { 
- 
+
         // Initialise the vector of lines that we'll return 
         Vector<HoughLine> lines = new Vector<HoughLine>(20); 
  
@@ -246,7 +299,7 @@ public class HoughTransform extends Thread {
                             if (v > peak)
 				    // found a bigger point nearby, skip 
 				continue loop; 
-			    else if (v == peak)   // avoid multiple detection of equal peaks in neighborhood; just take first
+			     else if (v == peak)   // avoid multiple detection of equal peaks in neighborhood; just take first
 				if ((dx < 0) | (dx == 0) & (dy < 0))
 				    continue loop;
 			}
@@ -256,7 +309,7 @@ public class HoughTransform extends Thread {
                     double theta = t * thetaStep; 
  
                     // add the line to the vector 
-                    lines.add(new HoughLine(theta, r, peak)); 
+                    lines.add(new HoughLine(theta, t, r, peak)); 
                  } 
             } 
         } 
@@ -293,7 +346,7 @@ public class HoughTransform extends Thread {
 
         for (int t = 0; t < maxTheta; t++) { 
             for (int r = 0; r < doubleHeight; r++) { 
-                double value = 255 * ((double) houghArray[t][r]) / max; 
+                double value = 254 * ((double) houghArray[t][r]) / max; 
                 int v = 255 - (int) value; 
 		raster.setSample(t, r, 0, v);
             } 
@@ -302,16 +355,103 @@ public class HoughTransform extends Thread {
     }
 
 
-    // TBD
-    public BufferedImage CreateEnhancedHT(int we, int wh) {
+     BufferedImage enhance(int w) {
 
-	BufferedImage eh = new BufferedImage(maxTheta, doubleHeight, BufferedImage.TYPE_BYTE_GRAY);
+	int [][] blurred = new int[maxTheta][doubleHeight]; 
 
-	return eh;
-    }
+	 for (int t = 0; t < maxTheta; t++) {
+	     for (int r = 0; r < doubleHeight; r++) {
+		 int sum = 0;
+		 for (int dx = -w; dx <= w; dx++) { 
+		     for (int dy = -w; dy <= w; dy++) { 
+			 int dt = t + dx; 
+			 int dr = r + dy; 
+			 if (dt < 0) dt = dt + maxTheta; 
+			 else if (dt >= maxTheta) dt = dt - maxTheta; 
+			 if (dr < 0) dr = dr + doubleHeight;
+			 else if (dr >= doubleHeight) dr = dr - doubleHeight;
+			 sum  = sum + houghArray[dt][dr];
+		     }
+		 }
+		 blurred[t][r] = sum;
+	     }
+	 }
+ 
+	 // Now adjust the individual cells according to neighborhood average:
+
+	 int area2 = (2 * w + 1) * (2 * w + 1);
+	 for (int t = 0; t < maxTheta; t++) {
+	     for (int r = 0; r < doubleHeight; r++) {
+		 int bl = blurred[t][r];
+		 if (bl > 0) {
+		     int hl = houghArray[t][r];
+ 		     houghArray[t][r] =  (hl * hl * area2) / bl;
+		 }
+		 else if (houghArray[t][r] > 0)
+		     System.err.println("bad HT blur " + houghArray[t][r] + " [" + t + "][" + r + "], blur = " + bl);
+	     }
+	 }
+
+        BufferedImage image = new BufferedImage(maxTheta, doubleHeight, BufferedImage.TYPE_BYTE_GRAY); 
+	WritableRaster raster = image.getRaster();
+
+	int bmax = 0;
+      
+	for (int t = 0; t < maxTheta; t++)
+	    for (int r = 0; r < doubleHeight; r++)
+		if (blurred[t][r] > bmax)
+		    bmax = blurred[t][r];
+
+	double scale = 255.0 / bmax;
+
+	for (int t = 0; t < maxTheta; t++)
+	    for (int r = 0; r < doubleHeight; r++) {
+		int v = 255 - (int) (blurred[t][r] * scale);
+		raster.setSample(t, r, 0, v);
+	    }
+
+	return image;
+     }
+
 
 	/*
-	  enhanced = h[t][r]**2 / (summation over we x wh neighborhood)
+
+	for (int t = 0; t < maxTheta; t++) { 
+	    // seed summation.  Note that we wrap around the matrix in both r & t
+	    int sum = 0;
+	    for (int r = 0; r < wr/2; r++)
+		sum = sum + houghArray[t][r];
+	    for (int r = doubleHeight - wr/2; r < doubleHeight; r++)
+		sum = sum + houghArray[t][r];
+	    for (int r = 0; r < doubleHeight; r++) {
+		int ir1 = r - wr/2;
+		if (ir1 < 0) ir1 = doubleHeight + ir1;
+		int ir2 = r + wr/2;
+		if (ir2 >= doubleHeight) ir2 = ir2 - doubleHeight;
+		sum = sum - houghArray[t][ir1] + houghArray[t][ir2];
+		blurred[t][r] = sum;
+	    }
+	}
+    
+	for (int r = 0; r < doubleHeight; r++) {
+		// seed summation
+		int sum = 0;
+		for (int t = 0; t < wt/2; t++)
+		    sum = sum + blurred[t][r];
+		for (int t = maxTheta - wt/2; t < maxTheta; t++)
+		    sum = sum + blurred[t][r];
+		for (int t = 0; t < maxTheta; t++) {
+		    int it1 = t - wt/2;
+		    if (it1 < 0) it1 = maxTheta + it1;
+		    int it2 = t + wt/2;
+		    if (it2 >= maxTheta) it2 = it2 - maxTheta;
+		    sum = sum - blurred[it1][r] + blurred[it2][r];
+		    // put the enhanced value back into our hough array, scale
+		    if (sum > 0)
+			houghArray[t][r] = houghArray[t][r] * houghArray[t][r] * wr * wt / sum;
+		}
+	}
+     }
 	*/
 
     /*
@@ -323,7 +463,8 @@ public class HoughTransform extends Thread {
                 double value = 255 * ((double) houghArray[t][r]) / max; 
                 int v = 255 - (int) value; 
                 int c = new Color(v, v, v).getRGB(); 
-                image.setRGB(t, r, c); 
+
+		image.setRGB(t, r, c); 
             } 
         } 
         return image;
