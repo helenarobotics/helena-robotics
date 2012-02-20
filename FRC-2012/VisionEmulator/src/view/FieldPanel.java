@@ -192,7 +192,7 @@ public class FieldPanel extends JPanel implements Observer {
         public void mouseDragged(MouseEvent e) {
             Point field = pixelToFieldLocation(e.getPoint());
             robot.setXOffset((int)field.getX());
-            robot.setYOffset((int)field.getY());
+            robot.setZOffset((int)field.getY());
         }
 
         public void mouseMoved(MouseEvent ignored) { }
@@ -205,7 +205,7 @@ public class FieldPanel extends JPanel implements Observer {
         void draw(Graphics g) {
             // Convert robot position to x/y in current co-ordinates.
             int x = (int)(robot.getXOffset() * scale);
-            int y = (int)(robot.getYOffset() * scale);
+            int y = (int)(robot.getZOffset() * scale);
 
             // Draw the robot!
             Graphics2D g2d = (Graphics2D)g;
