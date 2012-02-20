@@ -6,7 +6,7 @@ import java.util.Observable;
 public class Robot extends Observable {
     // Height of the robot (really, the height of the camera on the
     // robot).
-    private static final int CAMERA_HEIGHT = 20;
+    private static final int CAMERA_HEIGHT = 39;
 
     // The field length in inches
     private static final int MAX_Y_OFFSET = 54 * 12;
