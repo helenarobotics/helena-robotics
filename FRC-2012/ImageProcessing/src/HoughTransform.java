@@ -6,6 +6,7 @@ import javax.imageio.ImageIO;
 import java.io.IOException; 
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
+import java.awt.geom.*;
 
 /** 
  * <p/> 
@@ -64,7 +65,7 @@ public class HoughTransform extends Thread {
         // get the lines out 
 	int thresh = 30;
 	Vector<HoughLine> lines = h.getLines(thresh);  // XXX thresh was 30 
-        
+
 	System.out.println("Threshold = " + thresh);
  
 	System.out.println("Found " + lines.size() + "lines above threshold " + thresh);
@@ -80,10 +81,23 @@ public class HoughTransform extends Thread {
 	g.drawImage(himage, 0, 0, null);
 	g.dispose(); 
 
-        // draw the lines back onto the image 
+        // segment lines, draw the lines back onto the image
         for (int j = 0; j < lines.size(); j++) { 
             HoughLine line = lines.elementAt(j); 
-            line.draw(image, Color.RED.getRGB()); 
+
+	    // Segment hough line into visible components:
+	    Vector<Line2D.Double> segments = line.segment(image, 9, 6);  // window of 9, of which 6 pixels must be 'lit'
+	    System.out.print(segments.size() + " segments found " + j + ": ");
+	    for (int k = 0; k < segments.size(); k++) {
+	        Line2D.Double seg = segments.elementAt(k);
+		System.out.print(k + ": [{ " + seg.x1 + "," + seg.y1 + "}, {" + seg.x2 + "," + seg.y2 + "}] ");
+	    }
+	    System.out.println();
+
+	    // draw out line on image (for debugging and presentation)
+
+            line.draw(image, Color.RED.getRGB());
+
 	    System.out.println(j + ": " + line.peak + " [" + (int)((180/Math.PI)*line.theta) + ", " + line.r + "]");
 	    System.out.println("Neighborhood:");
 	    for (int t = -2; t <=2; t++) {
@@ -414,6 +428,8 @@ public class HoughTransform extends Thread {
      }
 
 
+
+
 	/*
 
 	for (int t = 0; t < maxTheta; t++) { 
@@ -471,3 +487,4 @@ public class HoughTransform extends Thread {
     }
     */
 }
+
