@@ -109,12 +109,9 @@ class DistortHoop {
         // Go through each of the angles to see if we subtract or add
         // the robot's rotation to them based on whether or not the
         // point is left/right or up/down from the cameraCenter.
-        bbAngles = correctAngles(robot.getRotation(), cameraCenter,
-                                 bbRobotPts, bbAngles);
-        ortAngles = correctAngles(robot.getRotation(), cameraCenter,
-                                  ortRobotPts, ortAngles);
-        irtAngles = correctAngles(robot.getRotation(), cameraCenter,
-                                  irtRobotPts, irtAngles);
+        bbAngles = correctAngles(robot.getRotation(), cameraCenter, bbAngles);
+        ortAngles = correctAngles(robot.getRotation(), cameraCenter, ortAngles);
+        irtAngles = correctAngles(robot.getRotation(), cameraCenter, irtAngles);
         
         // At this point, we can map the angles to the pixel lengths, but
         // the pixels we display on the screen may be smaller/larger
@@ -230,9 +227,12 @@ class DistortHoop {
     // robot will affect the HORIZONTAL angle slightly due to the change
     // in the angle based on Z/Y offsets.
     private double[][] correctAngles(int angle, Point3d cameraCenterPt,
-                                     Point3d pts[], double angles[][]) {
-        double corrected[][] = new double[angles.length][angles[0].length];
+                                     double angles[][]) {
+        // Determine if the correction angle is positive/negative.
+        if (cameraCenterPt.x > centerPt.x)
+            angle *= -1;
 
+        double corrected[][] = new double[angles.length][angles[0].length];
         for (int i = 0; i < angles.length; i++) {
             // Make sure we copy the current angle.
             corrected[i][ANGLE.HORIZ.ordinal()] =
@@ -240,14 +240,8 @@ class DistortHoop {
             corrected[i][ANGLE.VERT.ordinal()] =
                 angles[i][ANGLE.VERT.ordinal()];
 
-            // Determine if the correction angle is positive/negative.
-
             // Apply rotation correction
-            Point3d cornerPt = pts[i];
-            if (cameraCenterPt.x < pts[i].x)
-                corrected[i][ANGLE.HORIZ.ordinal()] += angle;
-            else
-                corrected[i][ANGLE.HORIZ.ordinal()] -= angle;
+            corrected[i][ANGLE.HORIZ.ordinal()] += angle;
         }
         return corrected;
     }
