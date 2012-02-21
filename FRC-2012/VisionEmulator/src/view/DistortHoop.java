@@ -88,30 +88,11 @@ class DistortHoop {
         double ortAngles[][] = calcAngles(robotPt, ortRobotPts);
         double irtAngles[][] = calcAngles(robotPt, irtRobotPts);
 
-        // Determine within the horizontal plane where the robot's
-        // camera is pointing along the backboard, which we use to
-        // correct for the robot's rotation.
-        //
-        // XXX - This isn't totally correct, but a good enough
-        // approximation.
-        //
-        // Since the robot rotations only changes the hoop's XOffset, we
-        // can easily determine this location since we know one leg of a
-        // right triangle (ZOffset), and the angle (rotation), which can
-        // give us the additional XOffset.
-        double rotXOffset = robot.getZOffset() *
-                            Math.cos(Math.toRadians(robot.getRotation()));
-
-        // The camera's focal point along the backboard.
-        Point3d cameraCenter = new Point3d(
-            robot.getXOffset() + rotXOffset, robot.getYOffset(), 0);
-
-        // Go through each of the angles to see if we subtract or add
-        // the robot's rotation to them based on whether or not the
-        // point is left/right or up/down from the cameraCenter.
-        bbAngles = correctAngles(robot.getRotation(), cameraCenter, bbAngles);
-        ortAngles = correctAngles(robot.getRotation(), cameraCenter, ortAngles);
-        irtAngles = correctAngles(robot.getRotation(), cameraCenter, irtAngles);
+        // Go through each of the angles and compensate for the robot's
+        // rotation.
+        bbAngles = correctAngles(robot.getRotation(), bbAngles);
+        ortAngles = correctAngles(robot.getRotation(), ortAngles);
+        irtAngles = correctAngles(robot.getRotation(), irtAngles);
         
         // At this point, we can map the angles to the pixel lengths, but
         // the pixels we display on the screen may be smaller/larger
@@ -223,15 +204,11 @@ class DistortHoop {
         return angles;
     }
 
-    // XXX - This isn't completely correct since the rotation of the
-    // robot will affect the HORIZONTAL angle slightly due to the change
-    // in the angle based on Z/Y offsets.
-    private double[][] correctAngles(int angle, Point3d cameraCenterPt,
-                                     double angles[][]) {
-        // Determine if the correction angle is positive/negative.
-        if (cameraCenterPt.x > centerPt.x)
-            angle *= -1;
-
+    // Note, This is only correct if the camera is parallel with the X/Z
+    // axis, otherwise the rotation of the robot will also affect the
+    // HORIZONTAL angle slightly due to the change in the angle based on
+    // Z/Y offsets.
+    private double[][] correctAngles(int angle, double angles[][]) {
         double corrected[][] = new double[angles.length][angles[0].length];
         for (int i = 0; i < angles.length; i++) {
             // Make sure we copy the current angle.
@@ -241,7 +218,7 @@ class DistortHoop {
                 angles[i][ANGLE.VERT.ordinal()];
 
             // Apply rotation correction
-            corrected[i][ANGLE.HORIZ.ordinal()] += angle;
+            corrected[i][ANGLE.HORIZ.ordinal()] -= angle;
         }
         return corrected;
     }
