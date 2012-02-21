@@ -76,9 +76,15 @@ public class HoughTransform extends Thread {
 	ImageIO.write(himage, "jpg", new File("houghspace.jpg"));
 
 	// Create a color image from the hough results, and highlight the peaks in red
-	BufferedImage cimage = new BufferedImage(h.maxTheta, h.doubleHeight,  BufferedImage.TYPE_INT_RGB);
+	BufferedImage chimage = new BufferedImage(h.maxTheta, h.doubleHeight,  BufferedImage.TYPE_INT_RGB);
+	Graphics gh = chimage.getGraphics();  
+	gh.drawImage(himage, 0, 0, null);
+	gh.dispose(); 
+
+	// Also create color image from original input image.  We'll overlay HT lines and line segments.
+	BufferedImage cimage = new BufferedImage(image.getWidth(), image.getHeight(),  BufferedImage.TYPE_INT_RGB);
 	Graphics g = cimage.getGraphics();  
-	g.drawImage(himage, 0, 0, null);
+	g.drawImage(image, 0, 0, null);
 	g.dispose(); 
 
         // segment lines, draw the lines back onto the image
@@ -86,17 +92,20 @@ public class HoughTransform extends Thread {
             HoughLine line = lines.elementAt(j); 
 
 	    // Segment hough line into visible components:
-	    Vector<Line2D.Double> segments = line.segment(image, 9, 6);  // window of 9, of which 6 pixels must be 'lit'
+	    Vector<Line2D.Double> segments = line.segment(image, 13, 8);  // window of 9, of which 6 pixels must be 'lit'
+
+            line.draw(cimage, Color.BLUE.getRGB());
+
 	    System.out.print(segments.size() + " segments found " + j + ": ");
 	    for (int k = 0; k < segments.size(); k++) {
 	        Line2D.Double seg = segments.elementAt(k);
 		System.out.print(k + ": [{ " + seg.x1 + "," + seg.y1 + "}, {" + seg.x2 + "," + seg.y2 + "}] ");
+		//g.draw(cimage, (int)seg.x1, (int)seg.y1, (int)seg.x2, (int)seg.y2);
+		HoughLine.drawsegment(cimage, seg, Color.RED.getRGB());
 	    }
 	    System.out.println();
 
 	    // draw out line on image (for debugging and presentation)
-
-            line.draw(image, Color.RED.getRGB());
 
 	    System.out.println(j + ": " + line.peak + " [" + (int)((180/Math.PI)*line.theta) + ", " + line.r + "]");
 	    System.out.println("Neighborhood:");
@@ -109,7 +118,7 @@ public class HoughTransform extends Thread {
 			if (it >= h.maxTheta) it = it - h.maxTheta;
 			if (ir < 0) ir = h.doubleHeight + r;
 			if (ir >= h.doubleHeight) ir = ir - h.doubleHeight;
-			cimage.setRGB(it, ir, Color.RED.getRGB());
+			chimage.setRGB(it, ir, Color.RED.getRGB());
 			System.out.print(h.houghArray[it][ir] + " ");
 		    }
 		System.out.println("");
@@ -117,8 +126,8 @@ public class HoughTransform extends Thread {
 	    System.out.println("");
 	}
 	// Write out markup'd images
-	ImageIO.write(image, "jpg", new File("houghout.jpg"));
-	ImageIO.write(cimage, "jpg", new File("houghspaceoverlay.jpg"));
+	ImageIO.write(cimage, "jpg", new File("houghout.jpg"));
+	ImageIO.write(chimage, "jpg", new File("houghspaceoverlay.jpg"));
     }
 
  
