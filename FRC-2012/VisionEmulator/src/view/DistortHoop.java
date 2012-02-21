@@ -4,8 +4,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Polygon;
-import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Double;
+
+import javax.vecmath.Point3d;
 
 import javax.swing.JPanel;
 
@@ -27,33 +27,31 @@ class DistortHoop {
     private static final double tapeInsideWidth = 20.0;
     private static final double tapeInsideHeight = 14.0;
 
-    // The offset of this hoop in inches from the 'center' of the
-    // bottom of the backboard.  yOffset is the height fromt the floor,
-    // and zOffset is the distance from the backboard.
-    private final double xOffset;
-    private final double yOffset;
-    private final double zOffset;
+    // The offset of this hoop in inches from the 'center' of the bottom
+    // of the backboard.  xOffset is the left/right offset from the
+    // center of the backboard, yOffset is the height from the floor,
+    // and zOffset is the distance from the backboard, which by
+    // definition is zero.
+    private Point3d centerPt;
 
     // Backboard points
-    private Point2D bbPts[];
+    private Point3d bbPts[];
 
     // Outside reflective tape points
-    private Point2D ortPts[];
+    private Point3d ortPts[];
 
     // Inside reflective tape points
-    private Point2D irtPts[];
-    
-    DistortHoop(double _xOffset, double _yOffset) {
-        xOffset = _xOffset;
+    private Point3d irtPts[];
 
+    DistortHoop(double xOffset, double yOffset) {
         // We place the offsets at the center of the hoop's
         // backboard. Since the hoop is on the bottom of the backboard,
         // increase the zOffset by half the height of the backboard.
-        yOffset = _yOffset + backboardOutsideHeight / 2;
+        yOffset += backboardOutsideHeight / 2;
 
         // The hoops are on the back wall, which by convention is at
         // location 0.
-        zOffset = 0;
+        centerPt = new Point3d(xOffset, yOffset, 0);
 
         // We have three rectangular 'objects' here, Backboard, outside
         // reflective tape, and inside reflective tape.  For each of
@@ -63,53 +61,61 @@ class DistortHoop {
         // - LowerRight
         // - LowerLeft
 
-        // Backboard
-        bbPts = cornerPoints(
-            xOffset, yOffset, backboardOutsideWidth, backboardOutsideHeight);
-        
+        // Clear Backboard
+        bbPts = cornerPoints(backboardOutsideWidth, backboardOutsideHeight);
+
         // Outside Reflective Tape border
-        ortPts = cornerPoints(
-            xOffset, yOffset, tapeOutsideWidth, tapeOutsideHeight);
+        ortPts = cornerPoints(tapeOutsideWidth, tapeOutsideHeight);
 
         // Inside Reflective Tape border
-        irtPts = cornerPoints(
-            xOffset, yOffset, tapeInsideWidth, tapeInsideHeight);
+        irtPts = cornerPoints(tapeInsideWidth, tapeInsideHeight);
     }
 
     void paint(Graphics g, Dimension screenDimension,
                Robot robot, Camera camera) {
-        // Calculate the angles from the robot to the four corners
-        // in all three planes (XY, XZ, and YZ).
-        double bbAngles[][] = calcAngles(robot, bbPts);
-        double ortAngles[][] = calcAngles(robot, ortPts);
-        double irtAngles[][] = calcAngles(robot, irtPts);
+        // Create a new origin point where the robot/camera is located.
+        final Point3d robotPt = new Point3d(0, 0, 0);
 
-        // Determine within the XY plane where the robot's camera is
-        // pointing along the backboard, which will help determine where
-        // we draw the pixels (left or right of the camera's center
-        // point).
+        // Calculate the object's points from the perspective of the
+        // camera on the robot being at the origin.
+        Point3d bbRobotPts[] = robotPoints(robot, bbPts);
+        Point3d ortRobotPts[] = robotPoints(robot, ortPts);
+        Point3d irtRobotPts[] = robotPoints(robot, irtPts);
+        
+        // Calculate the angles from the robot to the four corners in
+        // both the horizontal and vertical directions.
+        double bbAngles[][] = calcAngles(robotPt, bbRobotPts);
+        double ortAngles[][] = calcAngles(robotPt, ortRobotPts);
+        double irtAngles[][] = calcAngles(robotPt, irtRobotPts);
+
+        // Determine within the horizontal plane where the robot's
+        // camera is pointing along the backboard, which we use to
+        // correct for the robot's rotation.
         //
-        // The robot rotations only changes the XOffset, we can easily
-        // determine this location since we know one leg of a right
-        // triangle (YOffset), and the angle (rotation), which can give
-        // us the additional XOffset.
+        // XXX - This isn't totally correct, but a good enough
+        // approximation.
+        //
+        // Since the robot rotations only changes the hoop's XOffset, we
+        // can easily determine this location since we know one leg of a
+        // right triangle (ZOffset), and the angle (rotation), which can
+        // give us the additional XOffset.
         double rotXOffset = robot.getZOffset() *
                             Math.cos(Math.toRadians(robot.getRotation()));
 
-        // The camera's center-point along the back wall
-        Point2D cameraCenter =
-            new Point2D.Double(robot.getXOffset() + rotXOffset, yOffset);
+        // The camera's focal point along the backboard.
+        Point3d cameraCenter = new Point3d(
+            robot.getXOffset() + rotXOffset, robot.getYOffset(), 0);
 
-        // Go through each of the angles to see if we subtract or add to
-        // them based on whether or not the point is left/right to the
-        // cameraCenter.
+        // Go through each of the angles to see if we subtract or add
+        // the robot's rotation to them based on whether or not the
+        // point is left/right or up/down from the cameraCenter.
         bbAngles = correctAngles(robot.getRotation(), cameraCenter,
-                                 bbPts, bbAngles);
+                                 bbRobotPts, bbAngles);
         ortAngles = correctAngles(robot.getRotation(), cameraCenter,
-                                  ortPts, ortAngles);
+                                  ortRobotPts, ortAngles);
         irtAngles = correctAngles(robot.getRotation(), cameraCenter,
-                                  irtPts, irtAngles);
-
+                                  irtRobotPts, irtAngles);
+        
         // At this point, we can map the angles to the pixel lengths, but
         // the pixels we display on the screen may be smaller/larger
         // than the camera view, so scale the visual screen to what is
@@ -155,153 +161,93 @@ class DistortHoop {
 
     // Return a array containing the upper-left, upper-right,
     // lower-left, and lower-right points of the 'rectangle'.
-    private Point2D[] cornerPoints(double x, double y, double w, double h) {
-        Point2D pts[] = new Point2D[REC_PTS.values().length];
+    private Point3d[] cornerPoints(double w, double h) {
+        Point3d pts[] = new Point3d[REC_PTS.values().length];
 
-        // Because y is always 0, we only store X/Z values.
-        pts[REC_PTS.UPPER_LEFT.ordinal()] =
-            new Point2D.Double(x - w / 2, y + h / 2);
-        pts[REC_PTS.UPPER_RIGHT.ordinal()] =
-            new Point2D.Double(x + w / 2, y + h / 2);
-        pts[REC_PTS.LOWER_RIGHT.ordinal()] =
-            new Point2D.Double(x + w / 2, y - h / 2);
-        pts[REC_PTS.LOWER_LEFT.ordinal()] =
-            new Point2D.Double(x - w / 2, y - h / 2);
+        // Because z is always 0, we only store X/Z values.
+        pts[REC_PTS.UPPER_LEFT.ordinal()] = new Point3d(
+            centerPt.x - w / 2, centerPt.y + h / 2, centerPt.z);
+        pts[REC_PTS.UPPER_RIGHT.ordinal()] = new Point3d(
+            centerPt.x + w / 2, centerPt.y + h / 2, centerPt.z);
+        pts[REC_PTS.LOWER_RIGHT.ordinal()] = new Point3d(
+            centerPt.x + w / 2, centerPt.y - h / 2, centerPt.z);
+        pts[REC_PTS.LOWER_LEFT.ordinal()] = new Point3d(
+            centerPt.x - w / 2, centerPt.y - h / 2, centerPt.z);
 
         return pts;
     }
 
-    // The planes correspond to the TOP_DOWN, SIDE, and ROBOT
-    // perspectives respectively.
-    private enum Plane { XZ, YZ, XY };
+    // Return a 3d point created from the perspective of the robot.
+    private Point3d[] robotPoints(Robot robot, Point3d cornerPts[]) {
+        Point3d pts[] = new Point3d[cornerPts.length];
 
-    private Plane intToPlane(int i) {
-        if (i == Plane.XZ.ordinal())
-            return Plane.XZ;
-        else if (i == Plane.YZ.ordinal())
-            return Plane.YZ;
-        else if (i == Plane.XY.ordinal())
-            return Plane.XY;
-
-        // The code should blow up
-        return null;
+        // Simple math.  The point is the difference between the robot's
+        // position and the position of the corner point in all 3
+        // dimensions.
+        for (int i = 0; i < pts.length; i++) {
+            double x = cornerPts[i].x - robot.getXOffset();
+            double y = cornerPts[i].y - robot.getYOffset();
+            double z = cornerPts[i].z - robot.getZOffset();
+            pts[i] = new Point3d(x, y, z);
+        }
+        return pts;
     }
-        
-    // Return a 2D array containing the upper-left, upper-right,
-    // lower-left, and lower-right points of the 'rectangle' in
-    // all three perspectives.
-    private double[][] calcAngles(Robot robot, Point2D cornerPts[]) {
+
+    private enum ANGLE { HORIZ, VERT };
+    
+    // Return a 2D array containing horizontal/vertical angles to the
+    // the upper-left, upper-right, lower-left, and lower-right points
+    // of the triangle from the robot's perspective.
+    private double[][] calcAngles(Point3d robotPt, Point3d cornerPts[]) {
         // Calculate the angles
         double angles[][] =
-            new double[Plane.values().length][cornerPts.length];
+            new double[cornerPts.length][ANGLE.values().length];
 
-        for (int i = 0; i < angles.length; i++) {
-            // We calculate the distance from the robot to the corner points
-            // to give us the hypotenuse of the right triangle.
-            Plane p = intToPlane(i);
+        // Calculate the angles for each point
+        for (int i = 0; i < cornerPts.length; i++) {
+            // First, calculate the horizontal angle to this point.  This
+            // is just the atan of the X and Z points of the
+            // cornerPoints.
+            angles[i][ANGLE.HORIZ.ordinal()] = 
+                Math.toDegrees(Math.atan(cornerPts[i].x / cornerPts[i].z));
 
-            // Generate the robot's 2D position based on the current
-            // perspective.
-            Point2D robotPt = null;
-            switch (p) {
-            case XZ:
-                robotPt = new Point2D.Double(robot.getXOffset(),
-                                             robot.getZOffset());
-                break;
-
-            case YZ:
-                robotPt = new Point2D.Double(robot.getZOffset(),
-                                             robot.getYOffset());
-                break;
-
-            case XY:
-                robotPt = new Point2D.Double(robot.getXOffset(),
-                                             robot.getYOffset());
-                break;
-            }
-
-            // Go through each point and calculate the hypotenuse distance.
-            for (int j = 0; j < cornerPts.length; j++) {
-                // The adjacent length for angle calculations.
-                double adjLen = 1.0;
-                switch (p) {
-                case XZ:
-                case YZ:
-                    // from the robot to the wall, or ZOffset.
-                    adjLen = robot.getZOffset();
-                    break;
-
-                case XY:
-                    // Height of the point above the robot
-                    adjLen = Math.abs(cornerPts[j].getY() - robot.getYOffset());
-                    break;
-                }
-
-                // Next, calculate the triangle's opposite leg's length.
-                double oppLen = 1.0;
-                switch (p) {
-                case XZ:
-                case XY:
-                    // From the top and robot, the length is the
-                    // difference between the robot and the backboard
-                    // (delta X)
-                    oppLen = Math.abs(robot.getXOffset() - cornerPts[j].getX());
-                    break;
-                case YZ:
-                    // From the side, the length is the difference between
-                    // the robot's height and the backboard (delta Y)
-                    oppLen = Math.abs(robot.getYOffset() - cornerPts[j].getY());
-                    break;
-                }
-
-                // Calculate the angle
-                angles[i][j] = Math.toDegrees(Math.atan(oppLen / adjLen));
-
-                // Determine if the angle is positive or negative based on
-                // the perspective.
-                switch (p) {
-                case XZ:
-                case XY:
-                    // if the corner point is left of the robot, the
-                    // angle is negative.
-                    if (cornerPts[j].getX() < robotPt.getX())
-                        angles[i][j] *= -1.0;
-                    // the robot and the backboard (delta X)
-                    oppLen = Math.abs(robot.getXOffset() - cornerPts[i].getX());
-                    break;
-
-                case YZ:
-                    // if the corner point is above of the robot, the
-                    // angle is negative.  In Java y pixel values
-                    // increase by moving down the screen, and for our
-                    // perspective, increasing y is higher, so use a
-                    // negative angle.
-                    if (cornerPts[j].getY() > robotPt.getY())
-                        angles[i][j] *= -1.0;
-                    break;
-                }
-            }
+            // Calculate the horizontal angle to the point, but first
+            // calculating the length of the adjacent side of the right
+            // triangle which which exists in the XZ plane.  The length
+            // of this is the length of the hypotenuse of the triangle
+            // in the same XZ plane, which are known coordinates.
+            double adjLen = Math.sqrt(Math.pow(cornerPts[i].x, 2) +
+                                      Math.pow(cornerPts[i].z, 2));
+            // The length of the opposite triangle is the height, or y
+            // value.
+            angles[i][ANGLE.VERT.ordinal()] = 
+                Math.toDegrees(Math.atan(cornerPts[i].y / adjLen));
         }
         return angles;
     }
 
-    private double[][] correctAngles(int angle, Point2D centerPt,
-                                     Point2D pts[], double angles[][]) {
+    // XXX - This isn't completely correct since the rotation of the
+    // robot will affect the HORIZONTAL angle slightly due to the change
+    // in the angle based on Z/Y offsets.
+    private double[][] correctAngles(int angle, Point3d cameraCenterPt,
+                                     Point3d pts[], double angles[][]) {
         double corrected[][] = new double[angles.length][angles[0].length];
 
         for (int i = 0; i < angles.length; i++) {
-            for (int j = 0; j < angles[i].length; j++) {
-                corrected[i][j] = angles[i][j];
+            // Make sure we copy the current angle.
+            corrected[i][ANGLE.HORIZ.ordinal()] =
+                angles[i][ANGLE.HORIZ.ordinal()];
+            corrected[i][ANGLE.VERT.ordinal()] =
+                angles[i][ANGLE.VERT.ordinal()];
 
-                // We only correct in the (XZ plane) perspective
-                if (i != Plane.XZ.ordinal())
-                    continue;
+            // Determine if the correction angle is positive/negative.
 
-                if (centerPt.getX() < pts[i].getX())
-                    corrected[i][j] += angle;
-                else
-                    corrected[i][j] -= angle;
-            }
+            // Apply rotation correction
+            Point3d cornerPt = pts[i];
+            if (cameraCenterPt.x > pts[i].x)
+                corrected[i][ANGLE.HORIZ.ordinal()] += angle;
+            else
+                corrected[i][ANGLE.HORIZ.ordinal()] -= angle;
         }
         return corrected;
     }
@@ -311,25 +257,9 @@ class DistortHoop {
         Polygon poly = new Polygon();
 
         // Iterate through the points!
-        for (int j = 0; j < angles[0].length; j++) {
-            int x = 0;
-            int y = 0;
-            // Next, grab the angle/perspectives for this point.
-            for (int i = 0; i < angles.length; i++) {
-                switch (intToPlane(i)) {
-                case XZ:
-                    x = (int)(angles[i][j] * horizPixelScale);
-                    break;
-
-                case YZ:
-                    y = (int)(angles[i][j] * vertPixelScale);
-                    break;
-
-                case XY:
-                    // XXX - Unused for now
-                    break;
-                }
-            }
+        for (int i = 0; i < angles.length; i++) {
+            int x = -(int)(angles[i][ANGLE.HORIZ.ordinal()] * horizPixelScale);
+            int y = -(int)(angles[i][ANGLE.VERT.ordinal()] * vertPixelScale);
             poly.addPoint(x, y);
         }
         return poly;
