@@ -16,6 +16,8 @@ public class HoughLine {
     protected int itheta;
     protected int r; 
     protected int peak;
+
+    static int threshold = 100;  // used for determining whether a pixel is occupied ("lit")
  
     /** 
      * Initialises the hough line 
@@ -26,6 +28,17 @@ public class HoughLine {
 	peak = 0;
     } 
     */
+
+    private class Window {
+	boolean lit;
+	int x, y;
+
+	public Window (boolean _lit, int _x, int _y) {
+	    lit = _lit;
+	    x = _x;
+	    y = _y;
+	}
+    }
 
     public HoughLine(double _theta, int _itheta, int _r, int _peak) { 
         this.theta = _theta; 
@@ -60,7 +73,6 @@ public class HoughLine {
         float centerX = width / 2; 
         float centerY = height / 2; 
  
-        // Draw edges in output array 
         double tsin = Math.sin(theta); 
         double tcos = Math.cos(theta); 
 
@@ -68,8 +80,11 @@ public class HoughLine {
 	int buffer [] = new int [1];
 	int pixel [] = new int [1];
 
-	// moving window equipment:
-	boolean window [] = new boolean [w+1];
+	// moving window info storage
+	Window window [] = new Window [w+1];
+
+	for (int i = 0; i <= w; i++)
+	    window[i] = new Window(false, -1, -1);
 
 	boolean started = false;
 	Line2D.Double l = new Line2D.Double();    // line segment
@@ -77,35 +92,39 @@ public class HoughLine {
 	int x = 0, y = 0;
 
         if (theta < Math.PI * 0.25 || theta > Math.PI * 0.75) { 
-            //  follow vvertical-ish lines 
+            //  analyze vertical-ish lines 
             for (y = 0; y < height; y++) { 
                  x = (int) ((((r - houghHeight) - ((y - centerY) * tsin)) / tcos) + centerX); 
 		//		System.out.print("[" + x + ", " + y + "] =");
                 if (x < width && x >= 0) { 
 		    pixel = raster.getPixel(x, y, buffer);
 		    //		    System.out.print("=" + (pixel[0] & 0x000000ff) + " ");
-		    if ((pixel[0] & 0x000000ff) > 200) {
-			window[w] = true;
+		    if ((pixel[0] & 0x000000ff) > threshold) {
+			window[w].lit = true;
 		    }
 		    else {
-			window[w] = false;
+			window[w].lit = false;
 		    }
 		}
-		else window[w] = false;
+		else {
+		    window[w].lit = false;
+		}
 
+		window[w].x = x; window[w].y = y;
+			
 		// Slide window, count 'lit' pixels, and start or stop line segment growth depending on whether we meet
 		// minimum criteria (at least d of w pixels lit in moving window)
 		int count = 0;
 		for (int i = 0; i < w; i++) {
 		    window[i] = window[i+1];
-		    if (window[i])
+		    if (window[i].lit)
 			count = count + 1;
 		    }
 		if (count >= d) {
 		    if (!started) {
 			started = true;
 			// we'll extend the end points when we find the end of the line.
-			l.x1 = x; l.y1 = y;
+			l.x1 = window[w-d].x; l.y1 = window[w-d].y;
 			l.x2 = x; l.y2 = y;
 			//			System.out.print("New segment at {" + x + ", " + y + "}");
 		    }
@@ -119,35 +138,39 @@ public class HoughLine {
 		}
             }
         } else { 
-            // Draw horizontal-sh lines 
+            // Analyze horizontal-sh lines 
             for (x = 0; x < width; x++) { 
                 y = (int) ((((r - houghHeight) - ((x - centerX) * tcos)) / tsin) + centerY); 
 		//		System.out.print("[" + x + ", " + y + "]");
                 if (y < height && y >= 0) { 
 		    pixel = raster.getPixel(x, y, buffer);
 		    //		    System.out.print("=" + (pixel[0] & 0x000000ff) + " ");
-		    if ((pixel[0] & 0x000000ff) > 200) {
-			window[w] = true;
+		    if ((pixel[0] & 0x000000ff) > threshold) {
+			window[w].lit = true;
 		    }
 		    else {
-			window[w] = false;
+			window[w].lit = false;
 		    }
 		}
-		else window[w] = false;
+		else {  // we're off the screen, assume it's unlit
+		    window[w].lit = false;
+		}
+		window[w].x = x; window[w].y = y;
+
 
 		// Slide window, count 'lit' pixels, and start or stop line segment growth depending on whether we meet
 		// minimum criteria (at least d of w pixels lit in moving window)
 		int count = 0;
 		for (int i = 0; i < w; i++) {
 		    window[i] = window[i+1];
-		    if (window[i])
+		    if (window[i].lit)
 			count = count + 1;
 		    }
 		if (count >= d) {
 		    if (!started) {
 			started = true;
 			// we'll extend the end points when we find the end of the line.
-			l.x1 = x; l.y1 = y;
+			l.x1 = window[w-d].x; l.y1 = window[w-d].y;
 			l.x2 = x; l.y2 = y;
 			// System.out.print("New segment at {" + x + ", " + y + "}");
 		    }
@@ -171,6 +194,13 @@ public class HoughLine {
 	return segments;
     }
 
+    /**
+     * draw line in original image
+     */
+
+    //    static public void drawline(BufferedImage image, Line2D.Double l, int color) { 
+
+	
  
     /** 
      * Draws the line on the image of your choice with the RGB colour of your choice. 
@@ -209,5 +239,53 @@ public class HoughLine {
             } 
         } 
     }
-} 
+
+
+    /** 
+     * Draws the line on the image of your choice with the RGB colour of your choice. 
+     */ 
+    public static void drawsegment(BufferedImage image, Line2D.Double seg, int color) { 
+ 
+        int height = image.getHeight(); 
+        int width = image.getWidth(); 
+ 
+        // During processing h_h is doubled so that -ve r values 
+        int houghHeight = (int) (Math.sqrt(2) * Math.max(height, width)) / 2; 
+ 
+        // Find edge points and vote in array 
+        float centerX = width / 2; 
+        float centerY = height / 2; 
+ 
+	double slope;
+
+	// Draw the line (logic here handles vertical or horizontal)
+	if (Math.abs(seg.x2 - seg.x1) > Math.abs(seg.y2 - seg.y1)) {
+	    slope = (seg.y2 - seg.y1) / (seg.x2 - seg.x1);
+	    for (int x = (int) seg.x1; x <= (int) seg.x2; x++) {
+		int y = (int) (seg.y1 + (x - seg.x1) * slope);
+		if (y > image.getHeight() || x > image.getWidth())
+		    System.err.println("Oh oh, out of bounds at {" + x + ", " + y + "}");
+	        else {
+		    image.setRGB(x, y, color);
+		    if (y < height - 1) image.setRGB(x, y+1, color);
+		    if (y > 0) image.setRGB(x, y-1, color);
+		}
+	    }
+	}
+	else {
+	    slope = (seg.x2 - seg.x1) / (seg.y2 - seg.y1);
+	    for (int y = (int)seg.y1; y <= (int)seg.y2; y++) {
+		int x = (int) (seg.x1 + (y - seg.y1) * slope);
+		if (y > image.getHeight() || x > image.getWidth())
+		    System.err.println("Oh oh, out of bounds at {" + x + ", " + y + "}");
+	        else {
+		    image.setRGB(x, y, color);
+		    if (x < width - 1) image.setRGB(x+1, y, color);
+		    if (x > 0) image.setRGB(x+1, y, color);
+		}
+	    }
+	}
+    }
+}
+ 
 
