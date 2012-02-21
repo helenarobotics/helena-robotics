@@ -209,7 +209,7 @@ class DistortHoop {
             // is just the atan of the X and Z points of the
             // cornerPoints.
             angles[i][ANGLE.HORIZ.ordinal()] = 
-                Math.toDegrees(Math.atan(cornerPts[i].x / cornerPts[i].z));
+                Math.toDegrees(Math.atan(cornerPts[i].x / -cornerPts[i].z));
 
             // Calculate the horizontal angle to the point, but first
             // calculating the length of the adjacent side of the right
@@ -244,7 +244,7 @@ class DistortHoop {
 
             // Apply rotation correction
             Point3d cornerPt = pts[i];
-            if (cameraCenterPt.x > pts[i].x)
+            if (cameraCenterPt.x < pts[i].x)
                 corrected[i][ANGLE.HORIZ.ordinal()] += angle;
             else
                 corrected[i][ANGLE.HORIZ.ordinal()] -= angle;
@@ -258,7 +258,7 @@ class DistortHoop {
 
         // Iterate through the points!
         for (int i = 0; i < angles.length; i++) {
-            int x = -(int)(angles[i][ANGLE.HORIZ.ordinal()] * horizPixelScale);
+            int x = (int)(angles[i][ANGLE.HORIZ.ordinal()] * horizPixelScale);
             int y = -(int)(angles[i][ANGLE.VERT.ordinal()] * vertPixelScale);
             poly.addPoint(x, y);
         }
