@@ -22,7 +22,7 @@ public class RobotPanel extends GridBagJPanel implements Observer {
 
     // Labels for the robot data.
     private PositionJLabel xPosLabel;
-    private PositionJLabel yPosLabel;
+    private PositionJLabel zPosLabel;
     private PositionJLabel rotPosLabel;
 
     public RobotPanel(Robot _robot) {
@@ -48,10 +48,10 @@ public class RobotPanel extends GridBagJPanel implements Observer {
         addComponent(xLabel, 0, gridRow, GridBagConstraints.NORTHWEST);
         addComponent(xPosLabel, 1, gridRow++, GridBagConstraints.WEST);
 
-        JLabel yLabel = new JLabel("Y-Position:  ");
-        yPosLabel = new PositionJLabel(robot.getYOffset());
-        addComponent(yLabel, 0, gridRow, GridBagConstraints.NORTHWEST);
-        addComponent(yPosLabel, 1, gridRow++, GridBagConstraints.WEST);
+        JLabel zLabel = new JLabel("Z-Position:  ");
+        zPosLabel = new PositionJLabel(robot.getZOffset());
+        addComponent(zLabel, 0, gridRow, GridBagConstraints.NORTHWEST);
+        addComponent(zPosLabel, 1, gridRow++, GridBagConstraints.WEST);
 
         JLabel rotLabel = new JLabel("Rotation:   ");
         rotPosLabel = new PositionJLabel(robot.getRotation());
@@ -80,7 +80,7 @@ public class RobotPanel extends GridBagJPanel implements Observer {
     // The Robot model was updated, so update the information.
     public void update(Observable o, Object arg) {
         xPosLabel.updatePos(robot.getXOffset());
-        yPosLabel.updatePos(robot.getYOffset());
+        zPosLabel.updatePos(robot.getZOffset());
         rotPosLabel.updatePos(robot.getRotation());
     }
 }
