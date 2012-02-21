@@ -31,7 +31,6 @@ public class ViewScreen extends JPanel implements Observer {
 
     // The hoop display objects
     private DistortHoop hoops[];
-//    private Hoop hoops[];
 
     public ViewScreen(Camera _camera, Robot _robot) {
         // Turn on double-buffering
