@@ -28,6 +28,7 @@
   <path id="proj.classpath">
     <path refid="lib.classpath"/>
     <pathelement path="${build.dir}"/>
+    <fileset dir="${lib.dir}" includes="*.jar"/>
   </path>
 
   <target name="init">
