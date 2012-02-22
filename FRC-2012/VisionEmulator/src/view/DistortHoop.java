@@ -81,7 +81,7 @@ class DistortHoop {
         Point3d bbRobotPts[] = robotPoints(robot, bbPts);
         Point3d ortRobotPts[] = robotPoints(robot, ortPts);
         Point3d irtRobotPts[] = robotPoints(robot, irtPts);
-        
+
         // Calculate the angles from the robot to the four corners in
         // both the horizontal and vertical directions.
         double bbAngles[][] = calcAngles(robotPt, bbRobotPts);
@@ -93,7 +93,7 @@ class DistortHoop {
         bbAngles = correctAngles(robot.getRotation(), bbAngles);
         ortAngles = correctAngles(robot.getRotation(), ortAngles);
         irtAngles = correctAngles(robot.getRotation(), irtAngles);
-        
+
         // At this point, we can map the angles to the pixel lengths, but
         // the pixels we display on the screen may be smaller/larger
         // than the camera view, so scale the visual screen to what is
@@ -172,7 +172,7 @@ class DistortHoop {
     }
 
     private enum ANGLE { HORIZ, VERT };
-    
+
     // Return a 2D array containing horizontal/vertical angles to the
     // the upper-left, upper-right, lower-left, and lower-right points
     // of the triangle from the robot's perspective.
@@ -186,7 +186,7 @@ class DistortHoop {
             // First, calculate the horizontal angle to this point.  This
             // is just the atan of the X and Z points of the
             // cornerPoints.
-            angles[i][ANGLE.HORIZ.ordinal()] = 
+            angles[i][ANGLE.HORIZ.ordinal()] =
                 Math.toDegrees(Math.atan(cornerPts[i].x / -cornerPts[i].z));
 
             // Calculate the horizontal angle to the point, but first
@@ -198,7 +198,7 @@ class DistortHoop {
                                       Math.pow(cornerPts[i].z, 2));
             // The length of the opposite triangle is the height, or y
             // value.
-            angles[i][ANGLE.VERT.ordinal()] = 
+            angles[i][ANGLE.VERT.ordinal()] =
                 Math.toDegrees(Math.atan(cornerPts[i].y / adjLen));
         }
         return angles;
