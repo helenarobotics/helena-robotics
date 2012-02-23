@@ -286,6 +286,60 @@ public class HoughLine {
 	    }
 	}
     }
+
+
+	/*
+	 * Calculates intersection of two lines as a Point2D.Double class.  Returns 'null' if the lines do not intersect.
+	 */
+
+    static 	Point2D.Double intersection(Line2D.Double line1, Line2D.Double line2) {
+
+	    double dx1 = line1.x2 - line1.x1;
+	    double dy1 = line1.y2 - line1.y1;
+	    double dx2 = line2.x2 - line2.x1;
+	    double dy2 = line2.y2 - line2.y1;
+
+	    // Test for parallel lines: two cases: non-vertical, and vertical
+	    if ((Math.abs(dx1) > 0.0) && (Math.abs(dx2) > 0.0)) {   // non-vertical lines may or may not
+		m1 = dy1/dx1;
+		m2 = dy2/dx2;
+		if (Math.abs(m1 - m2) < 0.00001)
+		    return null;
+	    }
+	    else if (dx1 == 0.0 && dx2 == 0.0)    // two vertical lines never interset
+		return null;
+
+	    // Made it this far, so we know that the lines intersect (somwehere):
+		
+	    Point2D.Double intersect = new Point2D.Double();
+	    double m1, m2, b1, b2;
+
+	    // Handle the special cases for vertical lines
+	    if (line1.x1 == line1.x2) {          // line1 vertical case
+		m2 = dy2 / dx2;
+		b2 = line2.y1 - line2.x1 * m2;
+		intersect.x = line1.x1;
+		intersect.y = intersect.x * m2 + b2;
+	    }
+	    else if (line2.x1 == line2.x2) {     // line2 vertical case
+		m1 = dy1 / dx1;
+		b1 = line1.y1 - line1.x1 * m1;
+		intersect.x = line2.x1;
+		intersect.y = intersect.x * m1 + b1;
+	    }
+	    else {                               // general case (neither line vertical)
+		m1 = dy1 / dx1;
+	        b1 = line1.y1 - line1.x1 * m1;
+
+		m2 = dy2 / dx2;
+		b2 = line2.y1 - line2.x1 * m2;
+		   
+		intersect.x = (b2 - b1) / (m1 - m2);
+		intersect.y = line1.x1 * m1 + b1;
+	    }
+
+	    return intersect;
+	}
 }
  
 
