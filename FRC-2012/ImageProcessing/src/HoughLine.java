@@ -294,10 +294,13 @@ public class HoughLine {
 
     static 	Point2D.Double intersection(Line2D.Double line1, Line2D.Double line2) {
 
+	    double m1, m2, b1, b2;
+
 	    double dx1 = line1.x2 - line1.x1;
 	    double dy1 = line1.y2 - line1.y1;
 	    double dx2 = line2.x2 - line2.x1;
 	    double dy2 = line2.y2 - line2.y1;
+
 
 	    // Test for parallel lines: two cases: non-vertical, and vertical
 	    if ((Math.abs(dx1) > 0.0) && (Math.abs(dx2) > 0.0)) {   // non-vertical lines may or may not
@@ -312,7 +315,6 @@ public class HoughLine {
 	    // Made it this far, so we know that the lines intersect (somwehere):
 		
 	    Point2D.Double intersect = new Point2D.Double();
-	    double m1, m2, b1, b2;
 
 	    // Handle the special cases for vertical lines
 	    if (line1.x1 == line1.x2) {          // line1 vertical case
