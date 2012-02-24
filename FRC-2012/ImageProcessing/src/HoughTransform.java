@@ -92,7 +92,7 @@ public class HoughTransform extends Thread {
             HoughLine line = lines.elementAt(j); 
 
 	    // Segment hough line into visible components:
-	    Vector<Line2D.Double> segments = line.segment(image, 13, 8);  // window of 9, of which 6 pixels must be 'lit'
+	    Vector<Line2D.Double> segments = line.segment(image, 13, 11);  // window of 13, of which 11 pixels must be 'lit'
 
             line.draw(cimage, Color.BLUE.getRGB());
 
@@ -132,7 +132,7 @@ public class HoughTransform extends Thread {
 
  
     // The size of the neighbourhood in which to search for other local maxima 
-    final int neighbourhoodSize = 4; 
+    final int neighbourhoodSize = 15; 
  
     // How many discrete values of theta shall we check? 
     final int maxTheta = 180;
@@ -229,9 +229,9 @@ public class HoughTransform extends Thread {
 		// avoid the JPEG error-filled pixels (we anticipate thresholded values of 255)
 		//		pixel = r.getPixel(x, y, buffer);
 		//if ((pixel[0] & 0x000000ff) == 255)
-		if ((image.getRGB(x, y) & 0x000000ff) > 220) {      
+		if ((image.getRGB(x, y) & 0x000000ff) > 240) {      
                     addPoint(x, y);
-		    System.out.println("point [" + x + ", " + y + "] = " + (image.getRGB(x, y) & 0x000000ff));
+		    //System.out.println("point [" + x + ", " + y + "] = " + (image.getRGB(x, y) & 0x000000ff));
 		}
 	    }
 	}
@@ -315,15 +315,23 @@ public class HoughTransform extends Thread {
                         for (int dy = -neighbourhoodSize; dy <= neighbourhoodSize; dy++) { 
                             int dt = t + dx; 
                             int dr = r + dy; 
-                            if (dt < 0) dt = dt + maxTheta; 
-                            else if (dt >= maxTheta) dt = dt - maxTheta; 
+                            if (dt < 0) {
+				dt = dt + maxTheta;   // roll over to negative theta, and flip 'r' symmetrically over center point
+				dr = doubleHeight - dr;
+			    }
+                            else if (dt >= maxTheta) {
+				dt = dt - maxTheta; 
+				dr = doubleHeight - dr;
+			    }
+			    if (dr >= doubleHeight) dr = dr - doubleHeight;
+			    else if (dr < 0) dr = dr + doubleHeight;
 			    int v = houghArray[dt][dr];
 			    // Some ugly logic to avoid multiple detections of equal peaks in neighborhood
                             if (v > peak)
 				    // found a bigger point nearby, skip 
 				continue loop; 
 			     else if (v == peak)   // avoid multiple detection of equal peaks in neighborhood; just take first
-				if ((dx < 0) | (dx == 0) & (dy < 0))
+				 if ((dx < 0) | ((dx == 0) & (dy < 0)))
 				    continue loop;
 			}
 		    } 
