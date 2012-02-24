@@ -65,8 +65,10 @@ public class SimpleFrame extends SimpleRobot {
             joystickShifter(driveStick);
 
             // Read the throttle to determine the speed of the shooter
-            // motor
-            shooterMotor.set(shootStick.getThrottle());
+            // motor.  The throttle goes from -1.0 <-> 1.0, but we only
+            // want the values 0 -> 1.0.  (We change the sign since
+            // the motor is hooked up backward).
+            shooterMotor.set(-(shootStick.getThrottle() + 1.0)/ 2.0);
         }
     }
 
