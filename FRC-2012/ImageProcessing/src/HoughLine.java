@@ -16,8 +16,9 @@ public class HoughLine {
     protected int itheta;
     protected int r; 
     protected int peak;
+    protected int defaultMinLength = 10;
 
-    static int threshold = 100;  // used for determining whether a pixel is occupied ("lit")
+    static int threshold = 20;  // used for determining whether a pixel is occupied ("lit")
  
     /** 
      * Initialises the hough line 
@@ -56,7 +57,12 @@ public class HoughLine {
      * d = # cells within window that most be 'lit' to continue line segment
      */ 
 
-    public Vector<Line2D.Double> segment(BufferedImage image, int w, int d) { 
+    public Vector<Line2D.Double> segment(BufferedImage image, int w, int d) {
+	return segment(image, w, d, defaultMinLength);
+    }
+
+
+	public Vector<Line2D.Double> segment(BufferedImage image, int w, int d, int minLength) {
  
         int height = image.getHeight(); 
         int width = image.getWidth(); 
@@ -94,7 +100,7 @@ public class HoughLine {
         if (theta < Math.PI * 0.25 || theta > Math.PI * 0.75) { 
             //  analyze vertical-ish lines 
             for (y = 0; y < height; y++) { 
-                 x = (int) ((((r - houghHeight) - ((y - centerY) * tsin)) / tcos) + centerX); 
+		x = (int) Math.round((((r - houghHeight) - ((y - centerY) * tsin)) / tcos) + centerX); 
 		//		System.out.print("[" + x + ", " + y + "] =");
                 if (x < width && x >= 0) { 
 		    pixel = raster.getPixel(x, y, buffer);
@@ -126,21 +132,26 @@ public class HoughLine {
 			// we'll extend the end points when we find the end of the line.
 			l.x1 = window[w-d].x; l.y1 = window[w-d].y;
 			l.x2 = x; l.y2 = y;
-			//			System.out.print("New segment at {" + x + ", " + y + "}");
+			System.out.print("New segment at {" + x + ", " + y + "}");
 		    }
 		}
 		else {
 		    if (started) {
 			started = false;
-			segments.add(new Line2D.Double(l.x1, l.y1, x, y));
-			// System.out.println("... ended at {" + x + ", " + y + "}");
+			l.x2 = window[d].x;
+			l.y2 = window[d].y;
+			if (Math.sqrt((l.x2 - l.x1) * (l.x2 - l.x1) + (l.y2 - l.y1) * (l.y2 - l.y1)) >= (double)minLength) {
+			    segments.add(new Line2D.Double(l.x1, l.y1, l.x2, l.y2));
+			    System.out.println("... ended at {" + x + ", " + y + "}");
+			}
+			else System.out.println("... too short");
 		    }
 		}
             }
         } else { 
             // Analyze horizontal-sh lines 
             for (x = 0; x < width; x++) { 
-                y = (int) ((((r - houghHeight) - ((x - centerX) * tcos)) / tsin) + centerY); 
+                y = (int) Math.round((((r - houghHeight) - ((x - centerX) * tcos)) / tsin) + centerY); 
 		//		System.out.print("[" + x + ", " + y + "]");
                 if (y < height && y >= 0) { 
 		    pixel = raster.getPixel(x, y, buffer);
@@ -178,8 +189,13 @@ public class HoughLine {
 		else {
 		    if (started) {
 			started = false;
-			segments.add(new Line2D.Double(l.x1, l.y1, x, y));
-			// System.out.println("... ended at {" + x + ", " + y + "}");
+			l.x2 = window[d].x;
+			l.y2 = window[d].y;
+			if (Math.sqrt((l.x2 - l.x1) * (l.x2 - l.x1) + (l.y2 - l.y1) * (l.y2 - l.y1)) >= (double)minLength) {
+			    segments.add(new Line2D.Double(l.x1, l.y1, l.x2, l.y2));
+			    System.out.println("... ended at {" + x + ", " + y + "}");
+			}
+			else System.out.println("... was too short ");
 		    }
 		}
             }
@@ -286,62 +302,6 @@ public class HoughLine {
 	    }
 	}
     }
-
-
-	/*
-	 * Calculates intersection of two lines as a Point2D.Double class.  Returns 'null' if the lines do not intersect.
-	 */
-
-    static 	Point2D.Double intersection(Line2D.Double line1, Line2D.Double line2) {
-
-	    double m1, m2, b1, b2;
-
-	    double dx1 = line1.x2 - line1.x1;
-	    double dy1 = line1.y2 - line1.y1;
-	    double dx2 = line2.x2 - line2.x1;
-	    double dy2 = line2.y2 - line2.y1;
-
-
-	    // Test for parallel lines: two cases: non-vertical, and vertical
-	    if ((Math.abs(dx1) > 0.0) && (Math.abs(dx2) > 0.0)) {   // non-vertical lines may or may not
-		m1 = dy1/dx1;
-		m2 = dy2/dx2;
-		if (Math.abs(m1 - m2) < 0.00001)
-		    return null;
-	    }
-	    else if (dx1 == 0.0 && dx2 == 0.0)    // two vertical lines never interset
-		return null;
-
-	    // Made it this far, so we know that the lines intersect (somwehere):
-		
-	    Point2D.Double intersect = new Point2D.Double();
-
-	    // Handle the special cases for vertical lines
-	    if (line1.x1 == line1.x2) {          // line1 vertical case
-		m2 = dy2 / dx2;
-		b2 = line2.y1 - line2.x1 * m2;
-		intersect.x = line1.x1;
-		intersect.y = intersect.x * m2 + b2;
-	    }
-	    else if (line2.x1 == line2.x2) {     // line2 vertical case
-		m1 = dy1 / dx1;
-		b1 = line1.y1 - line1.x1 * m1;
-		intersect.x = line2.x1;
-		intersect.y = intersect.x * m1 + b1;
-	    }
-	    else {                               // general case (neither line vertical)
-		m1 = dy1 / dx1;
-	        b1 = line1.y1 - line1.x1 * m1;
-
-		m2 = dy2 / dx2;
-		b2 = line2.y1 - line2.x1 * m2;
-		   
-		intersect.x = (b2 - b1) / (m1 - m2);
-		intersect.y = line1.x1 * m1 + b1;
-	    }
-
-	    return intersect;
-	}
 }
  
 
