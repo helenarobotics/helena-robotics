@@ -88,11 +88,11 @@ void setup() {
 // These should be HallSensor methods, but attachInterrupt doesn't
 // allow such things done easily.
 void hs1Interrupt() {
-     hs1->countRevolutions();
+     hs1->countRevolution();
 }
 
 void hs2Interrupt() {
-     hs2->countRevolutions();
+     hs2->countRevolution();
 }
 
 // Roughly once/sec print out the calculated RPM
