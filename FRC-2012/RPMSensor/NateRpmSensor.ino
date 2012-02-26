@@ -56,11 +56,21 @@ int HallSensor::getRPM() {
   return rpm;
 }
 
+//
+// The I2C Slave code
+//
+
+// I2C constants
 const int I2C_ADDRESS = 0xC4;
+const int SENSOR_REGISTER = 0x00;
+
 const String EOL = "\r\n";
 
 int requestedSensor;
 HallSensor *hs1, *hs2;
+
+// We send at most 6 bytes of data
+byte sendData[6];
 
 void setup() {
   Serial.begin(9600);
@@ -100,41 +110,67 @@ int counter = 0;
 void loop() {
   counter++;
   if (counter % 10 == 0) {
-    Serial.print("RPM 1 value:" + hs1->getRPM() + EOL);
-    Serial.print("RPM 2 value:" + hs2->getRPM() + EOL);
+    Serial.print("RPM 1 value: " + hs1->getRPM() + EOL);
+    Serial.print("RPM 2 value: " + hs2->getRPM() + EOL);
   }
   delay(100);
 }
 
 // Determine which sensor is being requested.
 void wireReceive(int d) {
-  while (Wire.available()) {
-    switch (Wire.read()) {
-    case 1:
-      requestedSensor = 1;
-      break;
+  if (d > 0) {
+    // Grab the 'register'!
+    byte reg = Wire.read();
 
-    case 2:
-      requestedSensor = 2;
-      break;
+    for (int i = 1; i < d; i++) {
+      if (reg == SENSOR_REGISTER) {
+        // Request for SENSOR data
+        switch (i) {
+        case 1:
+          requestedSensor = Wire.read();
+          break;
+
+        default:
+          // The sensor register only needs a single value, so if more
+          // request data was provided throw it away.
+          Wire.read();
+          break;
+        }
+      } else {
+        // Unknown register, just read and throw away!
+        Wire.read();
+      }
     }
   }
 }
 
 // Send the response to the master
 void wireSend() {
-  int rpm = 0;
+  int sendLen = 0;
   switch (requestedSensor) {
-  case 1:
-    rpm = hs1->getRPM();
+  case 0:
+    sendLen += storeLEShort(hs1->getRPM(), sendData, sendLen);
+    sendLen += storeLEShort(hs2->getRPM(), sendData, sendLen);
     break;
+
+  case 1:
+    sendLen += storeLEShort(hs1->getRPM(), sendData, sendLen);
+    break;
+
   case 2:
-    rpm = hs2->getRPM();
+    sendLen += storeLEShort(hs2->getRPM(), sendData, sendLen);
+    break;
+
+  default:
+    // Nothing to send
     break;
   }
-  byte data[2];
-  data[0] = rpm & 0xFF;
-  data[1] = (rpm >> 8) & 0xFF;
-  Wire.write(data, 2);
+  Wire.write(sendData, sendLen);
 }
 
+// Store the data as two bytes in little endian format
+int storeLEShort(int data, byte *buff, int offset) {
+  buff[offset] = (data & 0xFF);
+  buff[offset + 1] = ((data << 8) & 0xFF);
+  return 2;
+}
