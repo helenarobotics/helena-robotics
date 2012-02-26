@@ -18,7 +18,7 @@ public class Corner extends Thread {
 	System.out.println(corner.toString());
 
 
-	line1 = new Line2D.Double(1.0, 1.0, 3.0, 10.0);   // vertical-ish line
+	line1 = new Line2D.Double(0.0, 1.0, 0.9, 10.0);   // vertical-ish line
 	line2 = new Line2D.Double(1.0, 11.0, 20.0, 8.0); // horizontal-ish line
 
 
@@ -198,7 +198,7 @@ public class Corner extends Thread {
 		b2 = line2.y1 - line2.x1 * m2;
 		   
 		intersect.x = (b2 - b1) / (m1 - m2);
-		intersect.y = line1.x1 * m1 + b1;
+		intersect.y = intersect.x * m1 + b1;
 	    }
 
 	    return intersect;
