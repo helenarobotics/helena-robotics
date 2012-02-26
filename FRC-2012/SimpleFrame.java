@@ -15,6 +15,9 @@ public class SimpleFrame extends SimpleRobot {
     // Shooter
     private Victor shooterMotor;
 
+    // Accelerometer
+    DIMUAccel accel;
+
     SimpleFrame() {
         System.out.println("Starting SimpleFrame");
         leftMotor = new Victor(1);
@@ -25,6 +28,9 @@ public class SimpleFrame extends SimpleRobot {
         // Setup the transmission shifter.
         shifter = new Solenoid(1);
         shifter.set(true);
+
+        // Initialize the accelerometer
+        accel = new DIMUAccel(1);
     }
 
     protected void disabled() {
@@ -69,6 +75,9 @@ public class SimpleFrame extends SimpleRobot {
             // want the values 0 -> 1.0.  (We change the sign since
             // the motor is hooked up backward).
             shooterMotor.set(-(shootStick.getThrottle() + 1.0)/ 2.0);
+
+            // Print out the Z-Axis of the accelerometer.
+            System.out.println(accel.getCurrentAccel(DIMUAccel.Z_AXIS));
         }
     }
 
