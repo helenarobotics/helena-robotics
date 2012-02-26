@@ -13,13 +13,13 @@ public class Corner extends Thread {
 	System.out.println("1st line: " + lineToString(line1));
 	System.out.println("2nd line: " + lineToString(line2));
 
-        Corner corner = new Corner(line1, line2, 5.0);
+        Corner corner = new Corner(line2, line1, 5.0);
 
 	System.out.println(corner.toString());
 
 
-	line1 = new Line2D.Double(0.0, 1.0, 0.9, 10.0);   // vertical-ish line
-	line2 = new Line2D.Double(1.0, 11.0, 20.0, 8.0); // horizontal-ish line
+	line1 = new Line2D.Double(22.0, 2.0, 22.9, 11.0);   // vertical-ish line
+	line2 = new Line2D.Double(1.0, 1.0, 20.0, 0.0); // horizontal-ish line
 
 
 	System.out.println("1st line: " + lineToString(line1));
@@ -59,7 +59,7 @@ public class Corner extends Thread {
 	}
 	else {
 	    if (Math.atan2(line1.y2 - line1.y1, line1.x2 - line1.x1) > 
-		Math.atan2(line2.y2 - line1.y2, line2.x2 - line2.x1)) {
+		Math.atan2(line2.y2 - line2.y2, line2.x2 - line2.x1)) {
 		verticalLine = OrderPoints(line1, intersection);
 		horizontalLine = OrderPoints(line2, intersection);
 	    }
@@ -71,29 +71,32 @@ public class Corner extends Thread {
 	    verticalError = distance(new Point2D.Double(verticalLine.x1, verticalLine.y1), intersection);
 	    horizontalError = distance(new Point2D.Double(horizontalLine.x1, horizontalLine.y1), intersection);
 
-	    // Now figure out the orientation of the lines to determine CornerType
+	    if ((verticalError > maxError) || (horizontalError > maxError))
+		cornerType = CornerLocation.none;
+	    else {
+		// Now figure out the orientation of the lines to determine CornerType
 
-	    boolean top, left;
+		boolean top, left;
 
-	    if (verticalLine.y1 > verticalLine.y2)    // If true, we're a top corner
-		top = true;
-	    else top = false;
-	    if (horizontalLine.x1 < horizontalLine.x2)  // if true, we're a left corner
-		left = true;
-	    else left = false;
+		if (verticalLine.y1 > verticalLine.y2)    // If true, we're a top corner
+		    top = true;
+		else top = false;
+		if (horizontalLine.x1 < horizontalLine.x2)  // if true, we're a left corner
+		    left = true;
+		else left = false;
 
-	    // System.out.println(" left = " + left + ", top = " + top);
-
-	    if (top & left)
-		cornerType = CornerLocation.upperLeft;
-	    else if (top & !left)
-		cornerType = CornerLocation.upperRight;
-	    else if (!top & left)
-		cornerType = CornerLocation.lowerLeft;
-	    else 
-		cornerType = CornerLocation.lowerRight;
+		if (top & left)
+		    cornerType = CornerLocation.upperLeft;
+		else if (top & !left)
+		    cornerType = CornerLocation.upperRight;
+		else if (!top & left)
+		    cornerType = CornerLocation.lowerLeft;
+		else 
+		    cornerType = CornerLocation.lowerRight;
+	    }
 	}
     }
+
 
     static  String lineToString(Line2D.Double line) {
 	return ("{" + line.x1 + ", " + line.y1 + "} to {" + 
@@ -101,23 +104,25 @@ public class Corner extends Thread {
     }
 
 
-	public String toString() {
-	    if (cornerType == CornerLocation.none)
-		return ("Not an intersection");
-	    else
-		return (cornerType + " intersection at {" + intersection.x + ", " + intersection.y + "}; " + 
-			"horiz = " + lineToString(horizontalLine) + ", " +
-			"err " + horizontalError + "; " +
-		         " vert = " + lineToString(verticalLine) + ", " +
-			"err " + verticalError);
-	}
+    public String toString() {
+	if (cornerType == CornerLocation.none)
+	    return ("Not an intersection");
+	else
+	    return (cornerType + " intersection at {" + intersection.x + ", " + intersection.y + "}; " + 
+		    "horiz = " + lineToString(horizontalLine) + ", " +
+		    "err " + horizontalError + "; " +
+		    " vert = " + lineToString(verticalLine) + ", " +
+		    "err " + verticalError);
+    }
+
+    // Order a line so that the first {x, y} point refers to the point nearest intersection
 		
     static Line2D.Double OrderPoints(Line2D.Double line, Point2D.Double pt) {
 	double d1 = distance(new Point2D.Double(line.x1, line.y1), pt);
 	double d2 = distance(new Point2D.Double(line.x2, line.y2), pt);
 	
 	if (d1 < d2)
-	    return new Line2D.Double(line.x1, line.y1, line.x2, line.y2);
+	    return new Line2D.Double(line.x1, line.y1, line.x2, line.y2);  // Copy line; ordering already correct
 	else
 	    return new Line2D.Double(line.x2, line.y2, line.x1, line.y1);  // "flip" line
     }
@@ -128,14 +133,6 @@ public class Corner extends Thread {
 	return (Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)));
 	}
 	
-    // determines sum of distances ^2 from end of segments to point of intersection
-
-    static double distance2(Line2D.Double line1, Line2D.Double line2) {
-	Point2D.Double inter = intersectingPoint(line1, line2);
-	//more to come...
-	System.err.println("distance2 not implemented!");
-	return 0.0;
-    }
 
     // determines whether two line segments intersect
     static boolean segmentsIntersect(Line2D.Double line1, Line2D.Double line2) {
