@@ -1,6 +1,5 @@
 <project name="frcImage" default="compile" basedir=".">
   <property name="build.dir" location="build"/>
-  <property name="image.dir" location="images"/>
   <property name="lib.dir" location="lib"/>
   <property name="project.jar" value="${ant.project.name}.jar"/>
   <property name="src.dir" location="src"/>
@@ -52,17 +51,6 @@
       <classpath>
         <path refid="proj.classpath"/>
       </classpath>
-    </java>
-  </target>
-
-  <target name="image" depends="compile">
-    <java classname="JavaImage" fork="true"
-      failonerror="true" inputstring="">
-      <classpath>
-        <path refid="proj.classpath"/>
-      </classpath>
-      <arg line="images/10Feet.jpg"/>
-      <arg line="images/10ft2.jpg"/>
     </java>
   </target>
 
