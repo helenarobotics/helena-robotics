@@ -102,20 +102,17 @@ public class HoughLine {
             for (y = 0; y < height; y++) { 
 		x = (int) Math.round((((r - houghHeight) - ((y - centerY) * tsin)) / tcos) + centerX); 
 		//		System.out.print("[" + x + ", " + y + "] =");
-                if (x < width && x >= 0) { 
-		    pixel = raster.getPixel(x, y, buffer);
-		    //		    System.out.print("=" + (pixel[0] & 0x000000ff) + " ");
-		    if ((pixel[0] & 0x000000ff) > threshold) {
+		window[w].lit = false;
+		for (int dx = x-1; dx <= x+1; dx++) {
+		    if (dx < width && dx >= 0) { 
+			pixel = raster.getPixel(dx, y, buffer);
+			//		    System.out.print("=" + (pixel[0] & 0x000000ff) + " ");
+			if ((pixel[0] & 0x000000ff) > threshold) {
 			window[w].lit = true;
-		    }
-		    else {
-			window[w].lit = false;
+			break;
+			}
 		    }
 		}
-		else {
-		    window[w].lit = false;
-		}
-
 		window[w].x = x; window[w].y = y;
 			
 		// Slide window, count 'lit' pixels, and start or stop line segment growth depending on whether we meet
@@ -153,18 +150,16 @@ public class HoughLine {
             for (x = 0; x < width; x++) { 
                 y = (int) Math.round((((r - houghHeight) - ((x - centerX) * tcos)) / tsin) + centerY); 
 		//		System.out.print("[" + x + ", " + y + "]");
-                if (y < height && y >= 0) { 
-		    pixel = raster.getPixel(x, y, buffer);
-		    //		    System.out.print("=" + (pixel[0] & 0x000000ff) + " ");
-		    if ((pixel[0] & 0x000000ff) > threshold) {
-			window[w].lit = true;
+		window[w].lit = false;
+		for (int dy = y-1; dy <= y+1; dy++) {
+		    if (dy < height && dy >= 0) { 
+			pixel = raster.getPixel(x, dy, buffer);
+			//		    System.out.print("=" + (pixel[0] & 0x000000ff) + " ");
+			if ((pixel[0] & 0x000000ff) > threshold) {
+			    window[w].lit = true;
+			    break;
+			}
 		    }
-		    else {
-			window[w].lit = false;
-		    }
-		}
-		else {  // we're off the screen, assume it's unlit
-		    window[w].lit = false;
 		}
 		window[w].x = x; window[w].y = y;
 
