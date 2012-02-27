@@ -200,4 +200,24 @@ public class Corner extends Thread {
 
 	    return intersect;
     }
+
+    public boolean shareLine(Corner c2) {
+
+	if (linesEqual(this.horizontalLine, c2.horizontalLine) ||
+	    linesEqual(this.verticalLine, c2.horizontalLine) ||
+	    linesEqual(this.horizontalLine, c2.verticalLine) ||
+	    linesEqual(this.verticalLine, c2.verticalLine))
+	    return true;
+	else return false;
+    }
+
+
+	private static boolean linesEqual(Line2D.Double l1, Line2D.Double l2) {
+
+	    if ((l1.x1 == l2.x1) && (l1.y1 == l2.y1) && (l1.x2 == l2.x2) && (l1.y2 == l2.y2))
+		return true;
+	    else if ((l1.x2 == l2.x1) && (l1.y2 == l2.y1) && (l1.x1 == l2.x2) && (l1.y1 == l2.y2))
+		return true;
+	    else return false;
+	}
 }

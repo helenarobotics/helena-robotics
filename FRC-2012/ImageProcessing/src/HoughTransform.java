@@ -87,12 +87,16 @@ public class HoughTransform extends Thread {
 	g.drawImage(image, 0, 0, null);
 	g.dispose(); 
 
+	Vector<Line2D.Double> totalSegments = new Vector<Line2D.Double>(30);
+
         // segment lines, draw the lines back onto the image
         for (int j = 0; j < lines.size(); j++) { 
             HoughLine line = lines.elementAt(j); 
 
 	    // Segment hough line into visible components:
-	    Vector<Line2D.Double> segments = line.segment(image, 13, 11);  // window of 13, of which 11 pixels must be 'lit'
+	    Vector<Line2D.Double> segments = line.segment(image, 13, 9);  // window of 13, of which 9 pixels must be 'lit'
+
+	    totalSegments.addAll(segments);
 
             line.draw(cimage, Color.BLUE.getRGB());
 
@@ -104,6 +108,11 @@ public class HoughTransform extends Thread {
 		HoughLine.drawsegment(cimage, seg, Color.RED.getRGB());
 	    }
 	    System.out.println();
+
+	    // Try organizing segments into boxes:
+	    Boxes boxes = new Boxes(totalSegments);
+	    System.out.println(boxes.size() + " boxes found:");
+	    System.out.println(boxes);
 
 	    // draw out line on image (for debugging and presentation)
 
@@ -132,7 +141,7 @@ public class HoughTransform extends Thread {
 
  
     // The size of the neighbourhood in which to search for other local maxima 
-    final int neighbourhoodSize = 15; 
+    final int neighbourhoodSize = 5; 
  
     // How many discrete values of theta shall we check? 
     final int maxTheta = 180;
