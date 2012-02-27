@@ -2,7 +2,7 @@ import java.util.Vector;
 import java.awt.geom.*;
 
 public class Box {
-    Vector<Corner> corners;
+    public Vector<Corner> corners;
 
     Box() {
 	corners = new Vector<Corner>(4);
@@ -45,7 +45,7 @@ public class Box {
 	String str = "";
 	for (int i = 0; i < corners.size(); i++) {
 	    Corner c = corners.elementAt(i);
-	    str = str + c;
+	    str = str + c + '\n';
 	}
 
 	return str;
