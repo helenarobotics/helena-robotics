@@ -15,7 +15,7 @@ public class Corner extends Thread {
 
         Corner corner = new Corner(line2, line1, 5.0);
 
-	System.out.println(corner.toString());
+        System.out.println(corner.toString());
 
 
 	line1 = new Line2D.Double(22.0, 2.0, 22.9, 11.0);   // vertical-ish line
@@ -58,8 +58,8 @@ public class Corner extends Thread {
 	    cornerType = CornerLocation.none;    // does not intersect;
 	}
 	else {
-	    if (Math.atan2(line1.y2 - line1.y1, line1.x2 - line1.x1) > 
-		Math.atan2(line2.y2 - line2.y2, line2.x2 - line2.x1)) {
+	    if (Math.atan2(Math.abs(line1.y2 - line1.y1), Math.abs(line1.x2 - line1.x1)) >
+		Math.atan2(Math.abs(line2.y2 - line2.y1), Math.abs(line2.x2 - line2.x1))) {
 		verticalLine = OrderPoints(line1, intersection);
 		horizontalLine = OrderPoints(line2, intersection);
 	    }
@@ -99,8 +99,8 @@ public class Corner extends Thread {
 
 
     static  String lineToString(Line2D.Double line) {
-	return ("{" + line.x1 + ", " + line.y1 + "} to {" + 
-		line.x2 + ", " + line.y2 + "}");
+	return ("{" + (int)line.x1 + ", " + (int)line.y1 + "} to {" + 
+		(int)line.x2 + ", " + (int)line.y2 + "}");
     }
 
 
@@ -108,11 +108,11 @@ public class Corner extends Thread {
 	if (cornerType == CornerLocation.none)
 	    return ("Not an intersection");
 	else
-	    return (cornerType + " intersection at {" + intersection.x + ", " + intersection.y + "}; " + 
+	    return (cornerType + " intersection at {" + (int) intersection.x + ", " + (int) intersection.y + "}; " + 
 		    "horiz = " + lineToString(horizontalLine) + ", " +
-		    "err " + horizontalError + "; " +
+		    "err " + (int) horizontalError + "; " +
 		    " vert = " + lineToString(verticalLine) + ", " +
-		    "err " + verticalError);
+		    "err " + (int) verticalError);
     }
 
     // Order a line so that the first {x, y} point refers to the point nearest intersection
