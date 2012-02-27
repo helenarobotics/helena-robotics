@@ -9,6 +9,7 @@
 
 const int MAX_COUNT = 5;
 class HallSensor {
+private:
   int sensorPort;
   int ledPort;
   double last_time;
@@ -64,8 +65,6 @@ int HallSensor::getRPM() {
 const int I2C_ADDRESS = 0xC4;
 const int SENSOR_REGISTER = 0x00;
 
-const String EOL = "\r\n";
-
 int requestedSensor;
 HallSensor *hs1, *hs2;
 
@@ -74,7 +73,7 @@ byte sendData[6];
 
 void setup() {
   Serial.begin(9600);
-  Serial.print("Starting RPM Sensor..." + EOL);
+  Serial.println("Starting RPM Sensor...");
 
   // By default, assume the first sensor
   requestedSensor = 1;
@@ -98,11 +97,11 @@ void setup() {
 // These should be HallSensor methods, but attachInterrupt doesn't
 // allow such things done easily.
 void hs1Interrupt() {
-     hs1->countRevolution();
+  hs1->countRevolution();
 }
 
 void hs2Interrupt() {
-     hs2->countRevolution();
+  hs2->countRevolution();
 }
 
 // Roughly once/sec print out the calculated RPM
@@ -110,8 +109,8 @@ int counter = 0;
 void loop() {
   counter++;
   if (counter % 10 == 0) {
-    Serial.print("RPM 1 value: " + hs1->getRPM() + EOL);
-    Serial.print("RPM 2 value: " + hs2->getRPM() + EOL);
+    Serial.println("RPM 1 value: " + hs1->getRPM());
+    Serial.println("RPM 2 value: " + hs2->getRPM());
   }
   delay(100);
 }
