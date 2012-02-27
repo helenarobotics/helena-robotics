@@ -109,10 +109,6 @@ public class HoughTransform extends Thread {
 	    }
 	    System.out.println();
 
-	    // Try organizing segments into boxes:
-	    Boxes boxes = new Boxes(totalSegments);
-	    System.out.println(boxes.size() + " boxes found:");
-	    System.out.println(boxes);
 
 	    // draw out line on image (for debugging and presentation)
 
@@ -134,6 +130,16 @@ public class HoughTransform extends Thread {
 	    }
 	    System.out.println("");
 	}
+
+	// Try organizing segments into boxes:
+	System.out.println("Organizing " + totalSegments.size() + " segments into boxes");
+	Boxes boxes = new Boxes(totalSegments);
+	System.out.println("");
+	System.out.println(boxes.size() + " boxes found:");
+	System.out.println("");
+	System.out.println(boxes);
+	System.out.println("");
+
 	// Write out markup'd images
 	ImageIO.write(cimage, "jpg", new File("houghout.jpg"));
 	ImageIO.write(chimage, "jpg", new File("houghspaceoverlay.jpg"));
