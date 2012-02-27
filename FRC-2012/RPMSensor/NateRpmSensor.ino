@@ -9,6 +9,7 @@
 
 const int MAX_COUNT = 5;
 class HallSensor {
+private:
   int sensorPort;
   int ledPort;
   double last_time;
@@ -96,11 +97,11 @@ void setup() {
 // These should be HallSensor methods, but attachInterrupt doesn't
 // allow such things done easily.
 void hs1Interrupt() {
-     hs1->countRevolution();
+  hs1->countRevolution();
 }
 
 void hs2Interrupt() {
-     hs2->countRevolution();
+  hs2->countRevolution();
 }
 
 // Roughly once/sec print out the calculated RPM
