@@ -63,7 +63,7 @@ public class HoughTransform extends Thread {
 	// ImageIO.write(h.enhance(7), "jpg", new File("blurredHT.jpg"));
  
         // get the lines out 
-	int thresh = 30;
+	int thresh = 20;
 	Vector<HoughLine> lines = h.getLines(thresh);  // XXX thresh was 30 
 
 	System.out.println("Threshold = " + thresh);
@@ -140,7 +140,7 @@ public class HoughTransform extends Thread {
 	System.out.println(boxes);
 	System.out.println("");
 
-	///  boxes.drawCorners(cimage);     // Draws all the corners, not just those assigned to boxes
+	// boxes.drawCorners(cimage);     // Draws all the corners, not just those assigned to boxes
 	boxes.draw(cimage);     // Draws corners assigned to completed boxes (hoops)
 
 	// Write out markup'd images

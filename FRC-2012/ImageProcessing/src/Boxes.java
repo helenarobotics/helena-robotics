@@ -10,7 +10,7 @@ public class Boxes extends Thread {
 
     }
 
-    double maxError = 40.0;
+    double maxError = 20.0;
     Vector<Box> boxes;
     Vector<Corner> bcorners;     // for debugging only -- we can kill this later
 
