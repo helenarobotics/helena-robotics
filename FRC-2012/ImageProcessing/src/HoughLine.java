@@ -108,8 +108,8 @@ public class HoughLine {
 			pixel = raster.getPixel(dx, y, buffer);
 			//		    System.out.print("=" + (pixel[0] & 0x000000ff) + " ");
 			if ((pixel[0] & 0x000000ff) > threshold) {
-			window[w].lit = true;
-			break;
+			    window[w].lit = true;
+			    break;
 			}
 		    }
 		}
@@ -259,13 +259,6 @@ public class HoughLine {
  
         int height = image.getHeight(); 
         int width = image.getWidth(); 
- 
-        // During processing h_h is doubled so that -ve r values 
-        int houghHeight = (int) (Math.sqrt(2) * Math.max(height, width)) / 2; 
- 
-        // Find edge points and vote in array 
-        float centerX = width / 2; 
-        float centerY = height / 2; 
  
 	double slope;
 

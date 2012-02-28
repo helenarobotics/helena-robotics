@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
 import java.awt.geom.*;
+import java.awt.image.BufferedImage;
 
 public class Boxes extends Thread {
 
@@ -9,8 +10,9 @@ public class Boxes extends Thread {
 
     }
 
-    double maxError = 25.0;
+    double maxError = 40.0;
     Vector<Box> boxes;
+    Vector<Corner> bcorners;     // for debugging only -- we can kill this later
 
     public Boxes(Vector<Line2D.Double> segments) {
 
@@ -24,9 +26,11 @@ public class Boxes extends Thread {
 	Vector<Corner> lr = new Vector<Corner>(20);
 	Vector<Corner> ll = new Vector<Corner>(20);
 
-	for (int j = 0; j < segments.size(); j++) {
+	this.bcorners = new Vector<Corner>(20);   // for debugging only - can kill later
+
+	for (int j = 0; j < tmp.size(); j++) {
 	    Line2D.Double seg1 = tmp.elementAt(j);
-	    for (int i = 1; i < tmp.size(); i++) {
+	    for (int i = j+1; i < tmp.size(); i++) {
 		Line2D.Double seg2 = tmp.elementAt(i);
 		Corner c = new Corner(seg1, seg2, maxError);
 		switch (c.cornerType) {
@@ -45,6 +49,10 @@ public class Boxes extends Thread {
 		    ll.add(c);
 		    break;
 		}
+		if (c.cornerType != Corner.CornerLocation.none) {
+		    System.out.println("Corner: " + c);
+		    this.bcorners.add(c);
+		}
 	    }
 	}
 
@@ -53,6 +61,8 @@ public class Boxes extends Thread {
 
 	this.boxes = new Vector<Box>(20);
 	Corner urc = null, ulc = null, lrc = null, llc = null;
+
+	System.out.println("Corner counts: " + ul.size() + " UL, " + ur.size() + " UR, " + lr.size() + " LR, " + ll.size() + " LL" + '\n');
 
 	while (ul.size() > 0) {
 	    ulc = ul.elementAt(0);
@@ -66,26 +76,29 @@ public class Boxes extends Thread {
 		//		System.out.println("Looking at UR box " + ur);
 		if (ulc.shareLine(urc)) {
 		    b.addCorner(urc);
-		    System.out.println("Found UR " + b);
+		    System.out.println("Starting with UR " + b);
 
 		    for (int j = 0; j < lr.size(); j++) {
 			lrc = lr.elementAt(j);
 			//  System.out.println("Looking at LR box " + lrc);
 			if (urc.shareLine(lrc)) {
 			    b.addCorner(lrc);
-			    System.out.println("Found LR " + b);
+			    System.out.println("addingd LR " + b);
 			    
 			    for (int k = 0; k < ll.size(); k++) {
 				llc = ll.elementAt(k);
 				// System.out.println("Looking at LL box " + ulc);
 				if (lrc.shareLine(llc) && ulc.shareLine(llc)) {
 				    b.addCorner(llc);
-				    System.out.println("Found LL " + b);
+				    System.out.println("finishing with  LL " + b);
 				    found = true;
+				    break;
 				}
 			    }
+			    break;
 			}
 		    }
+		    break;
 		}
 	    }
 
@@ -98,6 +111,22 @@ public class Boxes extends Thread {
 	}
     }
    
+
+    public void drawCorners(BufferedImage image) {
+
+	for (int i = 0; i < bcorners.size(); i++) {
+	    Corner c = bcorners.elementAt(i);
+	    c.draw(image);
+	}
+    }
+
+    public void draw(BufferedImage image) {
+	for (int i = 0; i < boxes.size(); i++) {
+	    Box b = boxes.elementAt(i);
+	    b.draw(image);
+	}
+    }
+
 
     public int size() {
 	return boxes.size();

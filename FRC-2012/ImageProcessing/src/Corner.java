@@ -1,5 +1,8 @@
 import java.util.Vector;
 import java.awt.geom.*;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.awt.Polygon;
 
 public class Corner extends Thread {
 
@@ -220,4 +223,48 @@ public class Corner extends Thread {
 		return true;
 	    else return false;
 	}
+
+
+    public void draw(BufferedImage image) {
+	Graphics2D g = image.createGraphics();
+
+	Polygon p = new Polygon();
+	int x1 = (int) intersection.x; 
+	int y1 = (int) intersection.y;
+	int x0 = 0, y0 = 0, x2 = 0, y2 = 0;
+	
+	switch (cornerType) {
+	case none:
+	    break;
+	case upperLeft: 
+	    x0 = x1;
+	    y0 = y1 - 20;
+	    x2 = x1 + 20;
+	    y2 = y1;
+	    break;
+	case upperRight:
+	    x0 = x1 - 20;
+	    y0 = y1;
+	    x2 = x1;
+	    y2 = y1 - 20;
+	    break;
+	case lowerLeft:
+	    x0 = x1;
+	    y0 = y1 + 20;
+	    x2 = x1 + 20;
+	    y2 = y1;
+	    break;
+	case lowerRight:
+	    x0 = x1;
+	    y0 = y1 + 20;
+	    x2 = x1 - 20;
+	    y2 = y1;
+	    break;
+	}
+	System.out.println("Corner.draw: " + x0 + ", " + y0);
+	p.addPoint(x0, y0);
+	p.addPoint(x1, y1);
+	p.addPoint(x2, y2);
+	g.draw(p);
+    }
 }

@@ -94,7 +94,7 @@ public class HoughTransform extends Thread {
             HoughLine line = lines.elementAt(j); 
 
 	    // Segment hough line into visible components:
-	    Vector<Line2D.Double> segments = line.segment(image, 13, 9);  // window of 13, of which 9 pixels must be 'lit'
+	    Vector<Line2D.Double> segments = line.segment(image, 15, 9);  // window of 15, of which 9 pixels must be 'lit'
 
 	    totalSegments.addAll(segments);
 
@@ -139,6 +139,9 @@ public class HoughTransform extends Thread {
 	System.out.println("");
 	System.out.println(boxes);
 	System.out.println("");
+
+	///  boxes.drawCorners(cimage);     // Draws all the corners, not just those assigned to boxes
+	boxes.draw(cimage);     // Draws corners assigned to completed boxes (hoops)
 
 	// Write out markup'd images
 	ImageIO.write(cimage, "jpg", new File("houghout.jpg"));
