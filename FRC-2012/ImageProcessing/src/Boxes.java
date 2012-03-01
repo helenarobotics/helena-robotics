@@ -50,7 +50,7 @@ public class Boxes extends Thread {
 		    break;
 		}
 		if (c.cornerType != Corner.CornerLocation.none) {
-		    System.out.println("Corner: " + c);
+		    //		    System.out.println("Corner: " + c);
 		    this.bcorners.add(c);
 		}
 	    }
@@ -62,7 +62,7 @@ public class Boxes extends Thread {
 	this.boxes = new Vector<Box>(20);
 	Corner urc = null, ulc = null, lrc = null, llc = null;
 
-	System.out.println("Corner counts: " + ul.size() + " UL, " + ur.size() + " UR, " + lr.size() + " LR, " + ll.size() + " LL" + '\n');
+	//	System.out.println("Corner counts: " + ul.size() + " UL, " + ur.size() + " UR, " + lr.size() + " LR, " + ll.size() + " LL" + '\n');
 
 	while (ul.size() > 0) {
 	    ulc = ul.elementAt(0);
@@ -76,21 +76,21 @@ public class Boxes extends Thread {
 		//		System.out.println("Looking at UR box " + ur);
 		if (ulc.shareLine(urc)) {
 		    b.addCorner(urc);
-		    System.out.println("Starting with UR " + b);
+		    //		    System.out.println("Starting with UR " + b);
 
 		    for (int j = 0; j < lr.size(); j++) {
 			lrc = lr.elementAt(j);
 			//  System.out.println("Looking at LR box " + lrc);
 			if (urc.shareLine(lrc)) {
 			    b.addCorner(lrc);
-			    System.out.println("addingd LR " + b);
+			    //			    System.out.println("addingd LR " + b);
 			    
 			    for (int k = 0; k < ll.size(); k++) {
 				llc = ll.elementAt(k);
 				// System.out.println("Looking at LL box " + ulc);
 				if (lrc.shareLine(llc) && ulc.shareLine(llc)) {
 				    b.addCorner(llc);
-				    System.out.println("finishing with  LL " + b);
+				    //				    System.out.println("finishing with  LL " + b);
 				    found = true;
 				    break;
 				}
@@ -109,8 +109,88 @@ public class Boxes extends Thread {
 		this.boxes.add(b);
 	    }
 	}
+
+	this.labelBoxes();
     }
-   
+
+
+    //    public enum BoxLocation { unknown, left, top, right, bottom };
+
+    public void labelBoxes() {
+
+	Box box[] = new Box [4];
+	Box highest = null, lowest = null, rightmost = null, leftmost = null;
+
+	for (int i = 0; i < this.boxes.size(); i++) {
+	    box[i] = this.boxes.elementAt(i);
+	    if ((highest == null) || (box[i].center().y < highest.center().y))      // note that y dimension is flipped; {0, 0} pixel index sits in upper left corner of the image
+		highest = box[i];
+	    if ((lowest == null) || (box[i].center().y > lowest.center().y))
+	        lowest = box[i];
+	    if ((rightmost == null) || (box[i].center().x > rightmost.center().x))
+		rightmost = box[i];
+	    if ((leftmost == null) || (box[i].center().x < leftmost.center().x))
+		leftmost = box[i];
+	}
+
+	System.out.println("labelBoxes: rightmost = " + rightmost + "leftmost = " + leftmost + " highest = " + highest + " lowest " + lowest);
+
+	switch (this.boxes.size()) {
+
+	case 1:             
+	    // if we see only one box, we have no way to know which it is
+	    this.boxes.elementAt(0).boxLocation = Box.BoxLocation.unknown;
+	    break;
+
+	case 2:
+	    // if same height, must be side-by-side.  Determine which is left v right.
+	    if (box[0].sameElevation(box[1])) {
+		leftmost.boxLocation = Box.BoxLocation.left;
+		rightmost.boxLocation = Box.BoxLocation.right;
+	    } else if (box[0].sameAzimuth(box[1])) {
+		highest.boxLocation =  Box.BoxLocation.top;
+		lowest.boxLocation =  Box.BoxLocation.bottom;
+	    }
+	    else // we can't tell -- ambiguous between (left & bottom) and (top and right)
+		{
+		    box[0].boxLocation = box[1].boxLocation = Box.BoxLocation.unknown;
+		}
+	    break;
+
+	case 3:
+	    if (highest.isAbove(leftmost) && highest.isAbove(rightmost)) {
+		highest.boxLocation = Box.BoxLocation.top;
+		if (leftmost.isLeftOf(highest))
+		    leftmost.boxLocation = Box.BoxLocation.left;
+		else if (leftmost.sameAzimuth(highest))
+		    leftmost.boxLocation = Box.BoxLocation.bottom;
+		if (rightmost.isRightOf(highest))
+		    rightmost.boxLocation = Box.BoxLocation.right;
+		else if (rightmost.sameAzimuth(highest))
+		    rightmost.boxLocation = Box.BoxLocation.bottom;
+	    }
+	    else if (highest.isLeftOf(lowest)) {
+		highest.boxLocation = Box.BoxLocation.left;
+		lowest.boxLocation = Box.BoxLocation.bottom;
+		rightmost.boxLocation = Box.BoxLocation.right;
+	    }
+	    else if (highest.isRightOf(lowest)) {
+		highest.boxLocation = Box.BoxLocation.right;
+		lowest.boxLocation = Box.BoxLocation.bottom;
+		leftmost.boxLocation = Box.BoxLocation.left;
+	    }
+	    else System.err.println("Bad labeling logic!");
+	    break;
+
+	case 4:
+	    highest.boxLocation = Box.BoxLocation.top;
+	    lowest.boxLocation = Box.BoxLocation.bottom;
+	    leftmost.boxLocation = Box.BoxLocation.left;
+	    rightmost.boxLocation = Box.BoxLocation.right;
+	    break;
+	}
+    }
+
 
     public void drawCorners(BufferedImage image) {
 

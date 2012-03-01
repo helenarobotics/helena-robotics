@@ -1,8 +1,13 @@
 import java.util.Vector;
 import java.awt.geom.*;
+import java.awt.Graphics2D;
+import java.awt.Polygon;
+import java.awt.image.BufferedImage;
 
 public class Box {
     public Vector<Corner> corners;
+    public enum BoxLocation { unknown, left, top, right, bottom }
+    BoxLocation boxLocation;
 
     Box() {
 	corners = new Vector<Corner>(4);
@@ -11,6 +16,49 @@ public class Box {
     Box(Corner firstCorner) {
 	corners = new Vector<Corner>(4);
 	addCorner(firstCorner);
+    }
+
+    public Point2D.Double center() {
+	if ((corners != null) && (corners.size() == 4)) {
+	    double xsum = 0.0, ysum = 0.0;
+	    for (int i = 0; i < 4; i++) {
+		xsum = corners.elementAt(i).intersection.x + xsum;
+		ysum = corners.elementAt(i).intersection.y + ysum;
+	    }
+	    return (new Point2D.Double(xsum/4.0, ysum/4.0));
+	}
+	else return null;
+    }
+
+    // Width and height calculations bake in the way we order corners inside the box: corner index 0 = upper left, 1 = upper right, 2 = lower right, 3 = lower left
+
+    public double width() {
+	if ((corners != null) && (corners.size() == 4)) {
+	    return (Math.abs(corners.elementAt(0).intersection.x + corners.elementAt(3).intersection.x - corners.elementAt(1).intersection.x - corners.elementAt(2).intersection.x));
+	}
+	else {
+	    System.err.println("Can't calculate width of incomplete box!");
+	    return -1.0;
+	}
+    }
+
+    public double height() {
+	if ((corners != null) && (corners.size() == 4)) {
+	    return (Math.abs(corners.elementAt(0).intersection.y + corners.elementAt(1).intersection.y - corners.elementAt(2).intersection.y - corners.elementAt(3).intersection.y));
+	}
+	else {
+	    System.err.println("Can't calculate height on incomplete box!");
+	    return -1.0;
+	}
+    }
+
+    // XXXX note that what we call upper left (in slot [0] is actually lower left due to flip of y dimension.  "Top" in this context means visible in the image.
+
+    public double topElevation() {
+	if ((corners != null) && (corners.size() == 4)) {
+	    return ((corners.elementAt(3).intersection.y + corners.elementAt(2).intersection.y)/2.0);
+	}
+	else return -1.0;
     }
 
     public int size() {
@@ -42,14 +90,76 @@ public class Box {
     }
 
     public String toString() {
-	String str = "";
-	for (int i = 0; i < corners.size(); i++) {
+	String str = boxLocation + ": {" + (int)this.center().x + ", " + (int)this.center().y + "}";
+	/*	for (int i = 0; i < corners.size(); i++) {
 	    Corner c = corners.elementAt(i);
 	    str = str + c + '\n';
 	}
+	*/
 
 	return str;
     }
+
+    public void draw(BufferedImage image) {
+	Graphics2D g = image.createGraphics();
+
+	if (this.corners.size() == 4) {
+	    for (int i = 0; i < 4; i++) {
+		Corner c = corners.elementAt(i);
+		c.draw(image);
+	    }
+	}
+    }
+
+
+    boolean sameElevation(Box box2) {
+	return (!(isAbove(box2) || isBelow(box2)));
+    }
+
+    boolean sameAzimuth(Box box2) {
+	return (!(isLeftOf(box2) || isRightOf(box2)));
+    }
+
+    boolean isAbove(Box box2) {
+	/*	boolean is = false;;
+	if ((this.center().y + this.height()/2.0) < (box2.center().y -  box2.height()/2.0))
+	    is = true;
+	System.out.print("isAbove: " + this + " is above " + box2 + " (" + is + "): ");
+	System.out.println("center = " + this.center() + ", comparing to " + box2.center());
+	System.out.println("bottom of this box is " + (this.center().y + this.height()/2.0) + ", compared to " + (box2.center().y - box2.height()/2.0));
+	*/
+	return ((this.center().y + this.height()/2.0) < (box2.center().y -  box2.height()/2.0));
+    }
+
+    boolean isBelow(Box box2) {
+	//	return ((this.center().y - this.height()/2.0) > ((box2.center().y + box2.height()/2.0)));
+	return (this.center().y > ((box2.center().y + box2.height()/2.0)));
+    }
+
+    boolean isLeftOf(Box box2) {
+	//	return ((this.center().x + this.width()/2.0) < (box2.center().x - box2.width()/2.0));
+	return (this.center().x < (box2.center().x - box2.width()/2.0));
+    }
+
+    boolean isRightOf(Box box2) {
+	//	return ((this.center().x - this.width()/2.0) > (box2.center().x + box2.width()/2.0));
+	return (this.center().x > (box2.center().x + box2.width()/2.0));
+    }
+
+    /*
+    public void draw(BufferedImage image) {
+	Graphics2D g = image.createGraphics();
+
+	if (this.corners.size() == 4) {
+	    Polygon p = new Polygon();
+	    for (int i = 0; i < 4; i++) {
+		Corner c = corners.elementAt(i);
+		p.addPoint((int) c.intersection.x, (int) c.intersection.y);
+	    }
+	    g.draw(p);
+	}
+    }
+    */
 }
 
 

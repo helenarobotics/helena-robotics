@@ -35,32 +35,35 @@ public class IU {
 	    System.out.println("processing file '" + imageFile + "'");
             try {
 
+		// time trial:
+		for (int trial = 0; trial < 20; trial++) {
+
 		BufferedImage image = ImageIO.read(new File(imageFile));
 
-		System.out.println("Detecting edges...");
+		//		System.out.println("Detecting edges...");
 		EdgeDetect edges = new EdgeDetect(image, 150);
 
-		System.out.println("Creating HT...");
+		// System.out.println("Creating HT...");
 		HoughTransform h = new HoughTransform(image.getWidth(), image.getHeight(), thetas, nthetas);
-		System.out.println("Transforming...");
+		//		System.out.println("Transforming...");
 		//		short [][] raw = image2short(image);
 		//		h.addPoints(raw);
 		//
 		h.addPoints(edges.edgesImage);      // revert to image version of HT
 		//		h.addPoints(edges.detected);      
-		System.out.println("Segmenting...");
+		//		System.out.println("Segmenting...");
 
 		// The following just for debugging:
 
 		Vector<HoughLine> lines = h.getLines(20);  // XXX thresh was 30 
-		BufferedImage himage = h.getHoughArrayImage();
-		ImageIO.write(himage, "jpg", new File("houghspace.jpg"));
+		//		BufferedImage himage = h.getHoughArrayImage();
+		// ImageIO.write(himage, "jpg", new File("houghspace.jpg"));
 
 		// Create a color image from the hough results, and highlight the peaks in red
-		BufferedImage chimage = new BufferedImage(h.maxTheta, h.doubleHeight,  BufferedImage.TYPE_INT_RGB);
-		Graphics gh = chimage.getGraphics();  
-		gh.drawImage(himage, 0, 0, null);
-		gh.dispose(); 
+		//BufferedImage chimage = new BufferedImage(h.maxTheta, h.doubleHeight,  BufferedImage.TYPE_INT_RGB);
+		//Graphics gh = chimage.getGraphics();  
+		//gh.drawImage(himage, 0, 0, null);
+		//		gh.dispose(); 
 
 		// Also create color image from original input image.  We'll overlay HT lines and line segments.
 		BufferedImage cimage = new BufferedImage(image.getWidth(), image.getHeight(),  BufferedImage.TYPE_INT_RGB);
@@ -83,20 +86,20 @@ public class IU {
 
 		    line.draw(cimage, Color.BLUE.getRGB());
 
-		    System.out.print(segments.size() + " segments found " + j + ": ");
+		    
+		    //		    System.out.print(segments.size() + " segments found " + j + ": ");
 		    for (int k = 0; k < segments.size(); k++) {
 			Line2D.Double seg = segments.elementAt(k);
-			System.out.print(k + ": [{ " + seg.x1 + "," + seg.y1 + "}, {" + seg.x2 + "," + seg.y2 + "}] ");
+			//System.out.print(k + ": [{ " + seg.x1 + "," + seg.y1 + "}, {" + seg.x2 + "," + seg.y2 + "}] ");
 			//			g.draw(edges.edgesImage, (int)seg.x1, (int)seg.y1, (int)seg.x2, (int)seg.y2);
 			//			HoughLine.drawsegment(edges.edgesImage, seg, Color.RED.getRGB());
 			HoughLine.drawsegment(cimage, seg, Color.RED.getRGB());
 		    }
-		    System.out.println();
-
 
 
 		    // draw out line on image (for debugging and presentation)
 
+		    /*
 		    System.out.println(j + ": " + line.peak + " [" + (int)((180/Math.PI)*line.theta) + ", " + line.r + "]");
 		    System.out.println("Neighborhood:");
 		    for (int t = -2; t <=2; t++) {
@@ -113,26 +116,28 @@ public class IU {
 			    }
 			System.out.println("");
 		    }
-		    System.out.println("");
+		   System.out.println("");
+		    */
 		}
 		// Write out markup'd images
-		ImageIO.write(cimage, "jpg", new File("houghout.jpg"));
+		//ImageIO.write(cimage, "jpg", new File("houghout.jpg"));
 		//		ImageIO.write(edges.edgesImage, "jpg", new File("houghoutedges.jpg"));
-		ImageIO.write(chimage, "jpg", new File("houghspaceoverlay.jpg"));
-
+		//ImageIO.write(chimage, "jpg", new File("houghspaceoverlay.jpg"));
+		  
 
 		//	        Vector<Line2D.Double> segments = h.getLineSegments(edges.detected, 20);   // threshold = min # points required along a line of integration to declare detection.
 
 		System.out.println("Forming into boxes...");
 		Boxes boxes = new Boxes(totalSegments);
-		System.out.println("Drawing boxes...");
-		boxes.draw(image);
-		System.out.println("writing overlaid image...");
-		ImageIO.write(image, "jpg", new File("process" + fileNum + ".jpg"));
+		// System.out.println("Drawing boxes...");
+		boxes.draw(cimage);
+		//System.out.println("writing overlaid image...");
+		ImageIO.write(cimage, "jpg", new File("process" + fileNum + ".jpg"));
 		System.out.println(boxes.size() + " boxes found:");
-		System.out.println("");
+		//System.out.println("");
 		System.out.println(boxes);
-		System.out.println("");
+		//System.out.println("");
+		}
             } catch (IOException e) {
                 e.printStackTrace();
 		success = false;
