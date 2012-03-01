@@ -17,6 +17,7 @@ public class EdgeDetect {
     public BufferedImage image;
     public int width, height;
     public short [][] detected;
+    public BufferedImage edgesImage;
 
     public EdgeDetect(BufferedImage _image, int thresh) {
 
@@ -30,7 +31,7 @@ public class EdgeDetect {
 		-1.0f, 0.0f, 0.0f, 
 		-2.0f, 0.0f, 2.0f, 
 		-1.0f, 0.0f, 1.0f
-	    });
+	    }
         BufferedImageOp xopR = new ConvolveOp(sobelXKernR);
 	*/
 
@@ -71,11 +72,15 @@ public class EdgeDetect {
 
 	xopL.filter(img, xImgL);
 	yopU.filter(img, yImgU);
-	detected = addAndthresholdImage(xImgL, yImgU, thresh);
-	BufferedImage iout = addGrayImages(xImgL, yImgU);
+
+	this.detected = addAndthresholdImage(xImgL, yImgU, thresh);
+	this.edgesImage = addGrayImages(xImgL, yImgU);
+	
+	BufferedImage raw = CreateEdgeImage();
 
 	try {
-	    ImageIO.write(iout, "jpg", new File("SumLU.jpg"));
+	    ImageIO.write(edgesImage, "jpg", new File("SumLU.jpg"));
+	    ImageIO.write(raw, "jpg", new File("rawedges.jpg"));
 	    ImageIO.write(img, "jpg", new File("Grayscale.jpg"));
 	    ImageIO.write(xImgL, "jpg", new File("xEdge.jpg"));
 	    ImageIO.write(yImgU, "jpg", new File("yEdge.jpg"));
@@ -196,6 +201,22 @@ public class EdgeDetect {
 	     }
 	 }
 	 return out;
+    }
+
+    BufferedImage CreateEdgeImage() {
+
+	BufferedImage raw = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY); 
+
+	WritableRaster o = raw.getRaster();
+
+	// vertical lines
+
+	for (int x = 0; x < width; x++) {
+	    for (int y = 0; y < height; y++)
+		o.setSample(x, y, 0, (int)detected[x][y]);
+	}
+
+	return raw;
     }
 
 }

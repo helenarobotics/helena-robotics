@@ -25,7 +25,7 @@ public class IU {
             System.exit(-1);
         }
 
-	int[][] thetas = {{0, 15}, {75, 105}, {165, 180}};
+	int[][] thetas = {{0, 7}, {83, 97}, {173, 180}};
 	int nthetas = 3;
 
 	boolean success = true;
@@ -34,15 +34,21 @@ public class IU {
             String imageFile = args[fileNum];
 	    System.out.println("processing file '" + imageFile + "'");
             try {
-                BufferedImage image = ImageIO.read(new File(imageFile));
+
+		BufferedImage image = ImageIO.read(new File(imageFile));
+
 		System.out.println("Detecting edges...");
 		EdgeDetect edges = new EdgeDetect(image, 150);
-		System.out.println("Creating HT...");
-		HoughTransform h = new HoughTransform(edges.width, edges.height, thetas, nthetas);
-		System.out.println("Transforming...");
-		h.addPoints(edges.detected);
-		System.out.println("Segmenting...");
 
+		System.out.println("Creating HT...");
+		HoughTransform h = new HoughTransform(image.getWidth(), image.getHeight(), thetas, nthetas);
+		System.out.println("Transforming...");
+		//		short [][] raw = image2short(image);
+		//		h.addPoints(raw);
+		//
+		h.addPoints(edges.edgesImage);      // revert to image version of HT
+		//		h.addPoints(edges.detected);      
+		System.out.println("Segmenting...");
 
 		// The following just for debugging:
 
@@ -61,13 +67,19 @@ public class IU {
 		Graphics g = cimage.getGraphics();  
 		g.drawImage(image, 0, 0, null);
 		g.dispose(); 
+		Vector<Line2D.Double> totalSegments = new Vector<Line2D.Double>(30);
 
 		for (int j = 0; j < lines.size(); j++) { 
 		    HoughLine line = lines.elementAt(j); 
 
 		    // Segment hough line into visible components:
 		    // window of 15, of which 9 pixels must be 'lit'
-		    Vector<Line2D.Double> segments = line.segment(edges.detected, image.getWidth(), image.getHeight(), 15, 9, 10);  
+		    //		    Vector<Line2D.Double> segments = line.segment(edges.detected, image.getWidth(), image.getHeight(), 15, 9, 10);  
+		    //		    Vector<Line2D.Double> segments = line.segment(edges.edgesImage, 15, 9, 10);
+		    Vector<Line2D.Double> segments = line.segment(edges.edgesImage, 15, 9, 10);    // Should this be performed on original image, or edges??
+
+		    totalSegments.addAll(segments);
+		    
 
 		    line.draw(cimage, Color.BLUE.getRGB());
 
@@ -75,10 +87,12 @@ public class IU {
 		    for (int k = 0; k < segments.size(); k++) {
 			Line2D.Double seg = segments.elementAt(k);
 			System.out.print(k + ": [{ " + seg.x1 + "," + seg.y1 + "}, {" + seg.x2 + "," + seg.y2 + "}] ");
-			//g.draw(cimage, (int)seg.x1, (int)seg.y1, (int)seg.x2, (int)seg.y2);
+			//			g.draw(edges.edgesImage, (int)seg.x1, (int)seg.y1, (int)seg.x2, (int)seg.y2);
+			//			HoughLine.drawsegment(edges.edgesImage, seg, Color.RED.getRGB());
 			HoughLine.drawsegment(cimage, seg, Color.RED.getRGB());
 		    }
 		    System.out.println();
+
 
 
 		    // draw out line on image (for debugging and presentation)
@@ -103,13 +117,14 @@ public class IU {
 		}
 		// Write out markup'd images
 		ImageIO.write(cimage, "jpg", new File("houghout.jpg"));
+		//		ImageIO.write(edges.edgesImage, "jpg", new File("houghoutedges.jpg"));
 		ImageIO.write(chimage, "jpg", new File("houghspaceoverlay.jpg"));
 
 
-	        Vector<Line2D.Double> segments = h.getLineSegments(edges.detected, 20);   // threshold = min # points required along a line of integration to declare detection.
+		//	        Vector<Line2D.Double> segments = h.getLineSegments(edges.detected, 20);   // threshold = min # points required along a line of integration to declare detection.
 
 		System.out.println("Forming into boxes...");
-		Boxes boxes = new Boxes(segments);
+		Boxes boxes = new Boxes(totalSegments);
 		System.out.println("Drawing boxes...");
 		boxes.draw(image);
 		System.out.println("writing overlaid image...");
@@ -123,5 +138,19 @@ public class IU {
 		success = false;
             }
         }
+    }
+
+ static   short [][] image2short(BufferedImage image) {
+	short [][] raw = new short [image.getWidth()][image.getHeight()];
+	
+        int [] buffer = new int [1];
+	int [] pixel = new int [1];
+
+	for (int x = 0; x < image.getWidth(); x++) {
+	    for (int y = 0; y < image.getHeight(); y++) {
+	        raw[x][y] = (short) (image.getRGB(x, y) & 0x000000ff);
+	    }
+	}
+	return raw;
     }
 }
