@@ -63,7 +63,7 @@ public class HoughTransform extends Thread {
 	// ImageIO.write(h.enhance(7), "jpg", new File("blurredHT.jpg"));
  
         // get the lines out 
-	int thresh = 30;
+	int thresh = 20;
 	Vector<HoughLine> lines = h.getLines(thresh);  // XXX thresh was 30 
 
 	System.out.println("Threshold = " + thresh);
@@ -94,7 +94,7 @@ public class HoughTransform extends Thread {
             HoughLine line = lines.elementAt(j); 
 
 	    // Segment hough line into visible components:
-	    Vector<Line2D.Double> segments = line.segment(image, 13, 9);  // window of 13, of which 9 pixels must be 'lit'
+	    Vector<Line2D.Double> segments = line.segment(image, 15, 9);  // window of 15, of which 9 pixels must be 'lit'
 
 	    totalSegments.addAll(segments);
 
@@ -109,10 +109,6 @@ public class HoughTransform extends Thread {
 	    }
 	    System.out.println();
 
-	    // Try organizing segments into boxes:
-	    Boxes boxes = new Boxes(totalSegments);
-	    System.out.println(boxes.size() + " boxes found:");
-	    System.out.println(boxes);
 
 	    // draw out line on image (for debugging and presentation)
 
@@ -134,6 +130,19 @@ public class HoughTransform extends Thread {
 	    }
 	    System.out.println("");
 	}
+
+	// Try organizing segments into boxes:
+	System.out.println("Organizing " + totalSegments.size() + " segments into boxes");
+	Boxes boxes = new Boxes(totalSegments);
+	System.out.println("");
+	System.out.println(boxes.size() + " boxes found:");
+	System.out.println("");
+	System.out.println(boxes);
+	System.out.println("");
+
+	// boxes.drawCorners(cimage);     // Draws all the corners, not just those assigned to boxes
+	boxes.draw(cimage);     // Draws corners assigned to completed boxes (hoops)
+
 	// Write out markup'd images
 	ImageIO.write(cimage, "jpg", new File("houghout.jpg"));
 	ImageIO.write(chimage, "jpg", new File("houghspaceoverlay.jpg"));
@@ -145,6 +154,9 @@ public class HoughTransform extends Thread {
  
     // How many discrete values of theta shall we check? 
     final int maxTheta = 180;
+
+    int [][] thetas;      // start and stop theta values for HT
+    int nthetas;          // # of HT theta 'bands'
  
     // Using maxTheta, work out the step 
     final double thetaStep = Math.PI / maxTheta; 
@@ -183,6 +195,25 @@ public class HoughTransform extends Thread {
  
         this.width = width; 
         this.height = height; 
+	thetas = new int[1][2];
+	thetas[0][0] = 0;
+	thetas[0][1] = 180;
+	nthetas = 1;
+ 
+        initialise(); 
+ 
+    } 
+
+    public HoughTransform(int width, int height, int [][] _thetas, int _nthetas) { 
+ 
+        this.width = width; 
+        this.height = height; 
+	thetas = _thetas;
+	nthetas = _nthetas;
+
+	System.out.println("Theta bands in HT:");
+	for (int i = 0; i < nthetas; i++)
+	    System.out.println("Band " + i + " " + thetas[i][0] + " to " + thetas[i][1]);
  
         initialise(); 
  
@@ -244,31 +275,40 @@ public class HoughTransform extends Thread {
 		}
 	    }
 	}
-    } 
+    }
+
+    public void addPoints(short [][] detected) { 
+ 
+	System.out.println("HoughTransform.addPoints: " + this.width + " x " + this.height);
+
+        // Find edge points and update the hough array 
+        for (int x = 0; x < this.width; x++) { 
+            for (int y = 0; y < this.height; y++) { 
+		if (detected[x][y] > 0)
+                    addPoint(x, y);
+	    }
+	}
+    }
  
     /** 
      * Adds a single point to the hough transform. You can use this method directly 
      * if your data isn't represented as a buffered image. 
      */ 
     public void addPoint(int x, int y) { 
-        // Go through each value of theta 
-        for (int t = 0; t < maxTheta; t++) { 
- 
-            //Work out the r values for each theta step 
+
+	// Go through each value of theta
+	for (int t = 0; t < maxTheta; t++) { 
+	    //Work out the r values for each theta step 
 	    //int r = (int) (((x - centerX) * cosCache[t]) + ((y - centerY) * sinCache[t]));
 	    int r = (int) Math.round((((x - centerX) * cosCache[t]) + ((y - centerY) * sinCache[t])));
  
-	    // XXX DEBUG
-	    if (t == 0)
-		System.out.println("{" + x + ", " + y + "} r = " + r);
-            
 	    // this copes with negative values of r 
-            r += houghHeight; 
- 
-            if (r < 0 || r >= doubleHeight) continue; 
- 
-            // Increment the hough array 
-            houghArray[t][r]++; 
+	    r += houghHeight; 
+		    
+	    if (r < 0 || r >= doubleHeight) continue; 
+	    
+	    // Increment the hough array 
+	    houghArray[t][r]++; 
 	    numPoints++; 
 	}
     }
@@ -291,7 +331,59 @@ public class HoughTransform extends Thread {
     }
     */
 
+    public Vector<Line2D.Double> getLineSegments(short [][] detected, int threshold) {
 
+	// get hough detections above threshold
+	Vector<HoughLine> lines = this.getLines(threshold);  // XXX thresh was 30 
+
+	// Now segment them according to image intensity 
+	Vector<Line2D.Double> totalSegments = new Vector<Line2D.Double>(30);
+
+        // segment lines, draw the lines back onto the image
+        for (int j = 0; j < lines.size(); j++) { 
+            HoughLine line = lines.elementAt(j); 
+
+	    // Segment hough line into visible components:
+	    Vector<Line2D.Double> segments = line.segment(detected, width, height, 15, 9, 20);  // window of 15, of which 9 pixels must be 'lit'; min segment length = 20 pixels
+
+	    totalSegments.addAll(segments);
+
+	    System.out.print(segments.size() + " segments found " + j + ": ");
+	}
+
+	    /*
+	    for (int k = 0; k < segments.size(); k++) {
+	        Line2D.Double seg = segments.elementAt(k);
+		System.out.print(k + ": [{ " + seg.x1 + "," + seg.y1 + "}, {" + seg.x2 + "," + seg.y2 + "}] ");
+		//g.draw(cimage, (int)seg.x1, (int)seg.y1, (int)seg.x2, (int)seg.y2);
+		HoughLine.drawsegment(cimage, seg, Color.RED.getRGB());
+	    }
+	    System.out.println();
+	    */
+
+	    // draw out line on image (for debugging and presentation)
+
+	    /*	    System.out.println(j + ": " + line.peak + " [" + (int)((180/Math.PI)*line.theta) + ", " + line.r + "]");
+	    System.out.println("Neighborhood:");
+	    for (int t = -2; t <=2; t++) {
+		for (int r = -2; r <= 2; r++)
+		    {
+			int it = t + line.itheta;
+			int ir = r + line.r;
+			if (it < 0) it = h.maxTheta + it;
+			if (it >= h.maxTheta) it = it - h.maxTheta;
+			if (ir < 0) ir = h.doubleHeight + r;
+			if (ir >= h.doubleHeight) ir = ir - h.doubleHeight;
+			chimage.setRGB(it, ir, Color.RED.getRGB());
+			System.out.print(h.houghArray[it][ir] + " ");
+		    }
+		System.out.println("");
+	    }
+	    System.out.println("");
+	}
+	    */
+	    return totalSegments;
+    }
  
     /** 
      * Once points have been added in some way this method extracts the lines and returns them as a Vector 
@@ -310,49 +402,56 @@ public class HoughTransform extends Thread {
         if (numPoints == 0) return lines; 
  
         // Search for local peaks above threshold to draw 
-        for (int t = 0; t < maxTheta; t++) { 
-        loop: 
-            for (int r = neighbourhoodSize; r < doubleHeight - neighbourhoodSize; r++) { 
+
+	for (int b = 0; b < nthetas; b++)
+	    {
+		int tstart = thetas[b][0];
+		int tstop = thetas[b][1];
+
+		for (int t = tstart; t < tstop; t++) { 
+		    loop: 
+		    for (int r = neighbourhoodSize; r < doubleHeight - neighbourhoodSize; r++) { 
  
-                // Only consider points above threshold 
-                if (houghArray[t][r] > threshold) { 
+			// Only consider points above threshold 
+			if (houghArray[t][r] > threshold) { 
  
-                    int peak = houghArray[t][r]; 
+			    int peak = houghArray[t][r]; 
  
-                    // Check that this peak is indeed the local maxima 
-                    for (int dx = -neighbourhoodSize; dx <= neighbourhoodSize; dx++) { 
-                        for (int dy = -neighbourhoodSize; dy <= neighbourhoodSize; dy++) { 
-                            int dt = t + dx; 
-                            int dr = r + dy; 
-                            if (dt < 0) {
-				dt = dt + maxTheta;   // roll over to negative theta, and flip 'r' symmetrically over center point
-				dr = doubleHeight - dr;
-			    }
-                            else if (dt >= maxTheta) {
-				dt = dt - maxTheta; 
-				dr = doubleHeight - dr;
-			    }
-			    if (dr >= doubleHeight) dr = dr - doubleHeight;
-			    else if (dr < 0) dr = dr + doubleHeight;
-			    int v = houghArray[dt][dr];
-			    // Some ugly logic to avoid multiple detections of equal peaks in neighborhood
-                            if (v > peak)
-				    // found a bigger point nearby, skip 
-				continue loop; 
-			     else if (v == peak)   // avoid multiple detection of equal peaks in neighborhood; just take first
-				 if ((dx < 0) | ((dx == 0) & (dy < 0)))
-				    continue loop;
-			}
-		    } 
+			    // Check that this peak is indeed the local maxima 
+			    for (int dx = -neighbourhoodSize; dx <= neighbourhoodSize; dx++) { 
+				for (int dy = -neighbourhoodSize; dy <= neighbourhoodSize; dy++) { 
+				    int dt = t + dx; 
+				    int dr = r + dy; 
+				    if (dt < 0) {
+					dt = dt + maxTheta;   // roll over to negative theta, and flip 'r' symmetrically over center point
+					dr = doubleHeight - dr;
+				    }
+				    else if (dt >= maxTheta) {
+					dt = dt - maxTheta; 
+					dr = doubleHeight - dr;
+				    }
+				    if (dr >= doubleHeight) dr = dr - doubleHeight;
+				    else if (dr < 0) dr = dr + doubleHeight;
+				    int v = houghArray[dt][dr];
+				    // Some ugly logic to avoid multiple detections of equal peaks in neighborhood
+				    if (v > peak)
+					// found a bigger point nearby, skip 
+					continue loop; 
+				    else if (v == peak)   // avoid multiple detection of equal peaks in neighborhood; just take first
+					if ((dx < 0) | ((dx == 0) & (dy < 0)))
+					    continue loop;
+				}
+			    } 
  
-                    // calculate the true value of theta 
-                    double theta = t * thetaStep; 
+			    // calculate the true value of theta 
+			    double theta = t * thetaStep; 
  
-                    // add the line to the vector 
-                    lines.add(new HoughLine(theta, t, r, peak)); 
-                 } 
-            } 
-        } 
+			    // add the line to the vector 
+			    lines.add(new HoughLine(theta, t, r, peak)); 
+			} 
+		    }
+		} 
+	    }
  
         return lines; 
     } 
