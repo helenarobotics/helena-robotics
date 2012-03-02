@@ -9,6 +9,11 @@
 
 const int MAX_COUNT = 5;
 class HallSensor {
+public:
+  HallSensor(int, int);
+  ~HallSensor();
+  void countRevolution();
+  int getRPM();
 private:
   int sensorPort;
   int ledPort;
@@ -16,10 +21,6 @@ private:
   int count;
   int rpm;
   void updateRPM();
-public:
-  HallSensor(int, int);
-  void countRevolution();
-  int getRPM();
 };
 
 HallSensor::HallSensor(int _sensorPort, int _ledPort) {
@@ -32,6 +33,11 @@ HallSensor::HallSensor(int _sensorPort, int _ledPort) {
   count = 0;
   rpm = 0;
   last_time = micros();
+}
+
+HallSensor::~HallSensor() {
+   // Nothing to destruct.  It would be good to ensure the
+   // interrupt is disabled.
 }
 
 void HallSensor::countRevolution() {
@@ -170,6 +176,6 @@ void wireSend() {
 // Store the data as two bytes in little endian format
 int storeLEShort(int data, byte *buff, int offset) {
   buff[offset] = (data & 0xFF);
-  buff[offset + 1] = ((data << 8) & 0xFF);
+  buff[offset + 1] = ((data >> 8) & 0xFF);
   return 2;
 }
