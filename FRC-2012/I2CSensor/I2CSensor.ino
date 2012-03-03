@@ -12,8 +12,11 @@
 //
 
 // I2C constants
-const int I2C_ADDRESS = 0xC2;
+const int I2C_ADDRESS = 0xCA;
 const int COUNTER_REGISTER = 0x00;
+
+// Toggle the LED
+const byte LED = 13;
 
 // The counters
 const int NUM_COUNTERS = 2;
@@ -30,6 +33,10 @@ void setup()
   Serial.begin(115200);
   Serial.println("Starting I2C Sensor...");
 
+  // Allow the LED to be controlled
+  pinMode(LED, OUTPUT);
+  digitalWrite(LED, LOW);
+
   // if analog input pin 0 is unconnected, random analog
   // noise will cause the call to randomSeed() to generate
   // different seed numbers each time the sketch runs.
@@ -40,12 +47,15 @@ void setup()
   for (int i = 0; i < NUM_COUNTERS; i++) {
     counter[i] = random(500);
   }
-  
+
   // By default, assume the first counter
   requestedCounter = 1;
 
   // Setup I2C
   Wire.begin(I2C_ADDRESS >> 1);
+
+  // enable broadcasts to be received
+  TWAR = (I2C_ADDRESS) | 1;
 
   // onReceive is called to provide the parameters for the request, and
   // onRequest is called when to send out the response to the master.
@@ -56,7 +66,7 @@ void setup()
 // Print buffer
 char prtBuff[128];
 int timeCounter = 0;
-void loop() 
+void loop()
 {
   for (int i = 0; i < NUM_COUNTERS; i++) {
      // Increment the counter by a random number between 1 and 3.
@@ -78,6 +88,10 @@ void loop()
 void wireReceive(int d)
 {
   Serial.println("wireReceive");
+
+  // Toggle the LED
+  digitalWrite(LED, !digitalRead(LED));
+
   if (d > 0) {
     // Grab the 'register'
     byte reg = Wire.read();
