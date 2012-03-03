@@ -49,10 +49,22 @@ public class ArduinoI2CSensor extends I2C implements ISensor {
      */
     public int getCount(int counterNum) {
         if (counterNum >= 1 && counterNum <= 2) {
-            byte sndBuf[] = new byte[] { DATA_REG, (byte)counterNum };
-            if (!this.transaction(sndBuf, sndBuf.length, inBuf, 2)) {
+            // The Arduino I2C slave code does not handle extended
+            // transactions where the Master keeps the bus locked
+            // for the entire transaction.  Therefore, we must
+            // do the request as two completely separate transactions,
+            // a 'W'rite (indicating which counter we wish to fetch),
+            // followed by a 'R'ead, which *CAN NOT* be send
+            // with the register to read (a 'W'rite request) due to
+            // the aformentioned bugs.
+
+            // Indicate which counter we're reading, and then read
+            // the counter value with a raw 'R'ead request.
+//            byte sndBuf[] = new byte[] { DATA_REG, (byte)counterNum };
+//            if (!this.transaction(sndBuf, sndBuf.length, inBuf, 2))
+            if (!write(DATA_REG, (byte)counterNum) &&
+                !transaction(null, 0, inBuf, 2))
                 return (int)decodeShortLE(inBuf, 0);
-            }
         }
         return 0;
     }
@@ -65,8 +77,10 @@ public class ArduinoI2CSensor extends I2C implements ISensor {
     public int[] getCounts() {
         int retVal[] = new int[2];
 
-        byte sndBuf[] = new byte[] { DATA_REG, BOTH_COUNTERS };
-        if (!this.transaction(sndBuf, sndBuf.length, inBuf, 4)) {
+//        byte sndBuf[] = new byte[] { DATA_REG, BOTH_COUNTERS };
+//        if (!this.transaction(sndBuf, sndBuf.length, inBuf, 4)) {
+        if (!write(DATA_REG, BOTH_COUNTERS) &&
+            !transaction(null, 0, inBuf, 4)) {
             retVal[0] = (int)decodeShortLE(inBuf, 0);
             retVal[1] = (int)decodeShortLE(inBuf, 2);
         }
