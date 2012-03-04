@@ -9,11 +9,6 @@
 
 const int MAX_COUNT = 5;
 class HallSensor {
-public:
-  HallSensor(int, int);
-  ~HallSensor();
-  void countRevolution();
-  int getRPM();
 private:
   int sensorPort;
   int ledPort;
@@ -21,6 +16,10 @@ private:
   int count;
   int rpm;
   void updateRPM();
+public:
+  HallSensor(int, int);
+  void countRevolution();
+  int getRPM();
 };
 
 HallSensor::HallSensor(int _sensorPort, int _ledPort) {
@@ -33,11 +32,6 @@ HallSensor::HallSensor(int _sensorPort, int _ledPort) {
   count = 0;
   rpm = 0;
   last_time = micros();
-}
-
-HallSensor::~HallSensor() {
-   // Nothing to destruct.  It would be good to ensure the
-   // interrupt is disabled.
 }
 
 void HallSensor::countRevolution() {
@@ -68,7 +62,7 @@ int HallSensor::getRPM() {
 //
 
 // I2C constants
-const int I2C_ADDRESS = 0xC4;
+const int I2C_ADDRESS = 0xCA;
 const int SENSOR_REGISTER = 0x00;
 
 int requestedSensor;
@@ -115,8 +109,10 @@ int counter = 0;
 void loop() {
   counter++;
   if (counter % 10 == 0) {
-    Serial.println("RPM 1 value: " + hs1->getRPM());
-    Serial.println("RPM 2 value: " + hs2->getRPM());
+    Serial.print("RPM 1 value: " );
+    Serial.println(hs1->getRPM());
+    Serial.print("RPM 2 value: ");
+    Serial.println(hs2->getRPM());
   }
   delay(100);
 }
