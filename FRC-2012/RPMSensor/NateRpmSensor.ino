@@ -76,7 +76,7 @@ byte sendData[6];
 double prevTime;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Starting RPM Sensor...");
 
   // By default, assume the first sensor
@@ -111,16 +111,20 @@ void hs2Interrupt() {
   hs2->addRevolution();
 }
 
+int loopCounter = 0;
 void loop() {
   // Calculate how much time has elapsed, and pass it to
   // the Hall Sensor to calculate RPM.
   double currTime = micros();
   hs1->calculateRPM(currTime - prevTime);
   hs1->calculateRPM(currTime - prevTime);
+  double diffTime = currTime - prevTime;
   prevTime = currTime;
 
   // Roughly once/sec print out the calculated RPM
-  if (counter % 10 == 0) {
+  if ((++loopCounter % 10) == 0) {
+    Serial.print("DT");
+    Serial.println(diffTime);
     Serial.print("RPM 1 value: " );
     Serial.println(hs1->getRPM());
     Serial.print("RPM 2 value: ");
