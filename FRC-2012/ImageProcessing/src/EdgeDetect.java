@@ -24,25 +24,24 @@ public class EdgeDetect {
 	image = _image;
 	width =  image.getWidth();
 	height = image.getHeight();
+    
 
         // Convolve to find the edges
-	/*
+
 	Kernel sobelXKernR = new Kernel(3, 3, new float[] {
 		-1.0f, 0.0f, 0.0f, 
 		-2.0f, 0.0f, 2.0f, 
 		-1.0f, 0.0f, 1.0f
-	    }
-        BufferedImageOp xopR = new ConvolveOp(sobelXKernR);
-	*/
+	    });
 
-	/*
+        BufferedImageOp xopR = new ConvolveOp(sobelXKernR);
+
         Kernel sobelYKernD = new Kernel(3, 3, new float[] {
 		-1.0f, -2.0f, -1.0f,
 		0.0f, 0.0f, 0.0f, 
 		1.0f, 2.0f, 1.0f, 
 	    });
-        BufferedImageOp yopD = new ConvolveOp(sobelYKernD);
-	*/
+	BufferedImageOp yopD = new ConvolveOp(sobelYKernD);
 
 	Kernel sobelXKernL = new Kernel(3, 3, new float[] {
 		0.0f, 0.0f, -1.0f, 
@@ -56,52 +55,93 @@ public class EdgeDetect {
 		0.0f, 0.0f, 0.0f, 
 		-1.0f, -2.0f, -1.0f,
 	    });
-
-        BufferedImageOp yopU = new ConvolveOp(sobelYKernU);
+	BufferedImageOp yopU = new ConvolveOp(sobelYKernU);
 
 	// convert to probability-of-backboard function (simplified for now):
 	
-	BufferedImage img = detectRed(image);
+	BufferedImage img = detectGreen(image, thresh);
 
 	// Create a new image to store the convolved data.
-	// BufferedImage xImgL = deepCopy(img);
-	// BufferedImage xImgR = deepCopy(img);
-
+	BufferedImage xImgR = deepCopy(img);
+	BufferedImage yImgD = deepCopy(img);
 	BufferedImage xImgL = deepCopy(img);
 	BufferedImage yImgU = deepCopy(img);
 
 	xopL.filter(img, xImgL);
 	yopU.filter(img, yImgU);
+	xopR.filter(img, xImgR);
+	yopD.filter(img, yImgD);
 
-	this.detected = addAndthresholdImage(xImgL, yImgU, thresh);
-	this.edgesImage = addGrayImages(xImgL, yImgU);
-	
+
+	this.edgesImage = addGrayImages(xImgL, yImgU, thresh);
+
+	/*
+	this.detected = addAndthresholdImage(xImgL, yImgU, thresh);	
 	BufferedImage raw = CreateEdgeImage();
+	*/
+
+	BufferedImage r = getColor(image, 0);
+	BufferedImage g = getColor(image, 1);
+	BufferedImage b = getColor(image, 2);
 
 	try {
 	    ImageIO.write(edgesImage, "jpg", new File("SumLU.jpg"));
-	    ImageIO.write(raw, "jpg", new File("rawedges.jpg"));
 	    ImageIO.write(img, "jpg", new File("Grayscale.jpg"));
-	    ImageIO.write(xImgL, "jpg", new File("xEdge.jpg"));
-	    ImageIO.write(yImgU, "jpg", new File("yEdge.jpg"));
+    	    ImageIO.write(r, "jpg", new File("red.jpg"));
+	    ImageIO.write(g, "jpg", new File("green.jpg"));
+	    ImageIO.write(b, "jpg", new File("blue.jpg"));
+
+	    // xopR.filter(img, xImgR);
+	    //	yopD.filter(image, yImgD);
+
+	    // Write out new image set
+	    ImageIO.write(yImgU, "jpg", new File("yEdgeU.jpg"));
+	    ImageIO.write(yImgD, "jpg", new File("yEdgeD.jpg"));
+	    ImageIO.write(xImgL, "jpg", new File("xEdgeL.jpg"));
+	    ImageIO.write(xImgR, "jpg", new File("xEdgeR.jpg"));
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
-
-
-	// xopR.filter(img, xImgR);
-	//	yopD.filter(image, yImgD);
-
-	// Write out new image set
-	/*                ImageIO.write(yImgU, "jpg", new File("yEdgeU" + fileNum + ".jpg"));
-			  ImageIO.write(yImgD, "jpg", new File("yEdgeD" + fileNum + ".jpg"));
-			  ImageIO.write(xImgL, "jpg", new File("xEdgeL" + fileNum + ".jpg"));
-			  ImageIO.write(xImgR, "jpg", new File("xEdgeR" + fileNum + ".jpg"));
-	*/
-
-
-
     }
+
+    
+
+    private static BufferedImage detectGreen(BufferedImage img, int thresh) {
+
+	 BufferedImage green = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+	 WritableRaster raster = green.getRaster();
+
+	 for (int x = 0; x < img.getWidth(); x++){
+	     for (int y = 0; y < img.getHeight(); y++){
+		 int rgb[] = getPixelData(img, x, y);
+		 int pixelValue = rgb[1] - (rgb[0] + rgb[2])/2;
+		 //		 if (pixelValue > 255) pixelValue = 255;
+		 // else if (pixelValue < 0) pixelValue = 0;
+		 if (pixelValue >= thresh)
+		     pixelValue = 255;
+		 else pixelValue = 0;
+		 raster.setSample(x, y, 0, pixelValue);
+	     }
+	 }
+	 return green;
+    }
+
+
+    private static BufferedImage getColor(BufferedImage img, int c) {
+	
+	BufferedImage out = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+	WritableRaster raster = out.getRaster();
+	
+	for (int x = 0; x < img.getWidth(); x++){
+	    for (int y = 0; y < img.getHeight(); y++){
+		int rgb[] = getPixelData(img, x, y);
+		int pixelValue = rgb[c];
+		raster.setSample(x, y, 0, pixelValue);
+	    }
+	}
+	return out;
+    }
+
 
     private static BufferedImage detectRed(BufferedImage img) {
 
@@ -132,7 +172,7 @@ public class EdgeDetect {
 	    return null;
 	}
 
-	System.out.println("width = " + img1.getWidth() + ", height = " + img1.getHeight() + "; threshold = " + threshold);
+	//	System.out.println("width = " + img1.getWidth() + ", height = " + img1.getHeight() + "; threshold = " + threshold);
 	    
        short [][]  out = new short [img1.getWidth()][img1.getHeight()];
 
@@ -145,7 +185,7 @@ public class EdgeDetect {
        int [] pixel2 = new int [1];
 
        for (int x = 0; x < img1.getWidth(); x++){
-	   System.out.println();
+	   //	   System.out.println();
 	   for (int y = 0; y < img2.getHeight(); y++){
 	       pixel1 = r1.getPixel(x, y, buffer1);
 	       pixel2 = r2.getPixel(x, y, buffer2);
@@ -178,7 +218,7 @@ public class EdgeDetect {
     }
 
 
-    private static BufferedImage addGrayImages(BufferedImage img1, BufferedImage img2) {
+    private static BufferedImage addGrayImages(BufferedImage img1, BufferedImage img2, int thresh) {
 
 	 BufferedImage out = new BufferedImage(img1.getWidth(), img1.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
 
@@ -196,7 +236,8 @@ public class EdgeDetect {
 		 pixel1 = r1.getPixel(x, y, buffer1);
 		 pixel2 = r2.getPixel(x, y, buffer2);
 		 int sum = pixel1[0] + pixel2[0];
-		 if (sum > 255) sum = 255;
+		 if (sum >= thresh) sum = 255;
+		 else sum = 0;
 		 o.setSample(x, y, 0, sum);
 	     }
 	 }
