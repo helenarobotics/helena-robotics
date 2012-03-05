@@ -12,13 +12,12 @@ class HallSensor {
 private:
   int sensorPort;
   int ledPort;
-  double last_time;
   int count;
   int rpm;
-  void updateRPM();
 public:
   HallSensor(int, int);
-  void countRevolution();
+  void addRevolution();
+  void calculateRPM(double diffTime);
   int getRPM();
 };
 
@@ -31,26 +30,28 @@ HallSensor::HallSensor(int _sensorPort, int _ledPort) {
 
   count = 0;
   rpm = 0;
-  last_time = micros();
 }
 
-void HallSensor::countRevolution() {
+void HallSensor::addRevolution() {
   // toggle output led
   digitalWrite(ledPort, !digitalRead(ledPort));
+  count++;
+}
 
-  if (++count > MAX_COUNT) {
-    // make sure timer hasn't overflown
-    double diff_time = micros() - last_time;
-    if (diff_time > 0) {
-      // rpm = rotations / time in micro-seconds * 1000000 ms/s * 60 sec
-      int new_rpm = (int)((double)count / diff_time * 1000000 * 60);
+void HallSensor::calculateRPM(double diffTime) {
+  // XXX - Handle overflow?
+  if (diffTime > 0) {
+    // rpm = rotations / time in micro-seconds * 1000000 ms/s * 60 sec
+    int new_rpm = (int)((double)count / diffTime * 1000000 * 60);
 
-      // Update the rpm using a bias to smooth it out (learning rate = .8)
-      rpm = new_rpm * .8 + rpm * .2;
-    }
-    count = 0;
-    last_time = micros();
+    // Update the rpm using a bias to smooth it out (learning rate = .8)
+    rpm = new_rpm * .8 + rpm * .2;
   }
+  // Disable interrupts while we change the count so that we don't end
+  // up with corrupted count values.
+  cli();
+  count = 0;
+  sei();
 }
 
 int HallSensor::getRPM() {
@@ -70,6 +71,9 @@ HallSensor *hs1, *hs2;
 
 // We send at most 6 bytes of data
 byte sendData[6];
+
+// Keep track of time
+double prevTime;
 
 void setup() {
   Serial.begin(9600);
@@ -92,22 +96,30 @@ void setup() {
   // Connect HallSensor to interrupts
   attachInterrupt(0, hs1Interrupt, RISING);
   attachInterrupt(1, hs2Interrupt, RISING);
+
+  // Remember the time
+  prevTime = micros();
 }
 
 // These should be HallSensor methods, but attachInterrupt doesn't
 // allow such things done easily.
 void hs1Interrupt() {
-  hs1->countRevolution();
+  hs1->addRevolution();
 }
 
 void hs2Interrupt() {
-  hs2->countRevolution();
+  hs2->addRevolution();
 }
 
-// Roughly once/sec print out the calculated RPM
-int counter = 0;
 void loop() {
-  counter++;
+  // Calculate how much time has elapsed, and pass it to
+  // the Hall Sensor to calculate RPM.
+  double currTime = micros();
+  hs1->calculateRPM(currTime - prevTime);
+  hs1->calculateRPM(currTime - prevTime);
+  prevTime = currTime;
+
+  // Roughly once/sec print out the calculated RPM
   if (counter % 10 == 0) {
     Serial.print("RPM 1 value: " );
     Serial.println(hs1->getRPM());
