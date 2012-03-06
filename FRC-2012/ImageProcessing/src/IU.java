@@ -9,6 +9,7 @@ import java.awt.image.Kernel;
 import java.awt.image.WritableRaster;
 import java.awt.image.Raster;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.Vector; 
 import javax.imageio.ImageIO;
 import java.awt.geom.*;
@@ -25,7 +26,7 @@ public class IU {
             System.exit(-1);
         }
 
-	int[][] thetas = {{0, 7}, {83, 97}, {173, 180}};
+	int[][] thetas = {{0, 12}, {65, 115}, {168, 180}};
 	int nthetas = 3;
 
 	boolean success = true;
@@ -44,13 +45,17 @@ public class IU {
 		System.out.println("Detecting edges...");
 		EdgeDetect edges = new EdgeDetect(image, 80);
 
+		RegionGrow RG = new RegionGrow(edges.thresholdedImage, 2, 200);
+		Region region = RG.grow(edges.thresholdedImage, 2, 200);
+		System.out.println(region);
+
 		System.out.println("Creating HT...");
 		HoughTransform h = new HoughTransform(image.getWidth(), image.getHeight(), thetas, nthetas);
 		h.addPoints(edges.edgesImage);      // This performs the actual transform; line above just constructor
 
 		// The following for debugging:
 
-		Vector<HoughLine> lines = h.getLines(15);  // XXX thresh was 30 
+		Vector<HoughLine> lines = h.getLines(10);  // XXX thresh was 15
 		BufferedImage himage = h.getHoughArrayImage();
 		ImageIO.write(himage, "jpg", new File("houghspace.jpg"));
 
@@ -65,6 +70,24 @@ public class IU {
 		Graphics g = cimage.getGraphics();  
 		g.drawImage(image, 0, 0, null);
 
+		//draw bounding rectangle
+		if (region != null) {
+		    Graphics2D g2 = cimage.createGraphics();
+		    Polygon p = new Polygon();
+		    Rectangle r = region.enclosingRectangle();
+		    p.addPoint(r.x, r.y);
+		    p.addPoint(r.x + r.width, r.y);
+		    p.addPoint(r.x + r.width, r.y + r.height);
+		    p.addPoint(r.x, r.y + r.height);
+		    g2.drawPolygon(p);
+
+		    int c = new Color(255, 255, 0).getRGB(); 
+		    for (int ir = 0; ir < region.size(); ir++) {
+			Point pt = region.elementAt(ir);
+			cimage.setRGB(pt.x, pt.y, c); 
+		    }
+		}
+
 		Vector<Line2D.Double> totalSegments = new Vector<Line2D.Double>(30);
 
 		for (int j = 0; j < lines.size(); j++) { 
@@ -74,7 +97,7 @@ public class IU {
 		    // window of 15, of which 9 pixels must be 'lit'
 		    //		    Vector<Line2D.Double> segments = line.segment(edges.detected, image.getWidth(), image.getHeight(), 15, 9, 10);  
 		    //		    Vector<Line2D.Double> segments = line.segment(edges.edgesImage, 15, 9, 10);
-		    Vector<Line2D.Double> segments = line.segment(edges.edgesImage, 15, 9, 10);    // Should this be performed on original image, or edges??
+		    Vector<Line2D.Double> segments = line.segment(edges.edgesImage, 15, 9, 15);    // Should this be performed on original image, or edges??
 
 		    totalSegments.addAll(segments);
 
@@ -83,16 +106,19 @@ public class IU {
 		    System.out.print(segments.size() + " segments found " + j + ": ");
 		    for (int k = 0; k < segments.size(); k++) {
 			Line2D.Double seg = segments.elementAt(k);
-			System.out.print(k + ": [{ " + seg.x1 + "," + seg.y1 + "}, {" + seg.x2 + "," + seg.y2 + "}] ");
+			System.out.print(k + ": <" + 
+					 (int)Math.sqrt(Math.pow(seg.x2 - seg.x1, 2) + Math.pow(seg.y2 - seg.y1, 2)) + 
+					 "> [{ " + seg.x1 + "," + seg.y1 + "}, {" + seg.x2 + "," + seg.y2 + "}] ");
 			//g.draw(edges.edgesImage, (int)seg.x1, (int)seg.y1, (int)seg.x2, (int)seg.y2);
 		    	HoughLine.drawsegment(edges.edgesImage, seg, Color.RED.getRGB());
 			HoughLine.drawsegment(cimage, seg, Color.RED.getRGB());
 		    }
+		    System.out.println();
 
 		    // draw out line on image (for debugging and presentation)
 
-		    System.out.println(j + ": " + line.peak + " [" + (int)((180/Math.PI)*line.theta) + ", " + line.r + "]");
-		    System.out.println("Neighborhood:");
+		    //		    System.out.println(j + ": " + line.peak + " [" + (int)((180/Math.PI)*line.theta) + ", " + line.r + "]");
+		    //		    System.out.println("Neighborhood:");
 		    for (int t = -2; t <=2; t++) {
 			for (int r = -2; r <= 2; r++)
 			    {
@@ -103,11 +129,11 @@ public class IU {
 				if (ir < 0) ir = h.doubleHeight + r;
 				if (ir >= h.doubleHeight) ir = ir - h.doubleHeight;
 				chimage.setRGB(it, ir, Color.RED.getRGB());
-				System.out.print(h.houghArray[it][ir] + " ");
+				//	System.out.print(h.houghArray[it][ir] + " ");
 			    }
-			System.out.println("");
+			//			System.out.println("");
 		    }
-		   System.out.println("");
+		    //		   System.out.println("");
 		}
 		// Write out markup'd images
 		ImageIO.write(cimage, "jpg", new File("houghout.jpg"));

@@ -16,7 +16,7 @@ import javax.imageio.ImageIO;
 public class EdgeDetect {
     public BufferedImage image;
     public int width, height;
-    public short [][] detected;
+    public BufferedImage thresholdedImage;
     public BufferedImage edgesImage;
 
     public EdgeDetect(BufferedImage _image, int thresh) {
@@ -61,6 +61,35 @@ public class EdgeDetect {
 	
 	BufferedImage img = detectGreen(image, thresh);
 
+	int h[] = histogram(image, 1);
+
+	for (int i  = 0; i <= 255; i++) {
+	    if ((i % 10) == 0)
+		System.out.print(i + ": ");
+	    System.out.print(h[i]);
+	    if ((i % 10) != 9)
+		System.out.print(", ");
+	    else System.out.println();
+	}
+	System.out.println();
+
+	System.out.println("Histogram in 32 overlapping buckets: ");
+	for (int i  = 0; i < 32; i++) {
+	    int jstart = Math.max(0, (i-1)*8);
+	    int jstop = Math.min(256, (i+1)*8);
+	    int sum = 0;
+	    for (int j = jstart; j < jstop; j++) {
+		sum = sum + h[j];
+	    }
+	    if ((i % 10) == 0) {
+		System.out.println();
+		System.out.print(" " + jstart + ": ");
+	    }
+	    System.out.print(sum/(jstop - jstart));
+	    if ((i % 10) != 9)
+		System.out.print(", ");
+	}
+
 	// Create a new image to store the convolved data.
 	BufferedImage xImgR = deepCopy(img);
 	BufferedImage yImgD = deepCopy(img);
@@ -83,6 +112,8 @@ public class EdgeDetect {
 	BufferedImage r = getColor(image, 0);
 	BufferedImage g = getColor(image, 1);
 	BufferedImage b = getColor(image, 2);
+
+	this.thresholdedImage = img;    // save for public access
 
 	try {
 	    ImageIO.write(edgesImage, "jpg", new File("SumLU.jpg"));
@@ -141,28 +172,6 @@ public class EdgeDetect {
 	}
 	return out;
     }
-
-
-    private static BufferedImage detectRed(BufferedImage img) {
-
-	 BufferedImage red = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-
-	 WritableRaster raster = red.getRaster();
-
-	 for (int x = 0; x < img.getWidth(); x++){
-	     for (int y = 0; y < img.getHeight(); y++){
-		 int rgb[] = getPixelData(img, x, y);
-		 //		 int pixelValue = rgb[0] - Mat˜πππh.abs(rgb[1] - rgb[2]) - (rgb[1] + rgb[2])/4;
-		 int pixelValue = rgb[0] - (rgb[1] + rgb[2])/2;
-		 if (pixelValue > 255) pixelValue = 255;
-		 else if (pixelValue < 0) pixelValue = 0;
-		 raster.setSample(x, y, 0, pixelValue);
-	     }
-	 }
-	 return red;
-    }
-
-
 
 
     private static short [][] addAndthresholdImage(BufferedImage img1, BufferedImage img2, int threshold) {
@@ -243,7 +252,7 @@ public class EdgeDetect {
 	 }
 	 return out;
     }
-
+    /*
     BufferedImage CreateEdgeImage() {
 
 	BufferedImage raw = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY); 
@@ -260,4 +269,39 @@ public class EdgeDetect {
 	return raw;
     }
 
+*/
+    private static BufferedImage detectRed(BufferedImage img) {
+
+	 BufferedImage red = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+
+	 WritableRaster raster = red.getRaster();
+
+	 for (int x = 0; x < img.getWidth(); x++){
+	     for (int y = 0; y < img.getHeight(); y++){
+		 int rgb[] = getPixelData(img, x, y);
+		 //		 int pixelValue = rgb[0] - Mat˜πππh.abs(rgb[1] - rgb[2]) - (rgb[1] + rgb[2])/4;
+		 int pixelValue = rgb[0] - (rgb[1] + rgb[2])/2;
+		 if (pixelValue > 255) pixelValue = 255;
+		 else if (pixelValue < 0) pixelValue = 0;
+		 raster.setSample(x, y, 0, pixelValue);
+	     }
+	 }
+	 return red;
+    }
+
+    static int [] histogram(BufferedImage img, int colorIndex) {
+
+	 int h[] = new int [256];
+
+	 for (int x = 0; x < img.getWidth(); x++){
+	     for (int y = 0; y < img.getHeight(); y++){
+		 int rgb[] = getPixelData(img, x, y);
+		 int pixelValue = rgb[colorIndex];
+		 if (pixelValue > 255) pixelValue = 255;
+		 else if (pixelValue < 0) pixelValue = 0;
+		 h[pixelValue]++;
+	     }
+	 }
+	 return h;
+     }
 }
