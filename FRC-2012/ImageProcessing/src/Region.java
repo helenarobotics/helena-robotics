@@ -40,15 +40,55 @@ public class Region {
 	return new Rectangle(minX, minY, (maxX - minX), (maxY - minY));
     }
 
+    public Polygon enclosingPolygon2(BufferedImage img) {
+	Rectangle r = enclosingRectangle();
+
+	Line2D.Double left = squeeze(img, 1, 0, new Line2D.Double((double)r.x, (double)r.y, (double)r.x, (double) (r.y + r.height)));
+	Line2D.Double right = squeeze(img, -1, 0, new Line2D.Double((double)(r.x + r.width), (double)r.y,
+								    (double)(r.x + r.width), (double) (r.y + r.height)));
+	Line2D.Double top = squeeze(img, 0, 1, new Line2D.Double((double)r.x, (double)r.y, 
+								 (double)(r.x + r.width), (double) r.y));
+	Line2D.Double bottom = squeeze(img, 0, -1, new Line2D.Double((double)r.x, (double)(r.y + r.height), 
+								     (double)(r.x + r.width), (double) (r.y + r.height)));
 	    
+	// Now find the four points of intersection
+	Point2D.Double leftTop = Corner.intersectingPoint(left, top);
+	Point2D.Double rightTop = Corner.intersectingPoint(right, top);
+	Point2D.Double leftBottom = Corner.intersectingPoint(left, bottom);
+	Point2D.Double rightBottom = Corner.intersectingPoint(right, bottom);
+
+	System.out.println("Top left corner at     " + (int)leftTop.x + ", " +  (int)leftTop.y);
+	System.out.println("Top right corner at    " + (int)rightTop.x + ", " +  (int)rightTop.y);
+	System.out.println("Bottom right corner at " + (int)rightBottom.x + ", " +  (int)rightBottom.y);
+	System.out.println("Bottom left corner at " +  (int)leftBottom.x + ", " +  (int)leftBottom.y);
+
+	Polygon p = new Polygon();
+
+	p.addPoint((int) leftTop.x, (int) leftTop.y);
+	p.addPoint((int) rightTop.x, (int) rightTop.y);
+	p.addPoint((int) rightBottom.x, (int) rightBottom.y);
+	p.addPoint((int) leftBottom.x, (int) leftBottom.y);
+
+	return p;
+    }
+
+    static Line2D.Double squeeze(BufferedImage img, int xdir, int ydir, Line2D.Double line) {
+	// Let's just return the original line to get started...
+	return (new Line2D.Double(line.x1, line.y1, line.x2, line.y2));
+    }
+
+
     public Polygon enclosingPolygon(BufferedImage img) {
 	Rectangle r = enclosingRectangle();
 	dataPoint [] dp = new dataPoint [Math.max(r.width, r.height) + 1];
 
+	int wsearch = r.width / 4;
+	int hsearch = r.height/ 4;
+
 	// Calculate best line fit to left edge (using thresholded image data)
 	int count = 0;
 	for (int y = r.y; y < r.y + r.height; y++) {
-	    for (int x = r.x; x < r.x + r.width; x++) {
+	    for (int x = r.x; x < r.x + wsearch; x++) {
 		if ((img.getRGB(x, y) & 0x000000ff) > 0) {
 		    dp[count] = new dataPoint(x, y);
 		    count++;
@@ -56,12 +96,14 @@ public class Region {
 		}
 	    }
 	}
-	double resultsLeft [] = leastSquares(dp, count, count/2);
+	double [] resultsLeft = leastSquares(dp, count, count/2);
+	if (count < r.height/2)
+	    resultsLeft = convertMxB((double)r.x, (double)r.y, (double)r.x, (double)(r.y + r.height));
 
 	// Calculate best line fit to right edge (using thresholded image data)
 	count = 0;
 	for (int y = r.y; y < r.y + r.height; y++) {
-	    for (int x = r.x + r.width; x >=  r.x; x--) {
+	    for (int x = r.x + r.width; x >=  r.x + (r.width - wsearch); x--) {
 		if ((img.getRGB(x, y) & 0x000000ff) > 0) {
 		    dp[count] = new dataPoint(x, y);
 		    count++;
@@ -69,12 +111,14 @@ public class Region {
 		}
 	    }
 	}
-	double resultsRight [] = leastSquares(dp, count, count/2);
+	    double resultsRight [] = leastSquares(dp, count, count/2);
+	if (count < r.height/2)
+	    resultsRight = convertMxB(r.x + r.width, r.y, r.x + r.width, r.y + r.height);
 
 	// Calculate best line fit to top edge (using thresholded image data)
 	count = 0;
 	for (int x = r.x; x < r.x + r.width; x++) {
-	    for (int y = r.y; y < r.y + r.height; y++) {
+	    for (int y = r.y; y < r.y + hsearch; y++) {
 		if ((img.getRGB(x, y) & 0x000000ff) > 0) {
 		    dp[count] = new dataPoint(x, y);
 		    count++;
@@ -83,12 +127,14 @@ public class Region {
 	    }
 	}
 	double resultsTop [] = leastSquares(dp, count, count/2);
+	if (count < r.width/2)
+	    resultsTop = convertMxB(r.x, r.y, r.x + r.width, r.y);
 
 	// Calculate best line fit to bottom edge (using thresholded image data)
 	count = 0;
 	for (int x = r.x; x < r.x + r.width; x++) {
 	    int y;
-	    for (y = r.y + r.height; y > r.y; y--) {
+	    for (y = r.y + r.height; y > r.y + (r.height - hsearch); y--) {
 		if ((img.getRGB(x, y) & 0x000000ff) > 0) {
 		    dp[count] = new dataPoint(x, y);
 		    count++;
@@ -96,7 +142,9 @@ public class Region {
 		}
 	    }
 	}
-	double resultsBottom [] = leastSquares(dp, count, count/2);
+	    double resultsBottom [] = leastSquares(dp, count, count/2);
+	    if (count < r.width/2)
+		resultsBottom = convertMxB(r.x, r.y + r.height, r.x + r.width, r.y + r.height);
 
 
 	// Now find the four points of intersection
@@ -118,6 +166,16 @@ public class Region {
 	p.addPoint((int) leftBottom.x, (int) leftBottom.y);
 
 	return p;
+    }
+
+    private double [] convertMxB(double x1, double y1, double x2, double y2) {
+	double m = (y2 - y1) / (x2 - x1);
+	double b = y2 - m * x2;
+	double result [] = new double [2];
+	result[0] = m;
+	result[1] = b;
+
+	return result;
     }
 
     static Point2D.Double intersectingPoint(double m1, double b1, double m2, double b2) {
