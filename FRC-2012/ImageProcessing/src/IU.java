@@ -42,7 +42,7 @@ public class IU {
 
 		BufferedImage image = ImageIO.read(new File(imageFile));
 
-		System.out.println("Detecting edges...");
+		//		System.out.println("Detecting edges...");
 		EdgeDetect edges = new EdgeDetect(image, 80);
 
 		RegionGrow RG = new RegionGrow(edges.thresholdedImage, 2, 200);
@@ -68,7 +68,9 @@ public class IU {
 			*/
 
 			Polygon p2 = region.enclosingPolygon(edges.thresholdedImage);
-			g2.drawPolygon(p2);
+			if (p2 != null)
+			    g2.drawPolygon(p2);
+			else System.out.println("Igorning substantially occluded hoop");
 
 			/*			int c = new Color(255, 255, 0).getRGB(); 
 			for (int iir = 0; iir < region.size(); iir++) {
@@ -129,7 +131,7 @@ public class IU {
 		    */
 		    // Write out markup'd images
 		    ImageIO.write(cimage, "jpg", new File("overlay.jpg"));
-		    ImageIO.write(edges.edgesImage, "jpg", new File("houghoutedges.jpg"));
+		    //ImageIO.write(edges.edgesImage, "jpg", new File("houghoutedges.jpg"));
 		    ImageIO.write(edges.thresholdedImage, "jpg", new File("thresholdedImage.jpg"));
 		    //		    ImageIO.write(chimage, "jpg", new File("houghspaceoverlay.jpg"));
 		  

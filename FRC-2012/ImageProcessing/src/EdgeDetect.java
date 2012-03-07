@@ -21,11 +21,14 @@ public class EdgeDetect {
 
     public EdgeDetect(BufferedImage _image, int thresh) {
 
-	image = _image;
-	width =  image.getWidth();
-	height = image.getHeight();
-    
+       image = _image;
+       width =  image.getWidth();
+       height = image.getHeight();
 
+       BufferedImage img = detectGreen(image, thresh);
+       this.thresholdedImage = img;    // save for public access
+
+	/*
         // Convolve to find the edges
 
 	Kernel sobelXKernR = new Kernel(3, 3, new float[] {
@@ -56,12 +59,11 @@ public class EdgeDetect {
 		-1.0f, -2.0f, -1.0f,
 	    });
 	BufferedImageOp yopU = new ConvolveOp(sobelYKernU);
-
+*/
 	// convert to probability-of-backboard function (simplified for now):
 	
-	BufferedImage img = detectGreen(image, thresh);
-
-	int h[] = histogram(image, 1);
+	/*	Histogram readout -- ignore for now
+		int h[] = histogram(image, 1);
 
 	for (int i  = 0; i <= 255; i++) {
 	    if ((i % 10) == 0)
@@ -89,8 +91,9 @@ public class EdgeDetect {
 	    if ((i % 10) != 9)
 		System.out.print(", ");
 	}
+	*/
 
-	// Create a new image to store the convolved data.
+	/*	// Create a new image to store the convolved data.
 	BufferedImage xImgR = deepCopy(img);
 	BufferedImage yImgD = deepCopy(img);
 	BufferedImage xImgL = deepCopy(img);
@@ -104,38 +107,38 @@ public class EdgeDetect {
 
 	this.edgesImage = addGrayImages(xImgL, yImgU, thresh);
 
-	/*
 	this.detected = addAndthresholdImage(xImgL, yImgU, thresh);	
 	BufferedImage raw = CreateEdgeImage();
 	*/
-
+	/*
 	BufferedImage r = getColor(image, 0);
 	BufferedImage g = getColor(image, 1);
 	BufferedImage b = getColor(image, 2);
+	*/
 
-	this.thresholdedImage = img;    // save for public access
-
+	/*
 	try {
-	    ImageIO.write(edgesImage, "jpg", new File("SumLU.jpg"));
-	    ImageIO.write(img, "jpg", new File("Grayscale.jpg"));
-    	    ImageIO.write(r, "jpg", new File("red.jpg"));
-	    ImageIO.write(g, "jpg", new File("green.jpg"));
-	    ImageIO.write(b, "jpg", new File("blue.jpg"));
+	    //  ImageIO.write(edgesImage, "jpg", new File("SumLU.jpg"));
+	    // ImageIO.write(img, "jpg", new File("Grayscale.jpg"));
+    	    //ImageIO.write(r, "jpg", new File("red.jpg"));
+	    //ImageIO.write(g, "jpg", new File("green.jpg"));
+	    //ImageIO.write(b, "jpg", new File("blue.jpg"));
 
 	    // xopR.filter(img, xImgR);
 	    //	yopD.filter(image, yImgD);
 
 	    // Write out new image set
-	    ImageIO.write(yImgU, "jpg", new File("yEdgeU.jpg"));
-	    ImageIO.write(yImgD, "jpg", new File("yEdgeD.jpg"));
-	    ImageIO.write(xImgL, "jpg", new File("xEdgeL.jpg"));
-	    ImageIO.write(xImgR, "jpg", new File("xEdgeR.jpg"));
+	   //ImageIO.write(yImgU, "jpg", new File("yEdgeU.jpg"));
+	    //ImageIO.write(yImgD, "jpg", new File("yEdgeD.jpg"));
+	    //ImageIO.write(xImgL, "jpg", new File("xEdgeL.jpg"));
+	    //ImageIO.write(xImgR, "jpg", new File("xEdgeR.jpg"));
 	} catch (IOException e) {
 	    e.printStackTrace();
 	}
+	*/
     }
 
-    
+ 
 
     private static BufferedImage detectGreen(BufferedImage img, int thresh) {
 

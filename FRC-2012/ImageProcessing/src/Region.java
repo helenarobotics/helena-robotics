@@ -78,12 +78,34 @@ public class Region {
     }
 
 
+
+    /* 
+     * Method to calculate a tight enclosing polygon for each hoop.
+     * Input: a thresholded grayscale image, ostensibly optimized to highlight pixels occupied with 
+     *  FRC reflective tape when illuminated with LED right.  
+     * Applies a two-pass least mean squares line fit: the first pass fits to all leading points, the 2nd
+     *  after outlier removal; a qsort algorithm orders the points by resulting error, and a large fraction 
+     *  (currently 1/2) of the data points - those with the lowest fit errors -- are used for the 2nd pass.
+     *  This makes it much more robust to gaps, including those created at top, bottom, and sides from loose
+     *  fitting of enclosing rectangle from which the algorithm begins.
+     *
+     *  returns a java.awt.Polygon containing the four hoop corners, UNLESS a hoop edge is more than 50% occluded;
+     *   in this event, a null is returned.
+     * 
+     *   Note that any pixel > 0 is assumed "on" -- a general grayscale scene would likely create disasterous results.
+     * 
+     *   (We may need to add logic to avoid misinterpreting hoops that are located along edge images.  The "50% rule"
+     *    described above helps, but in some cases an edge can be partially occluded but apparently still visible.
+     *    For example, we could ignore hoops with one or more of their bounding rectangle edges is along the image
+     *    boundary.  TBC).
+     */
+
     public Polygon enclosingPolygon(BufferedImage img) {
 	Rectangle r = enclosingRectangle();
 	dataPoint [] dp = new dataPoint [Math.max(r.width, r.height) + 1];
 
-	int wsearch = r.width / 4;
-	int hsearch = r.height/ 4;
+	int wsearch = r.width / 4;   // search for edge w/in 25% (1/4) of enclosing box;
+	int hsearch = r.height/ 4;   //   (this limit helps avoid outliers)
 
 	// Calculate best line fit to left edge (using thresholded image data)
 	int count = 0;
@@ -96,9 +118,10 @@ public class Region {
 		}
 	    }
 	}
-	double [] resultsLeft = leastSquares(dp, count, count/2);
 	if (count < r.height/2)
-	    resultsLeft = convertMxB((double)r.x, (double)r.y, (double)r.x, (double)(r.y + r.height));
+	    return null;
+	double [] resultsLeft = leastSquares(dp, count, count/2);
+
 
 	// Calculate best line fit to right edge (using thresholded image data)
 	count = 0;
@@ -111,9 +134,9 @@ public class Region {
 		}
 	    }
 	}
-	    double resultsRight [] = leastSquares(dp, count, count/2);
 	if (count < r.height/2)
-	    resultsRight = convertMxB(r.x + r.width, r.y, r.x + r.width, r.y + r.height);
+	    return null;
+	double resultsRight [] = leastSquares(dp, count, count/2);
 
 	// Calculate best line fit to top edge (using thresholded image data)
 	count = 0;
@@ -126,9 +149,9 @@ public class Region {
 		}
 	    }
 	}
-	double resultsTop [] = leastSquares(dp, count, count/2);
 	if (count < r.width/2)
-	    resultsTop = convertMxB(r.x, r.y, r.x + r.width, r.y);
+	    return null;
+	double resultsTop [] = leastSquares(dp, count, count/2);
 
 	// Calculate best line fit to bottom edge (using thresholded image data)
 	count = 0;
@@ -142,9 +165,9 @@ public class Region {
 		}
 	    }
 	}
-	    double resultsBottom [] = leastSquares(dp, count, count/2);
-	    if (count < r.width/2)
-		resultsBottom = convertMxB(r.x, r.y + r.height, r.x + r.width, r.y + r.height);
+	if (count < r.width/2)
+	    return null;
+	double resultsBottom [] = leastSquares(dp, count, count/2);
 
 
 	// Now find the four points of intersection
@@ -168,6 +191,7 @@ public class Region {
 	return p;
     }
 
+
     private double [] convertMxB(double x1, double y1, double x2, double y2) {
 	double m = (y2 - y1) / (x2 - x1);
 	double b = y2 - m * x2;
@@ -183,19 +207,22 @@ public class Region {
 	return (new Point2D.Double(x, x * m1 + b1));
     }
 
-    // Simple least squares linear fit algorithm.  Returns a 2-long array of doubles, the first (slot [0]) of which 
-    // represents m, 2nd b, in the familiar line equation y = mx + b
+    /* 
+     * Two-pass least squares algorith.  First pass estimates a line, sorts the results by residual error (on point-by-point basis), 
+     *  removes high-error points, and re-estimates.
+     */
 
     private double [] leastSquares(dataPoint dp [], int n, int keep) {
-	leastSquares(dp, n);
-	quickSort(dp, 0, n-1);
-	/*	System.out.println("Errors after sorting: ");
-	for (int i = 0; i < n; i++) {
-	    System.out.print(" {" + (int)dp[i].x + "," + (int)dp[i].y + "}=" + dp[i].err);
-	}
-	*/
-	return (leastSquares(dp, keep));
+
+	leastSquares(dp, n);        // first pass -- use all data
+	quickSort(dp, 0, n-1);      // sort by residual error
+
+	return (leastSquares(dp, keep));    // recalculate with 'keep' lowest error data points; return
     }
+
+
+    // Simple least squares linear fit algorithm.  Returns a 2-long array of doubles, the first (slot [0]) of which 
+    // represents m, 2nd b, in the familiar line equation y = mx + b
 
     private double [] leastSquares(dataPoint dp [], int n) {
 
@@ -229,7 +256,7 @@ public class Region {
 	}
 
 	// print results
-	System.out.println("y   = " + beta1 + " * x + " + beta0 + " std err " + Math.sqrt(err2/(double)n));
+	//	System.out.println("y   = " + beta1 + " * x + " + beta0 + " std err " + Math.sqrt(err2/(double)n));
 
 	double result [] = new double [2];
 	result[0] = beta1;

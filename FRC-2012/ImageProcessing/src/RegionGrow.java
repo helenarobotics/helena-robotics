@@ -18,12 +18,16 @@ public class RegionGrow {
 	image = _image;
 	minSize = _minSize;
 	minNeighbors = _minNeighbors;
-	/*
-	BufferedImage tmp = deepCopy(image);  // copy
-		for (Region region = grow(tmp, minSize); region != null; regions.add(region)) {
-	    System.out.println("Found region " + region);
+	regions = new Vector<Region> (10);
+
+	// Copy the image file -- this algorithm will trash the original
+	BufferedImage tmp = deepCopyGrayscale(image);
+	Region region;
+
+	while ((region = grow(tmp, minNeighbors, minSize)) != null) {
+	    regions.add(region);
+	    //	    System.out.println("Found region " + region);
 	}
-	*/
     }
 
 
@@ -31,7 +35,7 @@ public class RegionGrow {
     public Region grow(BufferedImage img, int minNeighhors, int minSize) {
 
 	int [][] dirs = {{-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}};
-	WritableRaster raster = image.getRaster();
+	WritableRaster raster = img.getRaster();
 	Region region = new Region();
 
 	for (int x = 0; x < img.getWidth(); x++) {
@@ -41,7 +45,7 @@ public class RegionGrow {
 		    boolean stuck = false;
 		    int dirIndex = 0;
 		    int npoints = 0;
-		    System.out.print('\n' + "Region from {" + x + ", " + y + "}");
+		    //		    System.out.print('\n' + "Region from {" + x + ", " + y + "}");
 		    while (!stuck) {
 			if (npoints > 100000)  // XXX hack to avoid 1 infiite loop.
 			    return region;
@@ -51,9 +55,9 @@ public class RegionGrow {
 			    raster.setSample(ix, iy, 0, 0);
 			    dirIndex = 0;      // always begin looking in NW direction
 			    npoints++;
-			    if ((npoints % 10) == 0)
-				System.out.println();
-			    System.out.print(" {" + ix + ", " + iy + "}");
+			    //			    if ((npoints % 10) == 0)
+			    //			System.out.println();
+			    //			    System.out.print(" {" + ix + ", " + iy + "}");
 			    ix += dirs[dirIndex][0];
 			    iy += dirs[dirIndex][1];
 			}
@@ -66,7 +70,7 @@ public class RegionGrow {
 				iy += dirs[dirIndex][1];
 			    }
 			    else { // find a new start point
-				System.out.print("\nStuck at (" + ix + ", " + iy + ") ");
+				//	System.out.print("\nStuck at (" + ix + ", " + iy + ") ");
 				stuck = true;
 				dirIndex = 0;
 				for (int ir = 0; ir < region.size(); ir++) {
@@ -74,7 +78,7 @@ public class RegionGrow {
 				    //				    System.out.print("(" + p.x + ", " + p.y + ") ");
 				    Point lit = litNeighbor(img, p.x, p.y);
 				    if (lit != null) {
-					System.out.println("[UNSTUCK AT (" + lit.x + ", " + lit.y + ")] ");
+					//System.out.println("[UNSTUCK AT (" + lit.x + ", " + lit.y + ")] ");
 					ix = lit.x;
 					iy = lit.y;
 					stuck = false;
@@ -84,9 +88,10 @@ public class RegionGrow {
 			    }
 			}
 		    }
-		    System.out.println("Finished at (" + ix + ", " + iy + ") npoints = " + npoints);
+		    System.out.println("Found new region that ends at (" + ix + ", " + iy + ") npoints = " + npoints);
 		    if (region.size() >= minSize)
 			return region;
+		    else return null;
 		}
 	    }
 	}
@@ -106,7 +111,7 @@ public class RegionGrow {
 		    if ((y >= 0) && (y < img.getHeight())) {
 			if (!((x == ix) && (y == iy)))        // don't count center pixl
 			    if ((img.getRGB(x, y) & 0x000000ff) > 0) {
-				System.out.print("(" + x + "," + y + ")");
+				//				System.out.print("(" + x + "," + y + ")");
 				count++;
 			    }
 		    }
@@ -114,8 +119,6 @@ public class RegionGrow {
 	    }
 	}
 
-	if (count > 0)
-	    System.out.println();
 	return count;
     }
 
@@ -138,10 +141,31 @@ public class RegionGrow {
 	return null;
     }
 
-    private static BufferedImage deepCopy(BufferedImage bi) {
-        ColorModel cm = bi.getColorModel();
-        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-        WritableRaster raster = bi.copyData(null);
-        return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+    private static BufferedImage deepCopyGrayscale(BufferedImage img) {
+
+	 BufferedImage out = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+
+	 WritableRaster o = out.getRaster();
+	 Raster r = img.getData();
+
+	 int [] buffer  = new int [1];
+	 int [] pixel = new int [1];
+
+	 for (int x = 0; x < out.getWidth(); x++){
+	     for (int y = 0; y < out.getHeight(); y++){
+		 pixel = r.getPixel(x, y, buffer);
+		 int val = pixel[0];
+		 o.setSample(x, y, 0, val);
+	     }
+	 }
+	 return out;
+    }
+
+    public String toString() {
+	String str = "Region enclosing rectangles: ";
+	for (int i = 0; i < regions.size(); i++) {
+	    str = str + '\n' + "  " + i + ": " + regions.elementAt(i);
+	}
+	return str;
     }
 }
