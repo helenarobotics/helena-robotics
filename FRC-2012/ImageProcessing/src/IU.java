@@ -54,7 +54,7 @@ public class IU {
 
 		    BufferedImage image = ImageIO.read(new File(filepath));
 		    EdgeDetect edges = new EdgeDetect(image, 80);
-		    RegionGrow RG = new RegionGrow(edges.thresholdedImage, 2, 200);
+		    RegionGrow RG = new RegionGrow(edges.thresholdedImage, 200);
 		    System.out.println(RG);
 
 		    // Create color image from original input image.  We'll overlay HT lines and line segments.
@@ -83,7 +83,7 @@ public class IU {
 			// Write image with box overlays
 			ImageIO.write(cimage, "jpg", new File(outdir + slash + filename.substring(0, filename.length()-4) + "-overlay.jpg"));
 		    }
-		    //		    ImageIO.write(edges.thresholdedImage, "jpg", new File(filename + "-thresholded.jpg"));
+		    ImageIO.write(edges.thresholdedImage, "jpg", new File(filename.substring(0, filename.length()-4) + "-thresholded.jpg"));
 		} catch (IOException e) {
 		    e.printStackTrace();
 		}

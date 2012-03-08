@@ -14,17 +14,16 @@ public class RegionGrow {
     int minSize;
     int minNeighbors;
 
-    public RegionGrow(BufferedImage _image, int _minNeighbors, int _minSize) {
+    public RegionGrow(BufferedImage _image, int _minSize) {
 	image = _image;
 	minSize = _minSize;
-	minNeighbors = _minNeighbors;
 	regions = new Vector<Region> (10);
 
 	// Copy the image file -- this algorithm will trash the original
 	BufferedImage tmp = deepCopyGrayscale(image);
 	Region region;
 
-	while ((region = grow(tmp, minNeighbors, minSize)) != null) {
+	while ((region = grow(tmp, minSize)) != null) {
 	    regions.add(region);
 	    //	    System.out.println("Found region " + region);
 	}
@@ -32,20 +31,20 @@ public class RegionGrow {
 
 
     // works only on thresholded grayscale
-    public Region grow(BufferedImage img, int minNeighhors, int minSize) {
+    public Region grow(BufferedImage img, int minSize) {
 
 	int [][] dirs = {{-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}};
 	WritableRaster raster = img.getRaster();
-	Region region = new Region();
 
 	for (int x = 0; x < img.getWidth(); x++) {
 	    for (int y = 0; y < img.getHeight(); y++) {
 		if ((img.getRGB(x, y) & 0x000000ff) > 0) {
+		    Region region = new Region();           // start a new region
 		    int ix = x, iy = y;
 		    boolean stuck = false;
 		    int dirIndex = 0;
 		    int npoints = 0;
-		    //		    System.out.print('\n' + "Region from {" + x + ", " + y + "}");
+		    //		    System.out.print('\n' + "Region starting at {" + x + ", " + y + "}");
 		    while (!stuck) {
 			if (npoints > 100000)  // XXX hack to avoid 1 infiite loop.
 			    return region;
@@ -89,14 +88,13 @@ public class RegionGrow {
 			}
 		    }
 		    //		    System.out.println("Found new region that ends at (" + ix + ", " + iy + ") npoints = " + npoints);
-		    if (region.size() >= minSize)
+		    if (region.size() >= minSize)           // if it's big enough 'to keep', return it; else keep looking
 			return region;
-		    else return null;
 		}
 	    }
 	}
 
-	return null;      // for situation where we find no lit pixels at all.
+	return null;      // we reach this point iff the thresholded image is blank -- this is, all regions found & reported (and erased)
     }
 
     static int neighborCount(BufferedImage img, int ix, int iy) {
