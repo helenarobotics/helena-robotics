@@ -7,7 +7,6 @@
 
 #include <Wire.h>
 
-const int MAX_COUNT = 5;
 class HallSensor {
 private:
   int sensorPort;
@@ -41,11 +40,11 @@ void HallSensor::addRevolution() {
 void HallSensor::calculateRPM(double diffTime) {
   // XXX - Handle overflow?
   if (diffTime > 0) {
-    // rpm = rotations / time in micro-seconds * 1000000 ms/s * 60 sec
+    // rpm = (rotations / utime) * 1000 * 1000 * 60 [usecs in a minute]
     int new_rpm = (int)((double)count / diffTime * 1000000 * 60);
 
-    // Update the rpm using a bias to smooth it out (learning rate = .8)
-    rpm = new_rpm * .8 + rpm * .2;
+    // Update the rpm using a bias to smooth it out (learning rate = 0.01)
+    rpm = rpm * 0.99 + new_rpm * 0.01;
   }
   // Disable interrupts while we change the count so that we don't end
   // up with corrupted count values.
@@ -125,7 +124,7 @@ void loop() {
   if ((++loopCounter % 10) == 0) {
     Serial.print("DT");
     Serial.println(diffTime);
-    Serial.print("RPM 1 value: " );
+    Serial.print("RPM 1 value: ");
     Serial.println(hs1->getRPM());
     Serial.print("RPM 2 value: ");
     Serial.println(hs2->getRPM());
