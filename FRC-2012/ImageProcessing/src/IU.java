@@ -58,14 +58,13 @@ public class IU {
 		    Graphics2D g2 = cimage.createGraphics();
 		    for (int ir = 0; ir < RG.regions.size(); ir++) {
 			Region region = RG.regions.elementAt(ir);
-			/*			Polygon p = new Polygon();
+			Polygon p = new Polygon();
 			Rectangle r = region.enclosingRectangle();
 			p.addPoint(r.x, r.y);
 			p.addPoint(r.x + r.width, r.y);
 			p.addPoint(r.x + r.width, r.y + r.height);
 			p.addPoint(r.x, r.y + r.height);
 			g2.drawPolygon(p);
-			*/
 
 			Polygon p2 = region.enclosingPolygon(edges.thresholdedImage);
 			if (p2 != null)

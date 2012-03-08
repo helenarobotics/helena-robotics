@@ -3,6 +3,17 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.geom.*;
 import java.awt.Polygon;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
+import java.awt.image.Raster;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import javax.imageio.ImageIO;
+
+import java.io.File;
+import java.io.IOException;
+import java.awt.*;
+
 
 public class Region {
 
@@ -40,44 +51,6 @@ public class Region {
 	return new Rectangle(minX, minY, (maxX - minX), (maxY - minY));
     }
 
-    public Polygon enclosingPolygon2(BufferedImage img) {
-	Rectangle r = enclosingRectangle();
-
-	Line2D.Double left = squeeze(img, 1, 0, new Line2D.Double((double)r.x, (double)r.y, (double)r.x, (double) (r.y + r.height)));
-	Line2D.Double right = squeeze(img, -1, 0, new Line2D.Double((double)(r.x + r.width), (double)r.y,
-								    (double)(r.x + r.width), (double) (r.y + r.height)));
-	Line2D.Double top = squeeze(img, 0, 1, new Line2D.Double((double)r.x, (double)r.y, 
-								 (double)(r.x + r.width), (double) r.y));
-	Line2D.Double bottom = squeeze(img, 0, -1, new Line2D.Double((double)r.x, (double)(r.y + r.height), 
-								     (double)(r.x + r.width), (double) (r.y + r.height)));
-	    
-	// Now find the four points of intersection
-	Point2D.Double leftTop = Corner.intersectingPoint(left, top);
-	Point2D.Double rightTop = Corner.intersectingPoint(right, top);
-	Point2D.Double leftBottom = Corner.intersectingPoint(left, bottom);
-	Point2D.Double rightBottom = Corner.intersectingPoint(right, bottom);
-
-	System.out.println("Top left corner at     " + (int)leftTop.x + ", " +  (int)leftTop.y);
-	System.out.println("Top right corner at    " + (int)rightTop.x + ", " +  (int)rightTop.y);
-	System.out.println("Bottom right corner at " + (int)rightBottom.x + ", " +  (int)rightBottom.y);
-	System.out.println("Bottom left corner at " +  (int)leftBottom.x + ", " +  (int)leftBottom.y);
-
-	Polygon p = new Polygon();
-
-	p.addPoint((int) leftTop.x, (int) leftTop.y);
-	p.addPoint((int) rightTop.x, (int) rightTop.y);
-	p.addPoint((int) rightBottom.x, (int) rightBottom.y);
-	p.addPoint((int) leftBottom.x, (int) leftBottom.y);
-
-	return p;
-    }
-
-    static Line2D.Double squeeze(BufferedImage img, int xdir, int ydir, Line2D.Double line) {
-	// Let's just return the original line to get started...
-	return (new Line2D.Double(line.x1, line.y1, line.x2, line.y2));
-    }
-
-
 
     /* 
      * Method to calculate a tight enclosing polygon for each hoop.
@@ -101,7 +74,19 @@ public class Region {
      */
 
     public Polygon enclosingPolygon(BufferedImage img) {
+
+	// for debugging
+	BufferedImage cimage = new BufferedImage(img.getWidth(), img.getHeight(),  BufferedImage.TYPE_INT_RGB);
+	Graphics g = cimage.getGraphics();  
+	g.drawImage(img, 0, 0, null);
+
 	Rectangle r = enclosingRectangle();
+
+	int red = new Color(255, 0, 0).getRGB(); 
+	int grn = new Color(0, 255, 0).getRGB(); 
+	int blu = new Color(0, 0, 255).getRGB(); 
+	int pur = new Color(255, 0, 255).getRGB(); 
+
 	dataPoint [] dp = new dataPoint [Math.max(r.width, r.height) + 1];
 
 	int wsearch = r.width / 4;   // search for edge w/in 25% (1/4) of enclosing box;
@@ -112,7 +97,7 @@ public class Region {
 	for (int y = r.y; y < r.y + r.height; y++) {
 	    for (int x = r.x; x < r.x + wsearch; x++) {
 		if ((img.getRGB(x, y) & 0x000000ff) > 0) {
-		    dp[count] = new dataPoint(x, y);
+		    dp[count] = new dataPoint(y, x);
 		    count++;
 		    break;
 		}
@@ -120,23 +105,36 @@ public class Region {
 	}
 	if (count < r.height/2)
 	    return null;
-	double [] resultsLeft = leastSquares(dp, count, count/2);
+	double [] resultsLeft = leastSquares(dp, count, 2*count/3);
+	// debug
+	for (int i = 0; i < 2*count/3; i++) {
+	    int x = (int)dp[i].x;
+	    int y = (int)dp[i].y;
+	    cimage.setRGB(y, x, red);
+	}
 
 
 	// Calculate best line fit to right edge (using thresholded image data)
 	count = 0;
 	for (int y = r.y; y < r.y + r.height; y++) {
-	    for (int x = r.x + r.width; x >=  r.x + (r.width - wsearch); x--) {
+	    for (int x = r.x + r.width; x >  r.x + (r.width - wsearch); x--) {
 		if ((img.getRGB(x, y) & 0x000000ff) > 0) {
-		    dp[count] = new dataPoint(x, y);
+		    //    dp[count] = new dataPoint(x, y);
+		    dp[count] = new dataPoint(y, x);
 		    count++;
 		    break;
 		}
 	    }
 	}
-	if (count < r.height/2)
-	    return null;
-	double resultsRight [] = leastSquares(dp, count, count/2);
+	//	if (count < r.height/8)
+	//  return null;
+	double resultsRight [] = leastSquares(dp, count, 2*count/3);
+	// debug
+	for (int i = 0; i < 2*count/3; i++) {
+	    int x = (int)dp[i].x;
+	    int y = (int)dp[i].y;
+	    cimage.setRGB(y, x, red); 
+	}
 
 	// Calculate best line fit to top edge (using thresholded image data)
 	count = 0;
@@ -151,7 +149,13 @@ public class Region {
 	}
 	if (count < r.width/2)
 	    return null;
-	double resultsTop [] = leastSquares(dp, count, count/2);
+	double resultsTop [] = leastSquares(dp, count, 2*count/3);
+	// debug
+	for (int i = 0; i < 2*count/3; i++) {
+	    int x = (int)dp[i].x;
+	    int y = (int)dp[i].y;
+	    cimage.setRGB(x, y, red); 
+	}
 
 	// Calculate best line fit to bottom edge (using thresholded image data)
 	count = 0;
@@ -167,7 +171,19 @@ public class Region {
 	}
 	if (count < r.width/2)
 	    return null;
-	double resultsBottom [] = leastSquares(dp, count, count/2);
+	double resultsBottom [] = leastSquares(dp, count, 3*count/4);
+	// debug
+	for (int i = 0; i < 3*count/4; i++) {
+	    int x = (int)dp[i].x;
+	    int y = (int)dp[i].y;
+	    cimage.setRGB(x, y, red); 
+	}
+
+	try {
+	    ImageIO.write(cimage, "jpg", new File("edgeoverlay.jpg"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
 
 	// Now find the four points of intersection
@@ -202,10 +218,21 @@ public class Region {
 	return result;
     }
 
+    // Expects m2, b2 to come from eqn x = m2 * y + b2;
+    //  while m1 and b1 eqn y = m1 * x + b1
+
     static Point2D.Double intersectingPoint(double m1, double b1, double m2, double b2) {
+	double y = (m1 * b2 + b1) / (1.0 - m1 * m2);
+	double x = m2 * y + b2;
+	//	System.out.println("Intersection at " + (int)x + ", " + y);
+	return (new Point2D.Double(x, y));
+    }
+
+    /*    static Point2D.Double intersectingPoint(double m1, double b1, double m2, double b2) {
 	double x = (b2 - b1) / (m1 - m2);   // x at point of intersection (if they intersect!)
 	return (new Point2D.Double(x, x * m1 + b1));
     }
+    */
 
     /* 
      * Two-pass least squares algorith.  First pass estimates a line, sorts the results by residual error (on point-by-point basis), 
@@ -228,11 +255,15 @@ public class Region {
 
 	double sumx = 0.0, sumx2 = 0.0, sumy = 0;
 
+	//	System.out.println("Data into leastSquares: (" + n + " points)");
 	for (int i = 0; i < n; i++) {
 	    sumx  += dp[i].x;
 	    sumx2 += dp[i].x * dp[i].x;
 	    sumy  += dp[i].y;
+	    // debug
+	    //  System.out.print("{" + (int)dp[i].x + "," + (int)dp[i].y + "}:" + (int)dp[i].err + " ");
 	}
+	//	System.out.println();
 
 	double xbar = sumx / n;
 	double ybar = sumy / n;
@@ -255,7 +286,7 @@ public class Region {
 	    err2 += dp[i].err;
 	}
 
-	// print results
+	// debug - print results
 	//	System.out.println("y   = " + beta1 + " * x + " + beta0 + " std err " + Math.sqrt(err2/(double)n));
 
 	double result [] = new double [2];
