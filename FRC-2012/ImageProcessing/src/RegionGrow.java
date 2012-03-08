@@ -88,7 +88,7 @@ public class RegionGrow {
 			    }
 			}
 		    }
-		    System.out.println("Found new region that ends at (" + ix + ", " + iy + ") npoints = " + npoints);
+		    //		    System.out.println("Found new region that ends at (" + ix + ", " + iy + ") npoints = " + npoints);
 		    if (region.size() >= minSize)
 			return region;
 		    else return null;
