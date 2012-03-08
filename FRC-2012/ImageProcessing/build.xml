@@ -46,13 +46,22 @@
   </target>
 
   <target name="image" depends="compile">
-    <java classname="JavaImage" fork="true"
+    <java classname="IU" fork="true"
       failonerror="true" inputstring="">
       <classpath>
         <path refid="proj.classpath"/>
       </classpath>
-      <arg line="testimages/10Feet.jpg"/>
-      <arg line="testimages/10ft2.jpg"/>
+      <arg line="testimages imageout"/>
+    </java>
+  </target>
+
+  <target name="hough" depends="compile">
+    <java classname="HoughTransform" fork="true"
+      failonerror="true" inputstring="">
+      <classpath>
+        <path refid="proj.classpath"/>
+      </classpath>
+      <arg line="testimages/testfile.jpg"/>
     </java>
   </target>
 
