@@ -31,10 +31,10 @@ public class IU {
 
 	if (children == null) {
 	    System.err.println("Can't access input directory " + args[0]);
-	    System.exit (-2);
+	    System.exit (-2);       // punt
 	} else {
 
-	    // Filter files on *.jpg
+	    // Filter files on *.jpg file extension
 	    FilenameFilter filter = new FilenameFilter() {
 		    public boolean accept(File dir, String name) {
 			return name.endsWith(".jpg");
@@ -52,24 +52,23 @@ public class IU {
 		    System.out.println("processing file '" + filename + "'");
 
 		    BufferedImage image = ImageIO.read(new File(filepath));
-		    EdgeDetect edges = new EdgeDetect(image, 80);
-		    RegionGrow RG = new RegionGrow(edges.thresholdedImage, 200);
 
-		    System.out.println(RG);
+		    // This constructor does all the image processing work: color match, threshold, region growing, and region boundary analysis
+		    RegionGrow RG = new RegionGrow(image, 80, 200);     // 80 = image threshold, 200 = min region size (in pixels)
+		    System.out.println(RG);    // debug: report out regions we found
 
-		    // Create color image from original input image.  We'll overlay HT lines and line segments.
+		    // Create color image from original input image.  We'll overlay region boundaries, crosshairs, etc
 		    BufferedImage cimage = new BufferedImage(image.getWidth(), image.getHeight(),  BufferedImage.TYPE_INT_RGB);
 		    Graphics g = cimage.getGraphics();  
 		    g.drawImage(image, 0, 0, null);
 
-		    //draw bounding rectangles
-		    if (RG.regions != null) {
-			RG.drawRegions(cimage);
-		    }
+		    //draw bounding rectangles, polygons
+		    RG.drawRegions(cimage);
 
 		    // Write image with box overlays
 		    ImageIO.write(cimage, "jpg", new File(outdir + slash + filename.substring(0, filename.length()-4) + "-overlay.jpg"));
-		    ImageIO.write(edges.thresholdedImage, "jpg", new File(filename.substring(0, filename.length()-4) + "-thresholded.jpg"));
+		    ImageIO.write(RG.thresholdedImage, "jpg", new File(filename.substring(0, filename.length()-4) + "-thresholded.jpg"));
+
 		} catch (IOException e) {
 		    e.printStackTrace();
 		}
