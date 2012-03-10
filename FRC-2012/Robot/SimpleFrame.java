@@ -13,30 +13,30 @@ public class SimpleFrame extends SimpleRobot {
     private Solenoid shifter;
 
     // Shooter
-    private Victor shooterMotor;
-
-    // Accelerometer
-    DIMUAccel accel;
+    private Shooter shooter;
 
     SimpleFrame() {
+        super();
         System.out.println("Starting SimpleFrame");
+
+        // Initialize the drive train
         leftMotor = new Victor(1);
         rightMotor = new Victor(2);
-        shooterMotor = new Victor(3);
-        disabled();
+        leftMotor.set(0);
+        rightMotor.set(0);
 
         // Setup the transmission shifter.
         shifter = new Solenoid(1);
         shifter.set(true);
 
-        // Initialize the accelerometer
-        accel = new DIMUAccel(1);
+        // Initialize the shooter
+        shooter = new Shooter(3, 4);
     }
 
     protected void disabled() {
         leftMotor.set(0);
         rightMotor.set(0);
-        shooterMotor.set(0);
+        shooter.disable();
     }
 
     /**
@@ -45,14 +45,15 @@ public class SimpleFrame extends SimpleRobot {
     public void autonomous() {
         System.out.println("No Autonomous mode code");
     }
+
     /**
-     * This function is called once each time the robot enters operator control.
+     * This function is called once each time the robot enters operator
+     * control.
      */
     public void operatorControl() {
         System.out.println("Starting operatorControl");
 
         Joystick driveStick = new Joystick(1);
-        Joystick shootStick = new Joystick(2);
         RobotDrive drive = new RobotDrive(leftMotor, rightMotor);
 
         drive.setInvertedMotor(RobotDrive.MotorType.kFrontLeft, false);
@@ -71,13 +72,10 @@ public class SimpleFrame extends SimpleRobot {
             joystickShifter(driveStick);
 
             // Read the throttle to determine the speed of the shooter
-            // motor.  The throttle goes from -1.0 <-> 1.0, but we only
-            // want the values 0 -> 1.0.  (We change the sign since
-            // the motor is hooked up backward).
-            shooterMotor.set(-(shootStick.getThrottle() + 1.0)/ 2.0);
-
-            // Print out the Z-Axis of the accelerometer.
-            System.out.println(accel.getCurrentAccel(DIMUAccel.Z_AXIS));
+            // motor and convert it to a number between 0 and 1 and use
+            // it to set the RPM of the shooter.
+            double throttle = (1.0 + driveStick.getThrottle()) / 2.0;
+            shooter.setRPM(throttle * Shooter.MAX_RPM);
         }
     }
 
