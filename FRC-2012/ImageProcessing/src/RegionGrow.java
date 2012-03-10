@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.awt.image.Raster;
+import java.awt.Rectangle;
 
 
 public class RegionGrow {
@@ -24,9 +25,11 @@ public class RegionGrow {
 	Region region;
 
 	while ((region = grow(tmp, minSize)) != null) {
+	    region.finish(image);       // calculates and saves rect and tight polygon boundaries, etc.
 	    regions.add(region);
 	    //	    System.out.println("Found region " + region);
 	}
+	labelHoops();
     }
 
 
@@ -158,6 +161,162 @@ public class RegionGrow {
 	 }
 	 return out;
     }
+
+    //    public enum HoopLocation { unknown, left, top, right, bottom };
+
+    public void labelHoops() {
+
+	Region highest = null, lowest = null, rightmost = null, leftmost = null;
+
+	// Pick out the top 4 (largest, in this case) regions as candidate hoops.
+	// Looking for equality of size might be better; dunno.
+
+	Region [] sorted = new Region [this.regions.size()];
+
+	// fill array with regions for analysis.  We need to add logic to pick "the best 4", rather than the first.
+
+
+	for (int i = 0; i < this.regions.size(); i++) {
+	    sorted[i] = this.regions.elementAt(i);
+	}
+
+	// Pick largest four regions (measured by area of their enclosig rectangle)
+	quickSortByArea(sorted, 0, this.regions.size() - 1);
+
+	int nregions = Math.min(4, this.regions.size());
+
+	// note that y dimension is flipped; {0, 0} pixel index sits in upper left corner of the image
+
+	for (int i = 0; i < nregions; i++) {
+	    Region region = sorted[i];
+	    if ((highest == null) || (region.enclosingRectangle.y < highest.enclosingRectangle.y))
+		highest = region;
+	    if ((lowest == null) || (region.enclosingRectangle.y + region.enclosingRectangle.height > lowest.enclosingRectangle.y + lowest.enclosingRectangle.height))   
+	        lowest = region;
+	    if ((rightmost == null) || (region.enclosingRectangle.x + region.enclosingRectangle.width > rightmost.enclosingRectangle.x + rightmost.enclosingRectangle.width))
+		rightmost = region;
+	    if ((leftmost == null) || (region.enclosingRectangle.x < leftmost.enclosingRectangle.x))
+		leftmost = region;
+	}
+
+	//	System.out.println("labelRegiones: rightmost = " + rightmost + "leftmost = " + leftmost + " highest = " + highest + " lowest " + lowest);
+
+	// This could use some add'l logic to sort out bad regions, and insure that we're looking at no more than 4 hoops
+	// (in case of false detection)
+
+	switch (nregions) {
+
+	case 1:             
+	    // if we see only one region, we have no way to know which it is
+	    sorted[0].hoopLocation = Region.HoopLocation.unknown;
+	    break;
+
+	case 2:
+	    // if same height, must be side-by-side.  Determine which is left v right.
+	    if (sorted[0].sameElevation(sorted[1])) {
+		leftmost.hoopLocation = Region.HoopLocation.left;
+		rightmost.hoopLocation = Region.HoopLocation.right;
+	    } else if (sorted[0].sameAzimuth(sorted[1])) {
+		highest.hoopLocation =  Region.HoopLocation.top;
+		lowest.hoopLocation =  Region.HoopLocation.bottom;
+	    }
+	    else { // we can't tell -- ambiguous between (left & bottom) and (top and right)
+		sorted[0].hoopLocation = sorted[1].hoopLocation = Region.HoopLocation.unknown;
+	    }
+	    break;
+
+	case 3:
+	    if (highest.isAbove(leftmost) && highest.isAbove(rightmost)) {
+		highest.hoopLocation = Region.HoopLocation.top;
+		if (leftmost.isLeftOf(highest))
+		    leftmost.hoopLocation = Region.HoopLocation.left;
+		else if (leftmost.sameAzimuth(highest))
+		    leftmost.hoopLocation = Region.HoopLocation.bottom;
+		if (rightmost.isRightOf(highest))
+		    rightmost.hoopLocation = Region.HoopLocation.right;
+		else if (rightmost.sameAzimuth(highest))
+		    rightmost.hoopLocation = Region.HoopLocation.bottom;
+	    }
+	    else if (highest.isLeftOf(lowest)) {
+		highest.hoopLocation = Region.HoopLocation.left;
+		lowest.hoopLocation = Region.HoopLocation.bottom;
+		rightmost.hoopLocation = Region.HoopLocation.right;
+	    }
+	    else if (highest.isRightOf(lowest)) {
+		highest.hoopLocation = Region.HoopLocation.right;
+		lowest.hoopLocation = Region.HoopLocation.bottom;
+		leftmost.hoopLocation = Region.HoopLocation.left;
+	    }
+	    else if (highest.sameAzimuth(lowest)) {
+		highest.hoopLocation = Region.HoopLocation.top;
+		lowest.hoopLocation = Region.HoopLocation.bottom;
+		if (rightmost.isRightOf(highest)) 
+		    rightmost.hoopLocation = Region.HoopLocation.right;
+		else if (leftmost.isLeftOf(highest))
+		    leftmost.hoopLocation = Region.HoopLocation.left;
+	    }
+	    else System.err.println("Bad labeling logic!");
+	    break;
+
+	case 4:
+	    highest.hoopLocation = Region.HoopLocation.top;
+	    lowest.hoopLocation = Region.HoopLocation.bottom;
+	    leftmost.hoopLocation = Region.HoopLocation.left;
+	    rightmost.hoopLocation = Region.HoopLocation.right;
+	    break;
+	}
+    }
+
+
+    //Quick Sort code for JAVA, by Yash Gupta
+    // (Rebuilt by Arnold to sort class type dataPoint
+
+private int partition(Region arr[], int left, int right){
+	int i = left, j = right;
+
+	Region tmp;
+	double pivot = arr[(left + right) / 2].getArea();
+	while (i <= j)
+	    {
+		while (arr[i].getArea() > pivot)
+		    i++;
+		while (arr[j].getArea() < pivot)
+		    j--;
+		if (i <= j)
+		    {
+			tmp = arr[i];
+			arr[i] = arr[j];
+			arr[j] = tmp;
+			i++;
+			j--;
+		    }
+	    };
+	return i;
+    }
+
+
+    // Sorts Regions by area by area, descending.
+
+    private void quickSortByArea(Region arr[], int left, int right)  {
+
+	if (right <= left)        //  watch out for  case of zero-length vector
+	    return;
+
+	int index = partition(arr, left, right);
+	if (left < index - 1)
+            quickSortByArea(arr, left, index - 1);
+	if (index < right)
+            quickSortByArea(arr, index, right);
+    }
+
+    public void drawRegions(BufferedImage cimage) {
+
+	for (int ir = 0; ir < this.regions.size(); ir++) {
+	    this.regions.elementAt(ir).drawEnclosingPolygon(cimage);
+	    this.regions.elementAt(ir).drawEnclosingRectangle(cimage);
+	}
+    }
+	
 
     public String toString() {
 	String str = "Region enclosing rectangles: ";
