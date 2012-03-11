@@ -65,6 +65,10 @@ public class IU {
 		    //draw bounding rectangles, polygons
 		    RG.drawRegions(cimage);
 
+		    // draw crosshairs -- location we expect ball to hit at current thrower wheel speed and distance
+		    // (just for demonstration purposes now -- we need to calculate actual distance and thrower speed)
+		    drawCrosshairs(cimage, cimage.getWidth()/2.0, cimage.getHeight() * 0.30);
+
 		    // Write image with box overlays
 		    ImageIO.write(cimage, "jpg", new File(outdir + slash + filename.substring(0, filename.length()-4) + "-overlay.jpg"));
 		    ImageIO.write(RG.thresholdedImage, "jpg", new File(filename.substring(0, filename.length()-4) + "-thresholded.jpg"));
@@ -74,6 +78,21 @@ public class IU {
 		}
 	    }
 	}
+    }
+
+    static void drawCrosshairs(BufferedImage image, double x, double y) {
+	double scale = Math.min(image.getWidth(), image.getHeight()) / 15.0;
+	double d = scale * 1.5;
+
+	Graphics2D g2 = image.createGraphics();
+	g2.setColor(Color.red);
+
+	Shape circle = new Ellipse2D.Double(x - scale, y - scale, 2.0*scale, 2.0*scale);
+	g2.draw(circle);
+	Line2D lin1 = new Line2D.Double(x - d, y, x + d, y);
+        g2.draw(lin1);
+	Line2D lin2 = new Line2D.Double(x, y-d, x, y+d);
+        g2.draw(lin2);
     }
 }
 
