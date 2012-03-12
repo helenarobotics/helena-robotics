@@ -11,21 +11,25 @@ import java.awt.Rectangle;
 
 public class RegionGrow {
     public Vector<Region> regions;
-    BufferedImage image;
-    int minSize;
-    int minNeighbors;
+    BufferedImage thresholdedImage;    // color-detected and thresholded image we keep.
+    int threshold;                     // pixel threshold for on/off after color detection
+    int minSize;                       // minimum acceptable pixel count in grown regions (remove and ignore anything smaller)
 
-    public RegionGrow(BufferedImage _image, int _minSize) {
-	image = _image;
-	minSize = _minSize;
+    public RegionGrow(BufferedImage image, int _threshold, int _minSize) {
+        minSize = _minSize;
 	regions = new Vector<Region> (10);
+	threshold = _threshold;
+	thresholdedImage = detectGreen(image, threshold);
 
-	// Copy the image file -- this algorithm will trash the original
-	BufferedImage tmp = deepCopyGrayscale(image);
 	Region region;
 
-	while ((region = grow(tmp, minSize)) != null) {
-	    region.finish(image);       // calculates and saves rect and tight polygon boundaries, etc.
+	// Note that 'grow' zero's out pixels after they've been grouped. We'll need the original
+	// later for geometry calculations (polygon in particular), so create and use a throw-away copy
+
+	BufferedImage tmp = deepCopyGrayscale(thresholdedImage);
+
+	while ((region = grow(tmp)) != null) {
+	    region.finish(thresholdedImage);       // calculates and saves rect and tight polygon boundaries, etc.
 	    regions.add(region);
 	    //	    System.out.println("Found region " + region);
 	}
@@ -33,8 +37,41 @@ public class RegionGrow {
     }
 
 
+    private static BufferedImage detectGreen(BufferedImage img, int thresh) {
+
+	 BufferedImage green = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+	 WritableRaster raster = green.getRaster();
+
+	 for (int x = 0; x < img.getWidth(); x++){
+	     for (int y = 0; y < img.getHeight(); y++){
+		 int rgb[] = getPixelData(img, x, y);
+		 int pixelValue = rgb[1] - (rgb[0] + rgb[2])/2;
+		 //   if (pixelValue > 255) pixelValue = 255;
+		 // else if (pixelValue < 0) pixelValue = 0;
+		 if (pixelValue >= thresh)
+		     pixelValue = 255;
+		 else pixelValue = 0;
+		 raster.setSample(x, y, 0, pixelValue);
+	     }
+	 }
+	 return (green);
+    }
+
+
+    private static int[] getPixelData(BufferedImage img, int x, int y) {
+        int argb = img.getRGB(x, y);
+
+        int rgb[] = new int[] {
+            (argb >> 16) & 0xff, //red
+            (argb >>  8) & 0xff, //green
+            (argb      ) & 0xff  //blue
+        };
+        return rgb;
+    }
+
+
     // works only on thresholded grayscale
-    public Region grow(BufferedImage img, int minSize) {
+    public Region grow(BufferedImage img) {
 
 	int [][] dirs = {{-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}};
 	WritableRaster raster = img.getRaster();

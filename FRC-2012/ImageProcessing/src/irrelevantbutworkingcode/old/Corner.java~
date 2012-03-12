@@ -74,7 +74,8 @@ public class Corner extends Thread {
 	    verticalError = distance(new Point2D.Double(verticalLine.x1, verticalLine.y1), intersection);
 	    horizontalError = distance(new Point2D.Double(horizontalLine.x1, horizontalLine.y1), intersection);
 
-	    if ((verticalError > maxError) || (horizontalError > maxError))
+	    if ((verticalError > maxError * length(verticalLine)) || 
+		(horizontalError > maxError * length(horizontalLine)))
 		cornerType = CornerLocation.none;
 	    else {
 		// Now figure out the orientation of the lines to determine CornerType
@@ -131,6 +132,9 @@ public class Corner extends Thread {
     }
 	
 		
+    static double length(Line2D.Double line) {
+	return (Math.sqrt((line.x1 - line.x2) * (line.x1 - line.x2) + (line.y1 - line.y2) * (line.y1 - line.y2)));
+    }
 	
     static double distance(Point2D.Double p1, Point2D.Double p2) {
 	return (Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)));
@@ -261,7 +265,7 @@ public class Corner extends Thread {
 	    y2 = y1;
 	    break;
 	}
-	System.out.println("Corner.draw: " + x0 + ", " + y0);
+	//	System.out.println("Corner.draw: " + x0 + ", " + y0);
 	p.addPoint(x0, y0);
 	p.addPoint(x1, y1);
 	p.addPoint(x2, y2);

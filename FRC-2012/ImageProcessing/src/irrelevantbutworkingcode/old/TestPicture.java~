@@ -1,4 +1,3 @@
-
 import java.io.File;
 import java.io.IOException;
 
@@ -14,7 +13,7 @@ import java.awt.Graphics;
 import javax.imageio.ImageIO;
 
 
-public class TestImage {
+public class TestPicture {
 
     static int width = 320; 
     static int height = 240;
@@ -25,11 +24,29 @@ public class TestImage {
 
 	img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY); 
 
-	// Top rectangle
-	drawrect(width/2 - 40, 20, 80, 60);
+	int rw = 40;
+	int rh = (rw*3)/4;
 
-	// lower rectangle
-	//	drawrect(width/2 - 40, height - 20 - 60, 80, 60);
+	//	drawline(100, height/2, rw);
+	//drawline(200, height/2, rw);
+	//drawline(300, height/2, rw);
+	//drawline(400, height/2, rw);
+
+	//drawline(120, height/2+30, rw);
+	drawline(180, height/2+30, rw);
+
+	// Top-center rectangle
+	//	drawrect((width - rw)/2, rh/2, rw, rh);
+
+
+	// lower-center rectangle
+        //drawrect((width - rw)/2, height - rh - rh/2, rw, rh);
+
+	// left-middle rectangle
+        //drawrect(rw, (height - rh)/2, rw, rh);
+
+	// right-middle rectangle
+        //drawrect(width - 2*rw, (height - rh)/2, rw, rh);
 
 	try {
 	    ImageIO.write(img, "jpg", new File("testfile.jpg"));
@@ -41,12 +58,24 @@ public class TestImage {
     }
 
 
+    static void drawline(int x0, int y0, int height) {
+	WritableRaster o = img.getRaster();
+
+	// vertical lines
+
+	for (int y = y0; y < y0+height; y++) {
+	    writePixel(o, x0, y, 255);
+	    System.out.print("{" + x0 + ", " + y + "} ");
+	}
+    }
+
+
     static void drawrect(int x0, int y0, int width, int height) {
 
 	WritableRaster o = img.getRaster();
 
-	// draw sides of a rectangle
 	// vertical lines
+
 	for (int y = y0; y < y0 + height; y++){
 	    writePixel(o, x0, y, 255);
 	    writePixel(o, x0 + width, y, 255);

@@ -10,7 +10,7 @@ public class Boxes extends Thread {
 
     }
 
-    double maxError = 20.0;
+    double maxError = 0.20;     // measured as fraction of segment length (e.g., 20%)
     Vector<Box> boxes;
     Vector<Corner> bcorners;     // for debugging only -- we can kill this later
 
@@ -50,7 +50,7 @@ public class Boxes extends Thread {
 		    break;
 		}
 		if (c.cornerType != Corner.CornerLocation.none) {
-		    //		    System.out.println("Corner: " + c);
+		    System.out.println("Corner: " + c);
 		    this.bcorners.add(c);
 		}
 	    }
@@ -73,24 +73,23 @@ public class Boxes extends Thread {
 
 	    for (int i = 0; i < ur.size(); i++) {
 		urc = ur.elementAt(i);
-		//		System.out.println("Looking at UR box " + ur);
+		System.out.println("Looking at UR box..." + ur);
 		if (ulc.shareLine(urc)) {
 		    b.addCorner(urc);
-		    //		    System.out.println("Starting with UR " + b);
 
 		    for (int j = 0; j < lr.size(); j++) {
 			lrc = lr.elementAt(j);
-			//  System.out.println("Looking at LR box " + lrc);
+			System.out.print("Looking at LR box... " + lrc);
 			if (urc.shareLine(lrc)) {
 			    b.addCorner(lrc);
-			    //			    System.out.println("addingd LR " + b);
+			    System.out.println("addingd LR..");
 			    
 			    for (int k = 0; k < ll.size(); k++) {
 				llc = ll.elementAt(k);
-				// System.out.println("Looking at LL box " + ulc);
+				System.out.println("Looking at LL ... " + ulc);
 				if (lrc.shareLine(llc) && ulc.shareLine(llc)) {
 				    b.addCorner(llc);
-				    //				    System.out.println("finishing with  LL " + b);
+				    System.out.println("finished with  LL " + b);
 				    found = true;
 				    break;
 				}
