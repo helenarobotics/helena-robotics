@@ -73,7 +73,7 @@ void loop() {
   // the Hall Sensor to calculate RPM.
   double currTime = micros();
   hs1->calculateRPM(currTime - prevTime);
-  hs1->calculateRPM(currTime - prevTime);
+  hs2->calculateRPM(currTime - prevTime);
   double diffTime = currTime - prevTime;
   prevTime = currTime;
 
