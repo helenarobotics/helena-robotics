@@ -9,7 +9,7 @@
 #include "HallSensor.h"
 
 // Define to enable debugging
-// #defined DEBUG 1
+// #define DEBUG 1
 
 //
 // The I2C Slave code
@@ -72,9 +72,9 @@ void loop() {
   // Calculate how much time has elapsed, and pass it to
   // the Hall Sensor to calculate RPM.
   double currTime = micros();
-  hs1->calculateRPM(currTime - prevTime);
-  hs2->calculateRPM(currTime - prevTime);
   double diffTime = currTime - prevTime;
+  hs1->calculateRPM(diffTime);
+  hs2->calculateRPM(diffTime);
   prevTime = currTime;
 
 #if defined(DEBUG)
