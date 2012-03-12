@@ -8,6 +8,9 @@
 #include <Wire.h>
 #include "HallSensor.h"
 
+// Define to enable debugging
+// #defined DEBUG 1
+
 //
 // The I2C Slave code
 //
@@ -27,8 +30,10 @@ byte sendData[6];
 double prevTime;
 
 void setup() {
+#if defined(DEBUG)
   Serial.begin(115200);
   Serial.println("Starting RPM Sensor...");
+#endif
 
   // By default, assume the first sensor
   requestedSensor = 1;
@@ -72,6 +77,7 @@ void loop() {
   double diffTime = currTime - prevTime;
   prevTime = currTime;
 
+#if defined(DEBUG)
   // Roughly once/sec print out the calculated RPM
   if ((++loopCounter % 10) == 0) {
     Serial.print("DT");
@@ -81,6 +87,7 @@ void loop() {
     Serial.print("RPM 2 value: ");
     Serial.println(hs2->getRPM());
   }
+#endif
   delay(25);
 }
 
