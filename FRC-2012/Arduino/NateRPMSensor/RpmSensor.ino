@@ -1,61 +1,12 @@
 /****
  * RPM Sensor
- * This program uses a reed switch or hall sensor to measure the RPM
- * of a wheel (or any rotating object) and sends the data over an I2C
- * Connection. The Arduino acts as a slave on the I2C bus.
+ * This program uses the HallSensor code (which measures the RPM of a
+ * wheel or other rotating object).  The Arduino acts as a slave on the
+ * I2C bus and sends the data to any master that requests the data.
  ****/
 
 #include <Wire.h>
-
-class HallSensor {
-private:
-  int sensorPort;
-  int ledPort;
-  int count;
-  int rpm;
-public:
-  HallSensor(int, int);
-  void addRevolution();
-  void calculateRPM(double diffTime);
-  int getRPM();
-};
-
-HallSensor::HallSensor(int _sensorPort, int _ledPort) {
-  sensorPort = _sensorPort;
-  ledPort = _ledPort;
-
-  pinMode(sensorPort, INPUT);
-  pinMode(ledPort, OUTPUT);
-
-  count = 0;
-  rpm = 0;
-}
-
-void HallSensor::addRevolution() {
-  // toggle output led
-  digitalWrite(ledPort, !digitalRead(ledPort));
-  count++;
-}
-
-void HallSensor::calculateRPM(double diffTime) {
-  // XXX - Handle overflow?
-  if (diffTime > 0) {
-    // rpm = (rotations / utime) * 1000 * 1000 * 60 [usecs in a minute]
-    int new_rpm = (int)((double)count / diffTime * 1000000 * 60);
-
-    // Update the rpm using a bias to smooth it out (learning rate = 0.01)
-    rpm = rpm * 0.99 + new_rpm * 0.01;
-  }
-  // Disable interrupts while we change the count so that we don't end
-  // up with corrupted count values.
-  cli();
-  count = 0;
-  sei();
-}
-
-int HallSensor::getRPM() {
-  return rpm;
-}
+#include "HallSensor.h"
 
 //
 // The I2C Slave code
@@ -65,6 +16,7 @@ int HallSensor::getRPM() {
 const int I2C_ADDRESS = 0xCA;
 const int SENSOR_REGISTER = 0x00;
 
+// Sensor information
 int requestedSensor;
 HallSensor *hs1, *hs2;
 
@@ -129,7 +81,7 @@ void loop() {
     Serial.print("RPM 2 value: ");
     Serial.println(hs2->getRPM());
   }
-  delay(100);
+  delay(25);
 }
 
 // Determine which sensor is being requested.
