@@ -462,21 +462,24 @@ private int partition(dataPoint arr[], int left, int right){
 	g2.drawPolygon(p);
 	g2.drawPolygon(p2);
 
+	double ft = FieldGeometry.estimateRange(this) / 12.0;
+	String distance = (int) ft + "." + (int)((ft - (int)ft) * 10.0) + "ft";
+
 	// now put a label on
 	switch (this.hoopLocation) {
 	case unknown:
 	    break;
 	case left: 
-	    g2.drawString("Left", r.x + r.width/2, r.y + r.height/2);
+	    g2.drawString("Left " + distance, r.x + r.width/4, r.y + r.height/2);
 	    break;
 	case right:
-	    g2.drawString("Right", r.x + r.width/2, r.y + r.height/2);
+	    g2.drawString("Right " + distance, r.x + r.width/4, r.y + r.height/2);
 	    break;
 	case top:
-	    g2.drawString("Top", r.x + r.width/2, r.y + r.height/2);
+	    g2.drawString("Top " + distance, r.x + r.width/4, r.y + r.height/2);
 	    break;
 	case bottom:
-	    g2.drawString("Bottom", r.x + r.width/2, r.y + r.height/2);
+	    g2.drawString("Bottom " + distance, r.x + r.width/16, r.y + r.height/2);
 	    break;
 	}
     
