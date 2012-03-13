@@ -245,6 +245,22 @@ public class Region {
 
 	enclosingPolygon = p;     // save this result in case anyone asks again...
 
+	double dx = leftTop.x - leftBottom.x;
+	double dy = leftTop.y - leftBottom.y;
+	double leftside = Math.sqrt(dx*dx + dy*dy);
+
+	dx = rightTop.x - rightBottom.x;
+	dy = rightTop.y - rightBottom.y;
+	double rightside = Math.sqrt(dx*dx + dy*dy);
+
+	/*	String str = "right";
+	if (rightside < leftside)
+	    str = "left";
+	System.out.println("left/right ratio = " + leftside / rightside + " " + 
+			   + (180.0 / Math.PI) * Math.acos(Math.min(rightside, leftside)
+							   / Math.max(rightside, leftside))
+			   + " degrees " + str + " from center");
+	*/
 	return p;
     }
 
@@ -325,14 +341,6 @@ public class Region {
 	return (result);
     }
 	
-
-    public String toString() {
-	Rectangle e = getEnclosingRectangle();
-	int xc = e.x + e.width/2;
-	int yc = e.y + e.height/2;
-	return (hoopLocation + " centers on {" + xc + ", " + yc + "} width = " + e.width + ", height = " + e.height);
-    }
-
 
     private class dataPoint {
 	double x, y, err;
@@ -471,8 +479,8 @@ private int partition(dataPoint arr[], int left, int right){
 	    g2.drawString("Bottom", r.x + r.width/2, r.y + r.height/2);
 	    break;
 	}
-    }
-
+    
+}
     public void drawEnclosingPolygon(BufferedImage cimage) {
 	Polygon p2 = this.getEnclosingPolygon();
 	if (p2 != null) {
@@ -481,6 +489,29 @@ private int partition(dataPoint arr[], int left, int right){
 	    g2.drawPolygon(p2);
 	}
 	else System.out.println("Ignoring substantially occluded hoop");
+    }
+
+
+    public String toString() {
+	Polygon  p = getEnclosingPolygon();
+	String str;
+
+	if (p == null) {
+	    Rectangle r = getEnclosingRectangle();
+	    str = " " + hoopLocation + " top left at {" + r.x + ", " + r.y + "} bottom right at {" + 
+		+ r.x + r.width + ", " + r.x + r.height + "}";
+	}
+	else {
+	    double ft = FieldGeometry.estimateRange(this) / 12.0;
+	    int ft10 = (int)((ft - (int)ft) * 10.0);
+	    
+	    // , top left at {" + p.xpoints[0] + ", " + p.ypoints[0] + "} bottom right at {" + 
+	    //		+ p.xpoints[2] + ", " + p.xpoints[2] + "}";
+	    str = " " + hoopLocation + " Range = " + (int) ft + "." + ft10 + "ft";
+	    str = str + ", yvalue of top middle = " + (p.ypoints[0] + p.ypoints[1])/2.0;
+	}
+
+	return (str);
     }
 }
 

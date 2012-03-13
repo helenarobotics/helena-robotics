@@ -7,7 +7,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.awt.image.Raster;
 import java.awt.Rectangle;
-
+import java.awt.Polygon;
 
 public class RegionGrow {
     public Vector<Region> regions;
@@ -353,12 +353,64 @@ private int partition(Region arr[], int left, int right){
 	    this.regions.elementAt(ir).drawEnclosingRectangle(cimage);
 	}
     }
-	
+
+    public Region getHoop(Region.HoopLocation hl) {
+	for (int i = 0; i < regions.size(); i++) {
+	    Region r = regions.elementAt(i);
+	    if (r.hoopLocation == hl)
+		return r;
+	}
+	return null;
+    }
+
+    // find the best hoop for estimating range (highest).  At this point we rely on hoops that
+    // are completely visible -- no occlusions, and thus with enclosing polygons.  We can relax
+    // this to include the visible tops or bottoms of hoops (FOR LATER)
+
+    public Region getHighestVisibleHoop() {
+	Region hoop = getTopHoop();
+	if ((hoop != null) && (hoop.getEnclosingPolygon() != null))
+	    return (hoop);
+	hoop = getRightHoop();
+	if ((hoop != null) && (hoop.getEnclosingPolygon() != null))
+	    return (hoop);
+	hoop = getLeftHoop();
+	if ((hoop != null) && (hoop.getEnclosingPolygon() != null))
+	    return (hoop);
+	hoop = getBottomHoop();
+	if ((hoop != null) && (hoop.getEnclosingPolygon() != null))
+	    return (hoop);
+
+	return null;
+    }
+
+
+    public Region getTopHoop()	{
+	return (getHoop(Region.HoopLocation.top));
+    }
+
+    public Region getLeftHoop()	{
+	return (getHoop(Region.HoopLocation.left));
+    }
+
+    public Region getRightHoop()	{
+	return (getHoop(Region.HoopLocation.right));
+    }
+
+    public Region getBottomHoop()	{
+	return (getHoop(Region.HoopLocation.bottom));
+    }
+
+    public Region getUnknownHoop()	{
+	return (getHoop(Region.HoopLocation.unknown));
+    }
+
+
 
     public String toString() {
-	String str = "Region enclosing rectangles: ";
+	String str = "";
 	for (int i = 0; i < regions.size(); i++) {
-	    str = str + '\n' + "  " + i + ": " + regions.elementAt(i);
+	    str = str + " " + i + ":  " + regions.elementAt(i) + '\n';
 	}
 	return str;
     }
