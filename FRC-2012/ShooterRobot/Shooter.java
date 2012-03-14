@@ -57,7 +57,7 @@ public class Shooter {
         boolean shooting;
 
         BallFeeder() {
-            launcher = new Servo(1, 8);
+            launcher = new Servo(Configuration.SERVO_SHOOTER_FEEDER);
             shooting = false;
 
             Thread t = new Thread("BallFeed");
@@ -102,16 +102,16 @@ public class Shooter {
 
     public Shooter() {
         // Initialize the motors
-        lowerMotor = new Victor(3);
-        upperMotor = new Victor(4);
+        lowerMotor = new Victor(Configuration.VICTOR_LOWER_SHOOTER);
+        upperMotor = new Victor(Configuration.VICTOR_UPPER_SHOOTER);
         lowerMotor.set(0);
         upperMotor.set(0);
 
         // Initialize the RPM sensor.
-        rpmSensor = new ArduinoRPMSensor(1);
+        rpmSensor = new ArduinoRPMSensor(Configuration.I2C_ARDUINO);
 
         // Setup the rotationMotor
-        rotationMotor = new Jaguar(6);
+        rotationMotor = new Jaguar(Configuration.JAGUAR_SHOOTER_ROTATION);
         rotationMotor.set(0);
 
         // Finally, the ball feeder

@@ -16,8 +16,8 @@ public class ShooterRobot extends SimpleRobot {
 
     ShooterRobot() {
         System.out.println("Starting ShooterRobot");
-        leftMotor = new Victor(1);
-        rightMotor = new Victor(2);
+        leftMotor = new Victor(Configuration.VICTOR_LEFT_DRIVE);
+        rightMotor = new Victor(Configuration.VICTOR_RIGHT_DRIVE);
         leftMotor.set(0);
         rightMotor.set(0);
 
@@ -48,10 +48,10 @@ public class ShooterRobot extends SimpleRobot {
         System.out.println("Starting operatorControl");
 
         // Drive control is done with the first joystick
-        Joystick driveStick = new Joystick(1);
+        Joystick driveStick = new Joystick(Configuration.JOYSTICK_DRIVER);
 
         // The shooter is controlled with the second joystick
-        Joystick shootStick = new Joystick(2);
+        Joystick shootStick = new Joystick(Configuration.JOYSTICK_SHOOTER);
 
         // Setup the drive system to move the robot!
         RobotDrive drive = new RobotDrive(leftMotor, rightMotor);
