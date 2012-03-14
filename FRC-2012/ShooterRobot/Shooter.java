@@ -131,18 +131,21 @@ public class Shooter {
         if (joystickTrigger(joy))
             feeder.shootBall();
 
+        // Toggle between 'PID' and raw throttle control for the shooter
+        // motors (debugging).
+        joystickRpm(joy);
+
         // Read the throttle to determine the speed of the shooter motor
         // and convert it to a number between 0 and 1.  Use that number
         // to set the RPM of the shooter.
-        double throttle = (1.0 + joy.getThrottle()) / 2.0;
-        setRPM(throttle * Shooter.MAX_RPM);
+        setRPM((1.0 + joy.getThrottle()) / 2.0);
     }
 
     private static final int TRIGGER_BTN = 1;
     private boolean wasTrigPressed = false;
     private boolean joystickTrigger(Joystick joy) {
         boolean btnPressed = false;
-        // Toggle the shifter when the shifter button is pressed
+        // Toggle when the button is pressed
         boolean nowPressed = joy.getRawButton(TRIGGER_BTN);
         if (nowPressed && !wasTrigPressed) {
             btnPressed = true;
@@ -152,12 +155,43 @@ public class Shooter {
         return btnPressed;
     }
 
-    private void setRPM(double rpm) {
+    // Toggle between PID and straight throttle control for the shooter
+    // motor speeds
+    private boolean rawThrottle = true;
+    private boolean wasRpmPressed = false;
+    private static final int RPM_BTN = 2;
+    private void joystickRpm(Joystick joy) {
+        boolean btnPressed = false;
+        // Toggle when the button is pressed
+        boolean nowPressed = joy.getRawButton(RPM_BTN);
+        if (nowPressed && !wasRpmPressed) {
+            rawThrottle = !rawThrottle;
+            if (!rawThrottle) {
+                // Re-enable the PID controls
+                lowerPID.enable();
+                upperPID.enable();
+            } else {
+                // Disable PID
+                lowerPID.disable();
+                upperPID.disable();
+            }
+        }
+        wasRpmPressed = nowPressed;
+    }
+
+    private void setRPM(double power) {
         // Give the upper motor a 5% slower rate than the upper motor.
         // In reality the speed is less than that since the upper motor
         // has a larger pulley on the shooter, but we'll give it a bit
         // more delta here.
-        lowerPID.setSetpoint(rpm);
-        upperPID.setSetpoint(rpm * UPPER_BIAS);
+        if (rawThrottle) {
+            lowerMotor.set(power);
+            upperMotor.set(power * UPPER_BIAS);
+        } else {
+            // Use PID control
+            double rpm = power * MAX_RPM;
+            lowerPID.setSetpoint(rpm);
+            upperPID.setSetpoint(rpm * UPPER_BIAS);
+        }
     }
 }
