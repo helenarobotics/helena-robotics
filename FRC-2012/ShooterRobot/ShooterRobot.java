@@ -42,7 +42,7 @@ public class ShooterRobot extends SimpleRobot {
     /**
      * This function is called once each time the robot enters operator
      * control.
-     * 
+     *
      */
     public void operatorControl() {
         System.out.println("Starting operatorControl");

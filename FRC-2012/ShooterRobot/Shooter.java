@@ -20,7 +20,7 @@ public class Shooter {
 
     // Ball Feeder
     private BallFeeder feeder;
-    
+
     // RPM maxspeed (helps the PID controller)
     private static final double MAX_RPM = 2000.0;
 

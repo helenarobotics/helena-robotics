@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.parsing.ISensor;
 
 /**
  * This Class communicates with Chris Ching's Arduino RPM Sensor
- * 
+ *
  * @author Nathan Williams, March 2012
  * @version 0.2
  */
