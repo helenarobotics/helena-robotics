@@ -369,16 +369,16 @@ private int partition(Region arr[], int left, int right){
 
     public Region getHighestVisibleHoop() {
 	Region hoop = getTopHoop();
-	if ((hoop != null) && (hoop.getEnclosingPolygon() != null))
+	if ((hoop != null) && (hoop.topEdge != null))
 	    return (hoop);
 	hoop = getRightHoop();
-	if ((hoop != null) && (hoop.getEnclosingPolygon() != null))
+	if ((hoop != null) && (hoop.topEdge != null))
 	    return (hoop);
 	hoop = getLeftHoop();
-	if ((hoop != null) && (hoop.getEnclosingPolygon() != null))
+	if ((hoop != null) && (hoop.topEdge != null))
 	    return (hoop);
 	hoop = getBottomHoop();
-	if ((hoop != null) && (hoop.getEnclosingPolygon() != null))
+	if ((hoop != null) && (hoop.topEdge != null))
 	    return (hoop);
 
 	return null;
