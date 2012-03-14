@@ -139,15 +139,15 @@ public class Shooter {
     }
 
     private static final int TRIGGER_BTN = 1;
-    private boolean wasPressed = false;
+    private boolean wasTrigPressed = false;
     private boolean joystickTrigger(Joystick joy) {
         boolean btnPressed = false;
         // Toggle the shifter when the shifter button is pressed
         boolean nowPressed = joy.getRawButton(TRIGGER_BTN);
-        if (nowPressed && !wasPressed) {
+        if (nowPressed && !wasTrigPressed) {
             btnPressed = true;
         }
-        wasPressed = nowPressed;
+        wasTrigPressed = nowPressed;
 
         return btnPressed;
     }
