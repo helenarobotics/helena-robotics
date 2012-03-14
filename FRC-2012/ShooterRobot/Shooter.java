@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSource;
-import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Victor;
 
 public class Shooter {
@@ -45,60 +44,6 @@ public class Shooter {
     private static final double UPPER_KI = 0.0;
     private static final double UPPER_KD = 0.0;
     private static final double UPPER_TOLERANCE = 10.0;
-
-    // This is the BallFeed mechanism, which shoots the ball by dropping
-    // the servo for a set period of time which allows the ball to be
-    // fed into the shooter.
-    private class BallFeeder implements Runnable {
-        final float HOLD_POS = 60;
-        final float LAUNCH_POS = 360;
-
-        Servo launcher;
-        boolean shooting;
-
-        BallFeeder() {
-            launcher = new Servo(Configuration.SERVO_SHOOTER_FEEDER);
-            shooting = false;
-
-            Thread t = new Thread("BallFeed");
-            t.start();
-        }
-
-        public void run() {
-            while (true) {
-                // We always start holding the ball.
-                launcher.setAngle(HOLD_POS);
-
-                // Wait for the shoot command.
-                synchronized (this) {
-                    while (!shooting) {
-                        try {
-                            this.wait();
-                        } catch (InterruptedException ignored) {
-                        }
-                    }
-                }
-                // Drop the synchronization lock and shoot a ball.
-                // Drop the gate for a bit, and then loop to the top
-                // which bring it back up.
-                launcher.setAngle(LAUNCH_POS);
-                try {
-                    Thread.sleep(250);
-                } catch (InterruptedException ignored) {
-                }
-            }
-        }
-
-        void shootBall() {
-            synchronized (this) {
-                // Ignore requests if we're already shooting
-                if (!shooting) {
-                    shooting = true;
-                    this.notify();
-                }
-            }
-        }
-    }
 
     public Shooter() {
         // Initialize the motors
