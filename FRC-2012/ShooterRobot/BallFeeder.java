@@ -24,6 +24,7 @@ class BallFeeder implements Runnable {
         while (true) {
             // We always start holding the ball.
             launcher.setAngle(SERVO_HOLD_POS);
+            DataLogger.shooting = false;
 
             // Wait for the shoot command.
             synchronized (this) {
@@ -38,6 +39,7 @@ class BallFeeder implements Runnable {
             // Drop the gate for a bit, and then loop to the top
             // which bring it back up.
             launcher.setAngle(SERVO_LAUNCH_POS);
+            DataLogger.shooting = true;
             try {
                 Thread.sleep(250);
             } catch (InterruptedException ignored) {

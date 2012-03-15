@@ -65,7 +65,11 @@ public class Shooter {
         // Initialize the setup for the lower PID controller
         PIDSource lowerRPM = new PIDSource() {
                 public double pidGet() {
-                    return rpmSensor.getRPM(ArduinoRPMSensor.BOTTOM_MOTOR);
+                    double btmRPM =
+                        rpmSensor.getRPM(ArduinoRPMSensor.BOTTOM_MOTOR);
+                    System.out.println("BtmRPM=" + btmRPM);
+                    DataLogger.rpmBottom = btmRPM;
+                    return btmRPM;
                 }
             };
         PIDOutput lowerMotorCtl = new PIDOutput() {
@@ -76,8 +80,11 @@ public class Shooter {
 
                 public void pidWrite(double output) {
                     double newVal = previousValue + output;
+                    System.out.println(
+                        "BtmPow=" + newVal + ", Change=" + output);
                     lowerMotor.set(newVal);
                     previousValue = newVal;
+                    DataLogger.powerBottom = newVal;
                 }
             };
         lowerPID = new PIDController(LOWER_KP, LOWER_KI, LOWER_KD,
@@ -93,7 +100,11 @@ public class Shooter {
         // Initialize the setup for the lower PID controller
         PIDSource upperRPM = new PIDSource() {
                 public double pidGet() {
-                    return rpmSensor.getRPM(ArduinoRPMSensor.TOP_MOTOR);
+                    double topRPM =
+                        rpmSensor.getRPM(ArduinoRPMSensor.TOP_MOTOR);
+                    System.out.println("TopRPM=" + topRPM);
+                    DataLogger.rpmTop = topRPM;
+                    return topRPM;
                 }
             };
         PIDOutput upperMotorCtl = new PIDOutput() {
@@ -104,8 +115,11 @@ public class Shooter {
 
                 public void pidWrite(double output) {
                     double newVal = previousValue + output;
+                    System.out.println(
+                        "TopPow=" + newVal + ", Change=" + output);
                     upperMotor.set(newVal);
                     previousValue = newVal;
+                    DataLogger.powerTop = newVal;
                 }
             };
         upperPID = new PIDController(UPPER_KP, UPPER_KI, UPPER_KD,

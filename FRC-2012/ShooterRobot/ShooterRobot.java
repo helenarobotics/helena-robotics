@@ -3,16 +3,19 @@ package robotics.helena;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SimpleRobot;
-//import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Victor;
 
 public class ShooterRobot extends SimpleRobot {
     private Victor leftMotor;
     private Victor rightMotor;
-//    private Solenoid shifter;
+    private Solenoid shifter;
 
     // Shooter
     private Shooter shooter;
+
+    // Gyro
+    private GyroSensor gyro;
 
     ShooterRobot() {
         System.out.println("Starting ShooterRobot");
@@ -24,6 +27,9 @@ public class ShooterRobot extends SimpleRobot {
         // Setup the transmission shifter.
 //        shifter = new Solenoid(1);
 //        shifter.set(true);
+
+        // The gyro
+//        gyro = new GyroSensor(Configuration.GYRO_ANALOG_CHANNEL, 100);
 
         // Initialize the shooter
         shooter = new Shooter();
@@ -72,9 +78,12 @@ public class ShooterRobot extends SimpleRobot {
                 // sensitivity at lower speeds.
                 drive.arcadeDrive(driveStick, true);
             }
+                
             // Shift the transmission when the button is pressed
-            if (joystickTrigger(driveStick))
+            if (joystickTrigger(driveStick)) {
 //                shifter.set(!shifter.get());
+//                DataLogger.shifterStatus = shifter.get();
+            }
 
             // Control the shooter with the second joystick.
             shooter.joystickControl(shootStick);

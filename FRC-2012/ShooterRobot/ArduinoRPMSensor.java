@@ -49,7 +49,6 @@ public class ArduinoRPMSensor extends I2C implements ISensor {
      */
     public int getRPM(int motorNum) {
         if (motorNum >= 1 && motorNum <= 2) {
-
             // The stock Arduino 1.0 I2C slave code does not handle
             // extended transactions where the Master keeps the bus
             // locked for the entire transaction.  Therefore, we must do
