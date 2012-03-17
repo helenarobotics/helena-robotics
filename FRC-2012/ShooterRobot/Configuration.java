@@ -17,5 +17,8 @@ public class Configuration {
     // I2C bus
     public static final int I2C_ARDUINO = 1;
 
-    // Solenoid slot?
+    // Analog channels
+    public static final int GYRO_ANALOG_CHANNEL = 1;
+
+    // XXX - Solenoid slot?
 }
