@@ -9,7 +9,7 @@ import java.awt.image.Raster;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import javax.imageio.ImageIO;
-
+import javax.vecmath.Point3d;
 import java.io.File;
 import java.io.IOException;
 import java.awt.*;
@@ -19,19 +19,24 @@ public class Region {
 
     public enum HoopLocation { unknown, left, top, right, bottom };
 
-    Vector<Point> points;
+    Vector<Point> points;      // temporary space used while building the region.
     public HoopLocation hoopLocation;
     public Rectangle enclosingRectangle;
+    double range;                 // range = dist from camera to a 3D point located on the hoop (see below)
+    Vector<HoopEstimate> estimates;
     public Line2D.Double leftEdge;
     public Line2D.Double rightEdge;
     public Line2D.Double topEdge;
     public Line2D.Double bottomEdge;
+    Point2D.Double leftTop, rightTop, leftBottom, rightBottom;
 
     public Region() {
 	points = new Vector<Point> (2000);
 	hoopLocation = HoopLocation.unknown;
 	enclosingRectangle = null;
 	leftEdge = rightEdge = topEdge = bottomEdge = null;
+	leftTop = rightTop = leftBottom = rightBottom = null;
+	estimates = new Vector<HoopEstimate>(4);
     }
 
 
@@ -100,70 +105,82 @@ public class Region {
      *  This makes it much more robust to gaps, including those created at top, bottom, and sides from loose
      *  fitting of enclosing rectangle from which the algorithm begins.
      *
-     *  returns a set of four Line2D's containing the four hoop corners, UNLESS a hoop edge is more than 50% occluded;
-     *   in this event, a null is returned.
+     *  Calcuates a set of four Point2D.Double's representing the four hoop corners, as visible (or extrapolated from 
+     *   visible edges)
      * 
      *   Note that any pixel > 0 is assumed "on" -- a general grayscale scene would likely create disasterous results.
      * 
-     *   (We may need to add logic to avoid misinterpreting hoops that are located along edge images.  The "50% rule"
-     *    described above helps, but in some cases an edge can be partially occluded but apparently still visible.
-     *    For example, we could ignore hoops with one or more of their bounding rectangle edges is along the image
-     *    boundary.  TBC).
      */
 
     public void calculateHoopEdges(BufferedImage img) {
 
 	Rectangle r = getEnclosingRectangle();
-
 	dataPoint [] dp = new dataPoint [Math.max(r.width, r.height) + 1];
-
 	double [] resultsRight = null, resultsLeft = null, resultsTop = null, resultsBottom = null;
 
 
 	int wsearch = r.width / 4;   // search for edge w/in 25% (1/4) of enclosing box;
 	int hsearch = r.height/ 4;   //   (this limit helps avoid outliers)
+	double required = 0.5;       // fraction of edge cells that must be visible to consider valid
 
 	// Calculate best line fit to left edge (using thresholded image data)
 	int count = 0;
 	for (int y = r.y; y < r.y + r.height; y++) {
 	    for (int x = r.x; x < r.x + wsearch; x++) {
 		if ((img.getRGB(x, y) & 0x000000ff) > 0) {
-		    dp[count] = new dataPoint(y, x);
-		    count++;
-		    break;
+		    if (x > 0) {      // we only count edge cells that are off the image edge
+			dp[count] = new dataPoint(y, x);
+			count++;
+		    }
+		break;
 		}
 	    }
 	}
-	if (count >= r.height/2)
+
+	if (count >= r.height/2) {
 	    resultsLeft = leastSquares(dp, count, 2*count/3);
+	    //	    System.out.println("Left count = " + count + " (results calculated)");
+	}
+	//	else System.out.println("Left count = " + count);
 
 	// Calculate best line fit to right edge (using thresholded image data)
 	count = 0;
 	for (int y = r.y; y < r.y + r.height; y++) {
 	    for (int x = r.x + r.width; x >  r.x + (r.width - wsearch); x--) {
 		if ((img.getRGB(x, y) & 0x000000ff) > 0) {
-		    //    dp[count] = new dataPoint(x, y);
-		    dp[count] = new dataPoint(y, x);
-		    count++;
+		    if (x < (img.getWidth() - 1)) {
+			dp[count] = new dataPoint(y, x);
+			count++;
+		    }
 		    break;
 		}
 	    }
 	}
-	if (count >= r.height/2)
+
+	if (count >= r.height/2) {
 	    resultsRight = leastSquares(dp, count, 2*count/3);
+	    //	    System.out.println("Right count = " + count + " (results calculated)");
+	}
+	//	else System.out.println("Right count = " + count);
 
 	count = 0;
 	for (int x = r.x; x < r.x + r.width; x++) {
 	    for (int y = r.y; y < r.y + hsearch; y++) {
 		if ((img.getRGB(x, y) & 0x000000ff) > 0) {
-		    dp[count] = new dataPoint(x, y);
-		    count++;
+		    if (y > 0) {
+			dp[count] = new dataPoint(x, y);
+			count++;
+		    }
 		    break;
 		}
 	    }
 	}
-	if (count >= r.width/2)
-	    resultsTop = leastSquares(dp, count, 2*count/3);
+	if (count >= r.width/2) {
+	    resultsTop = leastSquares(dp, count, 2*count/3);	    
+	    //	    System.out.println("Top count = " + count + " (results calculated)");
+	}
+	//	else System.out.println("Top count = " + count);
+
 
 	// Calculate best line fit to bottom edge (using thresholded image data)
 	count = 0;
@@ -171,41 +188,52 @@ public class Region {
 	    int y;
 	    for (y = r.y + r.height; y > r.y + (r.height - hsearch); y--) {
 		if ((img.getRGB(x, y) & 0x000000ff) > 0) {
-		    dp[count] = new dataPoint(x, y);
-		    count++;
+		    if (y < (img.getHeight() - 1)) {
+			dp[count] = new dataPoint(x, y);
+			count++;
+		    }
 		    break;
 		}
 	    }
 	}
-	if (count >= r.width/2)
+	if (count >= r.width/2) {
 	    resultsBottom = leastSquares(dp, count, 2*count/3);
+	    //	        System.out.println("Bottom count = " + count + " (results calculated)");
+	}
+	//       else 	System.out.println("Bottom: count = " + count);
 
-	Point2D.Double leftTop, rightTop, leftBottom, rightBottom;
 
 	// Now find the points of intersection
 
-	if ((resultsTop != null) && (resultsLeft != null))
+	if ((resultsTop != null) && (resultsLeft != null)) {
 	    leftTop = intersectingPoint(resultsTop[0], resultsTop[1], resultsLeft[0], resultsLeft[1]);
+	    //	    System.out.println("leftTop");
+	}
 	else leftTop = null;
 
-	if ((resultsTop != null) && (resultsRight != null))
+	if ((resultsTop != null) && (resultsRight != null)) {
 	    rightTop = intersectingPoint(resultsTop[0], resultsTop[1], resultsRight[0], resultsRight[1]);
+	    //	    System.out.println("rightTop");
+	}
 	else rightTop = null;
 
-	if ((resultsBottom != null) && (resultsLeft != null))
+	if ((resultsBottom != null) && (resultsLeft != null)) {
 	    leftBottom = intersectingPoint(resultsBottom[0], resultsBottom[1], resultsLeft[0], resultsLeft[1]);
+	    //	    System.out.println("leftBottom");
+	}
 	else leftBottom = null;
 
-	if ((resultsBottom != null) && (resultsRight != null))
+	if ((resultsBottom != null) && (resultsRight != null)) {
 	    rightBottom = intersectingPoint(resultsBottom[0], resultsBottom[1], resultsRight[0], resultsRight[1]);
+	    //System.out.println("rightBottom");
+	}
 	else rightBottom = null;
-
-	/*	System.out.println("Top left corner at     " + (int)leftTop.x + ", " +  (int)leftTop.y);
+	/*
+	System.out.println("Top left corner at     " + (int)leftTop.x + ", " +  (int)leftTop.y);
 	System.out.println("Top right corner at    " + (int)rightTop.x + ", " +  (int)rightTop.y);
 	System.out.println("Bottom right corner at " + (int)rightBottom.x + ", " +  (int)rightBottom.y);
 	System.out.println("Bottom left corner at " +  (int)leftBottom.x + ", " +  (int)leftBottom.y);
 	*/
-
 	// Save 4 lines that tightly bound the hoop, where possible.  We set edge pointers to null
 	// where no line could be found (e.g., due to substantial occlusion or off camera FOV
 
@@ -426,10 +454,16 @@ private int partition(dataPoint arr[], int left, int right){
 	g2.drawPolygon(p2);
 
 	String distance = "";
-	double ft = FieldGeometry.estimateRange(this) / 12.0;
-	if (ft > 0.0)
-	    distance = (int) ft + "." + (int)((ft - (int)ft) * 10.0) + "ft";
-
+	if (estimates.size() > 0) {
+	    double sum = 0.0;
+	    for (int i = 0; i < estimates.size(); i++) {
+		HoopEstimate he = estimates.elementAt(i);
+		sum += he.range;
+	    }
+	    double ft = sum / (estimates.size() * 12.0);
+	    if (ft > 0.0)
+		distance = (int) ft + "." + (int)((ft - (int)ft) * 10.0) + "ft";
+	}
 	// now put a label on
 	switch (this.hoopLocation) {
 	case unknown:
@@ -465,7 +499,7 @@ private int partition(dataPoint arr[], int left, int right){
 
     public String toString() {
 
-	String str;
+	String str = "";
 	
 	if ((topEdge == null) && (bottomEdge == null)) {
 	    Rectangle r = getEnclosingRectangle();
@@ -473,15 +507,19 @@ private int partition(dataPoint arr[], int left, int right){
 		+ (r.x + r.width) + ", " + (r.x + r.height) + "}";
 	}
 	else {
-	    double ft = FieldGeometry.estimateRange(this) / 12.0;
-	    int ft10 = (int)((ft - (int)ft) * 10.0);
-	    
-	    // , top left at {" + p.xpoints[0] + ", " + p.ypoints[0] + "} bottom right at {" + 
-	    //		+ p.xpoints[2] + ", " + p.xpoints[2] + "}";
-	    str = " " + hoopLocation + " Range = " + (int) ft + "." + ft10 + "ft";
-	    //	    str = str + ", yvalue of top middle = " + (topEdge.y1 + topEdge.y2)/2.0;
+	    if (estimates.size() > 0) {
+		double sum = 0.0, wgtsum = 0.0;
+		for (int i = 0; i < estimates.size(); i++) {
+		    HoopEstimate he = estimates.elementAt(i);
+		    double wgt = 1.0/he.error;
+		    sum += he.range * wgt;
+		    wgtsum += wgt;
+		}
+		double ft = sum / (wgtsum * 12.0);
+		int ft10 = (int)((ft - (int)ft) * 10.0);
+		str = " " + hoopLocation + " Range = " + (int) ft + "." + ft10 + "ft";
+	    }
 	}
-
 	return (str);
     }
 }

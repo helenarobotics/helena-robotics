@@ -1,6 +1,7 @@
 import java.awt.geom.*;
 import java.awt.Rectangle;
 import java.awt.Polygon;
+import javax.vecmath.Point3d;
 
 //     public enum HoopLocation { unknown, left, top, right, bottom };
 
@@ -15,76 +16,100 @@ public class FieldGeometry {
     public static double cameraTilt = 11.0 * Math.PI/180.0;     // estimated from data set of March 2; we need to nail this down
     public static final double cameraHorizontalView = 54.0 * Math.PI/180.0;
     public static final double cameraVerticalView = 40.5 * Math.PI/180.0;
-    public static int cameraXixels = 320;
+    public static int cameraXpixels = 320;
     public static int cameraYpixels = 240;
 
-
-    static double estimateRange(Region hoop) {
-	// At this point we can only estimate range at known hoop locations
-	if ((hoop == null) || (hoop.hoopLocation == Region.HoopLocation.unknown))
-	    return -1.0;
+    // leftTop, rightTop, leftBottom, rightBottom;
+    static void  estimateRange(Region hoop) {
 	
-	double h = 0.0, mid = 0.0, top = 0.0, bot = 0.0;
+	double top = 0.0, bot = 0.0, left = 0.0, right = 0.0;
+
+	Line2D.Double edge = null;
 
 	switch (hoop.hoopLocation) {
+	case unknown:
+	    return;
 	case left:
-	    top = leftHoop.y - cameraHeight;     // height of left hoop top relative to camera
-	    bot = top - leftHoop.height;         // height of left hoop bottom relative to camera
+	    top = leftHoop.y;
+	    bot = top - leftHoop.height;
+	    left = leftHoop.x;
+	    right = leftHoop.x + leftHoop.width;
 	    break;
 	case right:
-	    top = rightHoop.y - cameraHeight;   // etc.
+	    top = rightHoop.y;
 	    bot = top - rightHoop.height;    
+	    left = rightHoop.x;
+	    right = rightHoop.x + rightHoop.width;
 	    break;
 	case top:
-	    top = topHoop.y - cameraHeight;  
-	    bot = top - topHoop.height;     
+	    top = topHoop.y;
+	    bot = top - topHoop.height;
+	    left = topHoop.x;
+	    right = topHoop.x + topHoop.width;
 	    break;
 	case bottom:
-	    top = bottomHoop.y - cameraHeight;
+	    top = bottomHoop.y;
 	    bot = top - bottomHoop.height;    
+	    left = bottomHoop.x;
+	    right = bottomHoop.x + bottomHoop.width;
+     
 	    break;
 	}
 
+	// Estimate range to 4 corners, as possible
 
-	// Select the hoop edge (top vs. bottom) based first on which is visible, and 
-	// 2nd, to maximize range estimation accuracy,  on which sits at the greatest
-	// distance from the camera height
+	double x, y, h;
 
-	if ((hoop.topEdge != null) && (hoop.bottomEdge != null)) {
-	    if (Math.abs(top) > Math.abs(bot)) {
-		mid = (hoop.topEdge.y1 + hoop.topEdge.y2) / 2.0;
-		h = top; 
-	    } else {
-		mid = (hoop.bottomEdge.y1 + hoop.bottomEdge.y2) / 2.0;
-		h = bot;
-	    }
-	} else if ((hoop.topEdge != null) && (hoop.bottomEdge == null)) {
-	    mid = (hoop.topEdge.y1 + hoop.topEdge.y2) / 2.0;
-	    h = top; 
+	if (hoop.leftTop != null) {
+	    h = top  - cameraHeight;
+	    y = hoop.leftTop.y;
+	    x = hoop.leftTop.x;
+	    HoopEstimate hr = new HoopEstimate();
+	    hr.elevation = (cameraYpixels/2 - y) * cameraVerticalView / cameraYpixels + cameraTilt;
+	    hr.azimuth = x * cameraHorizontalView / cameraXpixels;
+	    hr.rangePoint = new Point3d(left, 0.0, top);      // We need to confirm consistent use of 3D axis: x, y, z
+	    hr.range = Math.abs(h / Math.sin(hr.elevation));   // this might even be correct.
+	    hr.error = Math.abs(h * Math.cos(hr.elevation) * cameraVerticalView / cameraYpixels / (Math.sin(hr.elevation) * Math.sin(hr.elevation)));
+	    hoop.estimates.add(hr);                            // Save for later
 	}
-	else if ((hoop.topEdge == null) && (hoop.bottomEdge != null)) {
-		mid = (hoop.bottomEdge.y1 + hoop.bottomEdge.y2) / 2.0;
-		h = bot;
+
+	if (hoop.rightTop != null) {
+	    y = hoop.rightTop.y;
+	    x = hoop.rightTop.x;
+	    h = top - cameraHeight;
+	    HoopEstimate hr = new HoopEstimate();
+	    hr.elevation = (cameraYpixels/2 - y) * cameraVerticalView / cameraYpixels + cameraTilt;
+	    hr.azimuth = x * cameraHorizontalView / cameraXpixels;
+	    hr.rangePoint = new Point3d(right, 0.0, top);      // We need to confirm consistent use of 3D axis: x, y, z
+	    hr.range = Math.abs(h / Math.sin(hr.elevation));   // this might even be correct.
+	    hr.error = Math.abs(h * Math.cos(hr.elevation) * cameraVerticalView / cameraYpixels / (Math.sin(hr.elevation) * Math.sin(hr.elevation)));
+	    hoop.estimates.add(hr);                            // Save for later
 	}
-	else return -1.0;     // no visible edges -- punt.
-
-    
-	// angle between center of camera view and hoop top.  NB we take the
-	// midppoint of the top line in the enclosing polygon
-
-	double theta = (cameraYpixels/2 - mid) * cameraVerticalView / cameraYpixels;
-	
-	// debug
-	//	System.out.println("estimateRange: " + hoop.hoopLocation + " mid = " + (int)mid + ", h = " + (int)h + ", theta = " + theta);
-
-	return (Math.abs(h / Math.sin(theta + cameraTilt)));  // this might even be correct.
-    }
-
-
-    static double estimateRange(RegionGrow RG) {
-	Region hoop = RG.getHighestVisibleHoop();
-	if (hoop == null)
-	    return -1.0;       // no known hopes, no estimate
-	else return (estimateRange(hoop));
+	// Now estimate range to bottom edge, if possible
+	if (hoop.leftBottom != null) {
+	    y = hoop.leftBottom.y;
+	    x = hoop.leftBottom.x;
+	    h = bot - cameraHeight;
+	    HoopEstimate hr = new HoopEstimate();
+	    hr.elevation = (cameraYpixels/2 - y) * cameraVerticalView / cameraYpixels + cameraTilt;
+	    hr.azimuth = x * cameraHorizontalView / cameraXpixels;
+	    hr.rangePoint = new Point3d(left, 0.0, bot);      // We need to confirm consistent use of 3D axis: x, y, z
+	    hr.range = Math.abs(h / Math.sin(hr.elevation));   // this might even be correct.
+	    hr.error = Math.abs(h * Math.cos(hr.elevation) * cameraVerticalView / cameraYpixels / (Math.sin(hr.elevation) * Math.sin(hr.elevation)));
+	    hoop.estimates.add(hr);                            // Save for later
+	}
+	// Now estimate range to bottom right corner, if possible
+	if (hoop.rightBottom != null) {
+	    y = hoop.rightBottom.y;
+	    x = hoop.rightBottom.x;
+	    h = bot - cameraHeight;
+	    HoopEstimate hr = new HoopEstimate();
+	    hr.elevation = (cameraYpixels/2 - y) * cameraVerticalView / cameraYpixels + cameraTilt;
+	    hr.azimuth = x * cameraHorizontalView / cameraXpixels;
+	    hr.rangePoint = new Point3d(right, 0.0, bot);      // We need to confirm consistent use of 3D axis: x, y, z
+	    hr.range = Math.abs(h / Math.sin(hr.elevation));   // this might even be correct.
+	    hr.error = Math.abs(h * Math.cos(hr.elevation) * cameraVerticalView / cameraYpixels / (Math.sin(hr.elevation) * Math.sin(hr.elevation)));
+	    hoop.estimates.add(hr);                            // Save for later
+	}
     }
 }
