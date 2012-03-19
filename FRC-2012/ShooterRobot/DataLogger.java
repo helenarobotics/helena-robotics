@@ -62,7 +62,6 @@ public class DataLogger extends Thread {
                 Thread.sleep(250);
             } catch (InterruptedException ignored) {
             }
-            
         }
     }
 }
