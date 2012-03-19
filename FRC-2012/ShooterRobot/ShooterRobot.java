@@ -78,7 +78,7 @@ public class ShooterRobot extends SimpleRobot {
                 // sensitivity at lower speeds.
                 drive.arcadeDrive(driveStick, true);
             }
-                
+
             // Shift the transmission when the button is pressed
             if (joystickTrigger(driveStick)) {
 //                shifter.set(!shifter.get());
