@@ -152,7 +152,7 @@ public class Shooter {
         // Read the throttle to determine the speed of the shooter motor
         // and convert it to a number between 0 and 1.  Use that number
         // to set the RPM of the shooter.
-        setRPM((1.0 + joy.getThrottle()) / 2.0);
+        setRPM((joy.getThrottle() - 1.0) / 2.0);
     }
 
     private static final int TRIGGER_BTN = 1;
