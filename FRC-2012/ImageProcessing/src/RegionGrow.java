@@ -8,6 +8,7 @@ import java.awt.image.WritableRaster;
 import java.awt.image.Raster;
 import java.awt.Rectangle;
 import java.awt.Polygon;
+import javax.vecmath.Point3d;
 
 public class RegionGrow {
     public Vector<Region> regions;
@@ -34,6 +35,60 @@ public class RegionGrow {
 	    //	    System.out.println("Found region " + region);
 	}
 	labelHoops();
+	estimateRanges();
+	estimateRobotPosition();
+    }
+
+    public void estimateRanges() {
+	for (int i = 0; i < regions.size(); i++) {
+	    Region r = regions.elementAt(i);
+	    if (r.hoopLocation != Region.HoopLocation.unknown)
+		FieldGeometry.estimateRange(r);
+	}
+    }
+
+
+    public Point3d estimateRobotPosition() {
+	double maxBaseline = 0.0;
+	HoopEstimate e1 = null, e2 = null;
+
+	// find the wides available baseline
+
+	for (int i = 0; i < regions.size(); i++) {
+	    Region ri = regions.elementAt(i);
+	    for (int j = i; j < regions.size(); j++) {
+		Region rj = regions.elementAt(j);
+		for (int rii = 0; rii < ri.estimates.size(); rii++) {
+		    HoopEstimate eii = ri.estimates.elementAt(rii);
+		    for (int rjj = rii; rjj < rj.estimates.size(); rjj++) {
+			HoopEstimate ejj = rj.estimates.elementAt(rjj);
+			if (Math.abs(ejj.rangePoint.z - eii.rangePoint.z) < 1) {
+			    double baseline = Math.abs(ejj.rangePoint.x - eii.rangePoint.x);
+			    if (baseline > maxBaseline) {
+				e1 = eii;
+				e2 = ejj;
+				maxBaseline = baseline;
+			    }
+			}
+		    }
+		}
+	    }
+	}
+	System.out.println("e1 = " + e1);
+	System.out.println("e2 = " + e2);
+
+	if ((e1 != null) && (e2 != null)) {
+	    double phi = Math.abs(e1.azimuth - e2.azimuth);
+	    double lambda = Math.asin((e1.range * Math.sin(phi)) / maxBaseline);
+	    if (e1.range > e2.range)
+		lambda = Math.PI - lambda;
+	    double xloc = e2.rangePoint.x - e2.range * Math.cos(lambda);
+	    double yloc = e2.rangePoint.y + e2.range * Math.sin(lambda);
+	    System.out.println("Robot located at {" + (int)xloc + ", " + (int)yloc + "}; phi=" + (int) Math.toDegrees(phi) 
+			       + ", lambda=" + (int)Math.toDegrees(lambda));
+	    return new Point3d(xloc, yloc, FieldGeometry.cameraHeight);
+	}
+	else return null;
     }
 
 
