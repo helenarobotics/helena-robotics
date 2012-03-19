@@ -206,7 +206,7 @@ public class Shooter {
             upperMotor.set(power * UPPER_BIAS);
         } else {
             // Use PID control
-            double rpm = power * MAX_RPM;
+            double rpm = Math.abs(power * MAX_RPM);
             lowerPID.setSetpoint(rpm);
             upperPID.setSetpoint(rpm * UPPER_BIAS);
         }
