@@ -66,7 +66,7 @@ public class ShooterRobot extends SimpleRobot {
 
         // Turn on drive safety which causes the motors to stop running
         // if they don't get a command within a couple of ms.
-        drive.setSafetyEnabled(true);
+        drive.setSafetyEnabled(false);
 
         while (isOperatorControl() && isEnabled()) {
             // Feed the watchdog to keep the drive motors running
