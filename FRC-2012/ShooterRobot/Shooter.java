@@ -28,7 +28,7 @@ public class Shooter {
     // give the ball some backspin.  In reality the speed difference is
     // greater than 5% since the upper motor has a larger pulley on the
     // shooter, but we'll give it a bit more delta here.
-    private static final double UPPER_BIAS = 0.95;
+    private static final double UPPER_BIAS = 0.9;
 
     // An effecient way to control the speed of the motors
     private PIDController lowerPID;
