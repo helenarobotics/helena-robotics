@@ -95,7 +95,7 @@ public class Shooter {
         lowerPID.setInputRange(0, MAX_RPM);
 
         // The motor range is all positive
-        lowerPID.setOutputRange(0, 1.0);
+        lowerPID.setOutputRange(-1.0, 1.0);
 
         // Initialize the setup for the lower PID controller
         PIDSource upperRPM = new PIDSource() {
@@ -128,7 +128,7 @@ public class Shooter {
 
         // Set the PID ranges
         lowerPID.setInputRange(0, MAX_RPM * UPPER_BIAS);
-        upperPID.setOutputRange(0, 1.0);
+        upperPID.setOutputRange(-1.0, 1.0);
     }
 
     public void disable() {
