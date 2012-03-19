@@ -149,6 +149,9 @@ public class Shooter {
         // motors (debugging).
         joystickRpm(joy);
 
+        // Rotate the shooter on the lazy susan
+        rotationMotor.set(joy.getX());
+
         // Read the throttle to determine the speed of the shooter motor
         // and convert it to a number between 0 and 1.  Use that number
         // to set the RPM of the shooter.
