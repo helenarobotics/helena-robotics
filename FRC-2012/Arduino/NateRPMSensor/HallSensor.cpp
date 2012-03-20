@@ -31,7 +31,7 @@ void HallSensor::calculateRPM(double diffTime) {
     int new_rpm = (int)((double)count / diffTime * 1000000 * 60);
 
     // Update the rpm using a bias to smooth it out (learning rate = 0.01)
-    rpm = rpm * 0.90 + new_rpm * 0.1;
+    rpm = rpm * 0.95 + new_rpm * 0.05;
   }
   // Disable interrupts while we change the count so that we don't end
   // up with corrupted count values.

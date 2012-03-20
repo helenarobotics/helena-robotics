@@ -28,22 +28,22 @@ public class Shooter {
     // give the ball some backspin.  In reality the speed difference is
     // greater than 5% since the upper motor has a larger pulley on the
     // shooter, but we'll give it a bit more delta here.
-    private static final double UPPER_BIAS = 0.95;
+    private static final double UPPER_BIAS = 0.9;
 
     // An effecient way to control the speed of the motors
     private PIDController lowerPID;
     private PIDController upperPID;
 
     // PID constants - XXX - Need tuning
-    private static final double LOWER_KP = 1.0;
+    private static final double LOWER_KP = 0.00002;
     private static final double LOWER_KI = 0.0;
-    private static final double LOWER_KD = 0.0;
-    private static final double LOWER_TOLERANCE = 10.0;
+    private static final double LOWER_KD = LOWER_KP * 5.0;
+    private static final double LOWER_TOLERANCE = 50.0;
 
-    private static final double UPPER_KP = 1.0;
+    private static final double UPPER_KP = 0.00002;
     private static final double UPPER_KI = 0.0;
-    private static final double UPPER_KD = 0.0;
-    private static final double UPPER_TOLERANCE = 10.0;
+    private static final double UPPER_KD = UPPER_KP * 5.0;
+    private static final double UPPER_TOLERANCE = 50.0;
 
     public Shooter() {
         // Initialize the motors
@@ -79,7 +79,19 @@ public class Shooter {
                 private double previousValue = 0.0;
 
                 public void pidWrite(double output) {
-                    double newVal = previousValue + output;
+                    // Output is subtracted since we use negative powers
+                    // to give us the proper direction as the RPM
+                    // counter doesn't care the direction, just the
+                    // value of the RPM.
+                    double newVal = previousValue - output;
+
+                    // Limit power from 0 -> -1.0 to keep the motor from
+                    // reversing itself if the controls oscillate too
+                    // far one way or the other.
+                    if (newVal < -1.0)
+                        newVal = -1.0;
+                    else if (newVal > 0.0)
+                        newVal = 0.0;
                     System.out.println(
                         "BtmPow=" + newVal + ", Change=" + output);
                     lowerMotor.set(newVal);
@@ -94,8 +106,10 @@ public class Shooter {
         // Set the minimum and maximum RPM range
         lowerPID.setInputRange(0, MAX_RPM);
 
-        // The motor range is all positive
-        lowerPID.setOutputRange(0, 1.0);
+        // The motor range is truly all position (actually negative and
+        // limited in the PIDOutput cass), but we need it to be able to
+        // go negative in order to reduce power.
+        lowerPID.setOutputRange(-1.0, 1.0);
 
         // Initialize the setup for the lower PID controller
         PIDSource upperRPM = new PIDSource() {
@@ -114,7 +128,19 @@ public class Shooter {
                 private double previousValue = 0.0;
 
                 public void pidWrite(double output) {
-                    double newVal = previousValue + output;
+                    // Output is subtracted since we use negative powers
+                    // to give us the proper direction as the RPM
+                    // counter doesn't care the direction, just the
+                    // value of the RPM.
+                    double newVal = previousValue - output;
+
+                    // Limit power from 0 -> -1.0 to keep the motor from
+                    // reversing itself if the controls oscillate too
+                    // far one way or the other.
+                    if (newVal < -1.0)
+                        newVal = -1.0;
+                    else if (newVal > 0.0)
+                        newVal = 0.0;
                     System.out.println(
                         "TopPow=" + newVal + ", Change=" + output);
                     upperMotor.set(newVal);
@@ -128,7 +154,7 @@ public class Shooter {
 
         // Set the PID ranges
         lowerPID.setInputRange(0, MAX_RPM * UPPER_BIAS);
-        upperPID.setOutputRange(0, 1.0);
+        upperPID.setOutputRange(-1.0, 1.0);
     }
 
     public void disable() {
@@ -149,10 +175,13 @@ public class Shooter {
         // motors (debugging).
         joystickRpm(joy);
 
+        // Rotate the shooter on the lazy susan
+        rotationMotor.set(joy.getX());
+
         // Read the throttle to determine the speed of the shooter motor
         // and convert it to a number between 0 and 1.  Use that number
         // to set the RPM of the shooter.
-        setRPM((1.0 + joy.getThrottle()) / 2.0);
+        setRPM((joy.getThrottle() - 1.0) / 2.0);
     }
 
     private static final int TRIGGER_BTN = 1;
@@ -182,7 +211,9 @@ public class Shooter {
             rawThrottle = !rawThrottle;
             if (!rawThrottle) {
                 // Re-enable the PID controls
-                lowerPID.enable();
+                // XXX - Tune only one motor at a time
+                lowerMotor.set(0);
+//                lowerPID.enable();
                 upperPID.enable();
             } else {
                 // Disable PID
@@ -203,9 +234,13 @@ public class Shooter {
             upperMotor.set(power * UPPER_BIAS);
         } else {
             // Use PID control
-            double rpm = power * MAX_RPM;
-            lowerPID.setSetpoint(rpm);
+            double rpm = Math.abs(power * MAX_RPM);
+//            lowerPID.setSetpoint(rpm);
             upperPID.setSetpoint(rpm * UPPER_BIAS);
+            // Only print out a new value if the setpoint it changes
+            // significantly
+            if (Math.abs((rpm * UPPER_BIAS) - upperPID.getSetpoint()) > 5)
+                System.out.println("SP=" + (rpm * UPPER_BIAS) + ", PP=" + upperPID.getSetpoint());
         }
     }
 }

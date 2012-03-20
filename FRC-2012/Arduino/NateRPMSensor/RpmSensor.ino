@@ -6,6 +6,7 @@
  ****/
 
 #include <Wire.h>
+#include <avr/wdt.h>
 #include "HallSensor.h"
 
 // Define to enable debugging
@@ -55,6 +56,12 @@ void setup() {
 
   // Remember the time
   prevTime = micros();
+  
+  // Finally, setup the Watchdog to reset if we haven't gotten any
+  // request in > 8s.  The arduino can hang and requests don't
+  // seem to work, so by resetting things we can get back to working
+  // hopefully.
+  wdt_enable(WDTO_8S);
 }
 
 // These should be HallSensor methods, but attachInterrupt doesn't
@@ -80,8 +87,8 @@ void loop() {
 #if defined(DEBUG)
   // Roughly once/sec print out the calculated RPM
   if ((++loopCounter % 10) == 0) {
-    Serial.print("DT");
-    Serial.println(diffTime);
+//    Serial.print("DT");
+//    Serial.println(diffTime);
     Serial.print("RPM 1 value: ");
     Serial.println(hs1->getRPM());
     Serial.print("RPM 2 value: ");
@@ -141,6 +148,9 @@ void wireSend() {
     break;
   }
   Wire.write(sendData, sendLen);
+
+  // Keep the watchdog happy
+  wdt_reset();
 }
 
 // Store the data as two bytes in little endian format

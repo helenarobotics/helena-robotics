@@ -6,8 +6,8 @@ import edu.wpi.first.wpilibj.Servo;
 // the servo for a set period of time which allows the ball to be
 // fed into the shooter.
 class BallFeeder implements Runnable {
-    private static final float SERVO_HOLD_POS = 60;
-    private static final float SERVO_LAUNCH_POS = 360;
+    private static final float SERVO_HOLD_POS = 90;
+    private static final float SERVO_LAUNCH_POS = 0;
 
     private Servo launcher;
     private boolean shooting;
@@ -16,7 +16,7 @@ class BallFeeder implements Runnable {
         launcher = new Servo(Configuration.SERVO_SHOOTER_FEEDER);
         shooting = false;
 
-        Thread t = new Thread("BallFeed");
+        Thread t = new Thread(this, "BallFeed");
         t.start();
     }
 
@@ -24,6 +24,7 @@ class BallFeeder implements Runnable {
         while (true) {
             // We always start holding the ball.
             launcher.setAngle(SERVO_HOLD_POS);
+            shooting = false;
             DataLogger.shooting = false;
 
             // Wait for the shoot command.
@@ -41,7 +42,7 @@ class BallFeeder implements Runnable {
             launcher.setAngle(SERVO_LAUNCH_POS);
             DataLogger.shooting = true;
             try {
-                Thread.sleep(250);
+                Thread.sleep(600);
             } catch (InterruptedException ignored) {
             }
         }
