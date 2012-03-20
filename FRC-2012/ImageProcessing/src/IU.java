@@ -71,7 +71,7 @@ public class IU {
 
 		    // Write image with box overlays
 		    ImageIO.write(cimage, "jpg", new File(outdir + slash + filename.substring(0, filename.length()-4) + "-overlay.jpg"));
-		    ImageIO.write(RG.thresholdedImage, "jpg", new File(filename.substring(0, filename.length()-4) + "-thresholded.jpg"));
+		    // ImageIO.write(RG.thresholdedImage, "jpg", new File(filename.substring(0, filename.length()-4) + "-thresholded.jpg"));
 
 		} catch (IOException e) {
 		    e.printStackTrace();

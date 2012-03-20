@@ -22,7 +22,7 @@ public class Region {
     Vector<Point> points;      // temporary space used while building the region.
     public HoopLocation hoopLocation;
     public Rectangle enclosingRectangle;
-    double range;                 // range = dist from camera to a 3D point located on the hoop (see below)
+    //    double range;                 // range = dist from camera to a 3D point located on the hoop (see below)
     Vector<HoopEstimate> estimates;
     public Line2D.Double leftEdge;
     public Line2D.Double rightEdge;

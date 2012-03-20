@@ -47,12 +47,15 @@ public class RegionGrow {
 	}
     }
 
+    // Estimates robot {x, z} location based on range estimates made on multiple hoop corners
+    // (generally across different hoops).
 
     public Point3d estimateRobotPosition() {
 	double maxBaseline = 0.0;
 	HoopEstimate e1 = null, e2 = null;
 
-	// find the wides available baseline
+	// find the widest available baseline to maximize accuracy
+	// (NB we could also combine weighted estimates from multiple baselines)
 
 	for (int i = 0; i < regions.size(); i++) {
 	    Region ri = regions.elementAt(i);
@@ -62,7 +65,7 @@ public class RegionGrow {
 		    HoopEstimate eii = ri.estimates.elementAt(rii);
 		    for (int rjj = rii; rjj < rj.estimates.size(); rjj++) {
 			HoopEstimate ejj = rj.estimates.elementAt(rjj);
-			if (Math.abs(ejj.rangePoint.z - eii.rangePoint.z) < 1) {
+			if (Math.abs(ejj.rangePoint.y - eii.rangePoint.y) < 1) {        // same approx height? (measured in inches!)
 			    double baseline = Math.abs(ejj.rangePoint.x - eii.rangePoint.x);
 			    if (baseline > maxBaseline) {
 				e1 = eii;
@@ -77,20 +80,31 @@ public class RegionGrow {
 	System.out.println("e1 = " + e1);
 	System.out.println("e2 = " + e2);
 
+	// Law of sines solution
 	if ((e1 != null) && (e2 != null)) {
 	    double phi = Math.abs(e1.azimuth - e2.azimuth);
 	    double lambda = Math.asin((e1.range * Math.sin(phi)) / maxBaseline);
-	    if (e1.range > e2.range)
+	    double zloc, yloc, xloc;
+	    if (e1.range > e2.range) {
 		lambda = Math.PI - lambda;
-	    double xloc = e2.rangePoint.x - e2.range * Math.cos(lambda);
-	    double yloc = e2.rangePoint.y + e2.range * Math.sin(lambda);
-	    System.out.println("Robot located at {" + (int)xloc + ", " + (int)yloc + "}; phi=" + (int) Math.toDegrees(phi) 
-			       + ", lambda=" + (int)Math.toDegrees(lambda));
-	    return new Point3d(xloc, yloc, FieldGeometry.cameraHeight);
+		xloc = e2.rangePoint.x + e2.floorRange * Math.cos(lambda); 
+	    }
+	    else {
+		xloc = e2.rangePoint.x - e2.floorRange * Math.cos(lambda);  // distance left (neg) or right (pos) of center of hoop wall
+	    }
+	    zloc = e2.rangePoint.z + e2.floorRange * Math.sin(lambda);   // distance from hoop wall
+	    yloc = CameraModel.cameraHeight;                             // vertical height
+	    System.out.println("Robot located at {" + (int)xloc + ", " + (int)zloc + "}; phi=" + (int) Math.toDegrees(phi) 
+			       + ", lambda=" + (int)Math.toDegrees(lambda) + ", azi to center of baseline: " + 
+			       (int)Math.toDegrees((e1.azimuth + e2.azimuth)/2.0));
+	    return new Point3d(xloc, yloc, zloc);
 	}
 	else return null;
     }
 
+
+    // detects FRC reflective tape.  Works remarkably well IN OUR TESTING; need to verify onsite at competition,
+    // and adjust as required.
 
     private static BufferedImage detectGreen(BufferedImage img, int thresh) {
 
