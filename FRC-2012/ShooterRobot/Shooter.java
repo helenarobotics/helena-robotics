@@ -1,5 +1,8 @@
 package robotics.helena;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PIDController;
@@ -224,6 +227,28 @@ public class Shooter {
         wasRpmPressed = nowPressed;
     }
 
+    // Allows the motors to get up to speed before enabling the PID
+    // controller.
+    private class StartUpTask extends TimerTask {
+        private double lowerRPM, upperRPM;
+
+        public StartUpTask(double _lowerRPM, double _upperRPM) {
+            lowerRPM = _lowerRPM;
+            upperRPM = _upperRPM;
+//            lowerPID.disable();
+//            lowerMotor.set(lowerRPM / MAX_RPM);
+            upperPID.disable();
+            upperMotor.set(upperRPM / MAX_RPM);
+        }
+
+        public void run() {
+//            lowerPID.setSetpoint(lowerRPM);
+//            lowerPID.enable();
+            upperPID.setSetpoint(upperRPM);
+            upperPID.enable();
+        }
+    }
+
     private void setRPM(double power) {
         // If the power is less than 10%, ignore it and just set the
         // power to zero as we're not going to shoot any baskets with
@@ -254,8 +279,17 @@ public class Shooter {
         } else {
             // Use PID control
             double rpm = Math.abs(power * MAX_RPM);
-//            lowerPID.setSetpoint(rpm);
-            upperPID.setSetpoint(rpm * UPPER_BIAS);
+
+            // If the motors aren't running, then start them up and let
+            // them run for a bit before we use the PID controller on
+            // them to avoid PID windup.
+            if (power > 0 && !upperPID.isEnable()) {
+                new Timer().schedule(
+                    new StartUpTask(rpm, rpm * UPPER_BIAS), 2000);
+            } else {
+//                lowerPID.setSetpoint(rpm);
+                upperPID.setSetpoint(rpm * UPPER_BIAS);
+            }
             // Only print out a new value if the setpoint changes significantly
             if (Math.abs((rpm * UPPER_BIAS) - upperPID.getSetpoint()) > 5)
                 System.out.println("SP=" + (rpm * UPPER_BIAS) +
