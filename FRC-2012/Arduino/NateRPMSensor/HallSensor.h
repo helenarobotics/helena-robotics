@@ -9,10 +9,8 @@ private:
   int ledPort;
 
   // Code to calculate and keep track of RPM
-  static const short RPM_HISTORY = 5;
-  short rpmHistory[RPM_HISTORY];
-  short historyIndex;
   unsigned long lastRevTime;
+  int rpm;
 
 public:
   HallSensor(int, int);
