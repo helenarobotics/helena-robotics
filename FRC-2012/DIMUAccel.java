@@ -6,17 +6,17 @@ import edu.wpi.first.wpilibj.parsing.ISensor;
 
 /**
  * This Class manages the Dexter Inertial Motion Sensor
- * 
+ *
  * @author Nathan Williams, February 2012
  * @version 0.1
  */
 public class DIMUAccel extends I2C implements ISensor {
-	/*
-	 * Documentation can be obtained here:
-	 * http://dexterindustries.com/manual/imu-sensor/
-	 */
+    /*
+     * Documentation can be obtained here:
+     * http://dexterindustries.com/manual/imu-sensor/
+     */
 
-    // The axis for the gyro 
+    // The axis for the gyro
     public static final byte X_AXIS = 0;
     public static final byte Y_AXIS = 1;
     public static final byte Z_AXIS = 2;
