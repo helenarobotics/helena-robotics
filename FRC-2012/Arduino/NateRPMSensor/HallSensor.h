@@ -17,5 +17,6 @@ private:
 public:
   HallSensor(int, int);
   void addRevolution();
+  void noRevolution();
   int getRPM();
 };

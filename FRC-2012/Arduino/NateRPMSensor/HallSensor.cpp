@@ -49,6 +49,20 @@ void HallSensor::addRevolution() {
   lastRevTime = currRevTime;
 }
 
+// Move the calculation to zero if it's been more than 2 seconds since
+// we last measured anything
+void HallSensor::noRevolution() {
+  if (lastRevTime > 0) {
+    double diffTime = micros() - lastRevTime;
+    if (diffTime > 2 * 1000 * 1000) {
+      // Zero out all the calculations
+      for (int i = 0; i < RPM_HISTORY; i++)
+        rpmHistory[i] = 0;
+      historyIndex = 0;
+    }
+  }
+}
+
 int HallSensor::getRPM() {
   // Return the average of all the calculations
   int total = 0;
