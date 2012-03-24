@@ -8,7 +8,6 @@
 #include <Wire.h>
 #include <avr/wdt.h>
 #include "HallSensor.h"
-#include "TimerOne.h"
 
 // Define to enable debugging
 // #define DEBUG 1
@@ -52,19 +51,14 @@ void setup() {
   attachInterrupt(0, hs1Interrupt, RISING);
   attachInterrupt(1, hs2Interrupt, RISING);
 
-  // The RPM values are calculated by measuring how long it takes
-  // to make a revolution.  However, if the motor isn't moving it
-  // takes an infinitely long time to determine the RPM.  Therefore, we
-  // have a shared background timer routine that calls the sensors to
-  // check if the motor isn't moving.
-  Timer1.initialize(2 * 1000 * 1000);
-  Timer1.attachInterrupt(noMovement);
-
+  // Don't need the watchdog while debugging
+#if !defined(DEBUG)
   // Finally, setup the Watchdog to reset if we haven't gotten any
   // request in > 8s.  The arduino can hang and requests don't
   // seem to work, so by resetting things we can get back to working
   // hopefully.
   wdt_enable(WDTO_8S);
+#endif
 }
 
 // These should be HallSensor methods, but attachInterrupt doesn't
@@ -77,23 +71,23 @@ void hs2Interrupt() {
   hs2->addRevolution();
 }
 
-void noMovement() {
+void loop() {
+  // Poll the sensors ~half/second (500ms) to check for no rotation.
+  // Since the RPM values are calculated by measuring how long it takes
+  // to make a revolution.  However, if the motor isn't moving it takes
+  // an infinitely long time to determine the RPM.  Therefore, we call
+  // the sensor on a fairly infrequent basis to have them check if the
+  // motor isn't moving so they can zero out their RPM.
+  delay(500);
   hs1->noRevolution();
   hs2->noRevolution();
-}
 
-int loopCounter = 0;
-void loop() {
 #if defined(DEBUG)
-  // Roughly once/sec print out the RPM
-  if ((++loopCounter % 10) == 0) {
-    Serial.print("RPM 1 value: ");
-    Serial.println(hs1->getRPM());
-    Serial.print("RPM 2 value: ");
-    Serial.println(hs2->getRPM());
-  }
+   Serial.print("RPM 1 value: ");
+   Serial.println(hs1->getRPM());
+   Serial.print("RPM 2 value: ");
+   Serial.println(hs2->getRPM());
 #endif
-  delay(100);
 }
 
 // Determine which sensor is being requested.
@@ -147,8 +141,10 @@ void wireSend() {
   }
   Wire.write(sendData, sendLen);
 
+#if !defined(DEBUG)
   // Keep the watchdog happy
   wdt_reset();
+#endif
 }
 
 // Store the data as two bytes in little endian format
