@@ -225,6 +225,25 @@ public class Shooter {
     }
 
     private void setRPM(double power) {
+        // If the power is less than 10%, ignore it and just set the
+        // power to zero as we're not going to shoot any baskets with
+        // such lower power!
+        if (Math.abs(power) < 0.1) {
+            power = 0;
+        }
+
+        // Turn the shooter off and disable controls!
+        if (power == 0.0) {
+            // Disable PID
+            lowerPID.disable();
+            lowerPID.setSetpoint(0);
+            lowerMotor.set(0);
+            upperPID.disable();
+            upperPID.setSetpoint(0);
+            upperMotor.set(0);
+            return;
+        }
+
         // Give the upper motor a 5% slower rate than the upper motor.
         // In reality the speed is less than that since the upper motor
         // has a larger pulley on the shooter, but we'll give it a bit
@@ -237,10 +256,10 @@ public class Shooter {
             double rpm = Math.abs(power * MAX_RPM);
 //            lowerPID.setSetpoint(rpm);
             upperPID.setSetpoint(rpm * UPPER_BIAS);
-            // Only print out a new value if the setpoint it changes
-            // significantly
+            // Only print out a new value if the setpoint changes significantly
             if (Math.abs((rpm * UPPER_BIAS) - upperPID.getSetpoint()) > 5)
-                System.out.println("SP=" + (rpm * UPPER_BIAS) + ", PP=" + upperPID.getSetpoint());
+                System.out.println("SP=" + (rpm * UPPER_BIAS) +
+                                   ", PP=" + upperPID.getSetpoint());
         }
     }
 }
