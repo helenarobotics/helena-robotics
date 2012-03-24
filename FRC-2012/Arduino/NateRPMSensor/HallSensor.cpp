@@ -14,32 +14,46 @@ HallSensor::HallSensor(int _sensorPort, int _ledPort) {
   pinMode(sensorPort, INPUT);
   pinMode(ledPort, OUTPUT);
 
-  count = 0;
-  rpm = 0;
+  // Keep track of the instantaneous RPM calculations to aid in getting
+  // a better/smoother RPM value.
+  for (int i = 0; i < RPM_HISTORY; i++)
+    rpmHistory[i] = 0;
+  historyIndex = 0;
+
+  // Not really true, but good enough for now.
+  lastRevTime = 0;
 }
 
 void HallSensor::addRevolution() {
   // toggle output led
   digitalWrite(ledPort, !digitalRead(ledPort));
-  count++;
-}
 
-void HallSensor::calculateRPM(double diffTime) {
-  // XXX - Handle overflow?
-  if (diffTime > 0) {
-    // rpm = (rotations / utime) * 1000 * 1000 * 60 [usecs in a minute]
-    int new_rpm = (int)((double)count / diffTime * 1000000 * 60);
+  // Calculate the RPM
+  unsigned long currRevTime = micros();
+  if (lastRevTime > 0) {
+    double diffTime = currRevTime - lastRevTime;
 
-    // Update the rpm using a bias to smooth it out (learning rate = 0.01)
-    rpm = rpm * 0.95 + new_rpm * 0.05;
+    // RPM = 60 secs/min * 1000 ms/sec * 1000 us/ms * 1 rev / us
+    // The instantaneous RPM is the time to make one revolution:
+    // * 60 seconds/min * 1000 ms/sec * 1000 us/ms * 1 (rev) / diffTime (in us)
+    if (diffTime > 0) {
+      short newRpm = (short)(60.0 * 1000.0 * 1000.0 / diffTime);
+
+      // Keep track of the RPM history!
+      rpmHistory[historyIndex] = newRpm;
+      historyIndex++;
+      if (historyIndex >= RPM_HISTORY)
+        historyIndex = 0;
+    }
   }
-  // Disable interrupts while we change the count so that we don't end
-  // up with corrupted count values.
-  cli();
-  count = 0;
-  sei();
+  lastRevTime = currRevTime;
 }
 
 int HallSensor::getRPM() {
-  return rpm;
+  // Return the average of all the calculations
+  int total = 0;
+  for (int i = 0; i < RPM_HISTORY; i++)
+    total += rpmHistory[i];
+    
+  return total / RPM_HISTORY;
 }

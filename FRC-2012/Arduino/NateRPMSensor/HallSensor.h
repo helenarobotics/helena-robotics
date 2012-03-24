@@ -7,11 +7,15 @@ class HallSensor {
 private:
   int sensorPort;
   int ledPort;
-  int count;
-  int rpm;
+
+  // Code to calculate and keep track of RPM
+  static const short RPM_HISTORY = 5;
+  short rpmHistory[RPM_HISTORY];
+  short historyIndex;
+  unsigned long lastRevTime;
+
 public:
   HallSensor(int, int);
   void addRevolution();
-  void calculateRPM(double diffTime);
   int getRPM();
 };
