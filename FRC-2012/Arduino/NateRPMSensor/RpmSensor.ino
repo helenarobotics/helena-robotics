@@ -8,6 +8,7 @@
 #include <Wire.h>
 #include <avr/wdt.h>
 #include "HallSensor.h"
+#include "TimerOne.h"
 
 // Define to enable debugging
 // #define DEBUG 1
@@ -51,6 +52,14 @@ void setup() {
   attachInterrupt(0, hs1Interrupt, RISING);
   attachInterrupt(1, hs2Interrupt, RISING);
 
+  // The RPM values are calculated by measuring how long it takes
+  // to make a revolution.  However, if the motor isn't moving it
+  // takes an infinitely long time to determine the RPM.  Therefore, we
+  // have a shared background timer routine that calls the sensors to
+  // check if the motor isn't moving.
+  Timer1.initialize(2 * 1000 * 1000);
+  Timer1.attachInterrupt(noMovement);
+
   // Finally, setup the Watchdog to reset if we haven't gotten any
   // request in > 8s.  The arduino can hang and requests don't
   // seem to work, so by resetting things we can get back to working
@@ -66,6 +75,11 @@ void hs1Interrupt() {
 
 void hs2Interrupt() {
   hs2->addRevolution();
+}
+
+void noMovement() {
+  hs1->noRevolution();
+  hs2->noRevolution();
 }
 
 int loopCounter = 0;
