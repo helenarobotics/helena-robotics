@@ -25,28 +25,28 @@ public class Shooter {
     private BallFeeder feeder;
 
     // RPM maxspeed (helps the PID controller)
-    private static final double MAX_RPM = 2000.0;
+    private static final double MAX_RPM = 1990.0;
 
     // Give the upper motor a 5% slower rate than the lower motor to
     // give the ball some backspin.  In reality the speed difference is
     // greater than 5% since the upper motor has a larger pulley on the
     // shooter, but we'll give it a bit more delta here.
-    private static final double UPPER_BIAS = 0.9;
+    private static final double UPPER_BIAS = 0.95;
 
     // An effecient way to control the speed of the motors
     private PIDController lowerPID;
     private PIDController upperPID;
 
     // PID constants - XXX - Need tuning
-    private static final double LOWER_KP = 0.00002;
+    private static final double LOWER_KP = 0.00005;
     private static final double LOWER_KI = 0.0;
     private static final double LOWER_KD = LOWER_KP * 5.0;
-    private static final double LOWER_TOLERANCE = 50.0;
+    private static final double LOWER_TOLERANCE = 10.0;
 
-    private static final double UPPER_KP = 0.00002;
+    private static final double UPPER_KP = 0.00005;
     private static final double UPPER_KI = 0.0;
     private static final double UPPER_KD = UPPER_KP * 5.0;
-    private static final double UPPER_TOLERANCE = 50.0;
+    private static final double UPPER_TOLERANCE = 10.0;
 
     public Shooter() {
         // Initialize the motors
@@ -67,10 +67,12 @@ public class Shooter {
 
         // Initialize the setup for the lower PID controller
         PIDSource lowerRPM = new PIDSource() {
+                int count = 0;
                 public double pidGet() {
                     double btmRPM =
                         rpmSensor.getRPM(ArduinoRPMSensor.BOTTOM_MOTOR);
-                    System.out.println("BtmRPM=" + btmRPM);
+                    if ((count++ % 25) == 0)
+                        System.out.println("BtmRPM=" + btmRPM);
                     DataLogger.rpmBottom = btmRPM;
                     return btmRPM;
                 }
@@ -95,8 +97,8 @@ public class Shooter {
                         newVal = -1.0;
                     else if (newVal > 0.0)
                         newVal = 0.0;
-                    System.out.println(
-                        "BtmPow=" + newVal + ", Change=" + output);
+//                    System.out.println(
+//                        "BtmPow=" + newVal + ", Change=" + output);
                     lowerMotor.set(newVal);
                     previousValue = newVal;
                     DataLogger.powerBottom = newVal;
@@ -116,10 +118,12 @@ public class Shooter {
 
         // Initialize the setup for the lower PID controller
         PIDSource upperRPM = new PIDSource() {
+                int count = 0;
                 public double pidGet() {
                     double topRPM =
                         rpmSensor.getRPM(ArduinoRPMSensor.TOP_MOTOR);
-                    System.out.println("TopRPM=" + topRPM);
+                    if ((count++ % 25) == 0)
+                        System.out.println("TopRPM=" + topRPM);
                     DataLogger.rpmTop = topRPM;
                     return topRPM;
                 }
@@ -144,8 +148,8 @@ public class Shooter {
                         newVal = -1.0;
                     else if (newVal > 0.0)
                         newVal = 0.0;
-                    System.out.println(
-                        "TopPow=" + newVal + ", Change=" + output);
+//                    System.out.println(
+//                        "TopPow=" + newVal + ", Change=" + output);
                     upperMotor.set(newVal);
                     previousValue = newVal;
                     DataLogger.powerTop = newVal;
@@ -156,15 +160,15 @@ public class Shooter {
         upperPID.setTolerance(UPPER_TOLERANCE);
 
         // Set the PID ranges
-        lowerPID.setInputRange(0, MAX_RPM * UPPER_BIAS);
+        upperPID.setInputRange(0, MAX_RPM * UPPER_BIAS);
         upperPID.setOutputRange(-1.0, 1.0);
     }
 
     public void disable() {
         // Shut everything down!
         lowerPID.disable();
-        upperPID.disable();
         lowerMotor.set(0);
+        upperPID.disable();
         upperMotor.set(0);
         rotationMotor.set(0);
     }
@@ -203,7 +207,7 @@ public class Shooter {
 
     // Toggle between PID and straight throttle control for the shooter
     // motor speeds
-    private boolean rawThrottle = true;
+    private boolean rawThrottle = false;
     private boolean wasRpmPressed = false;
     private static final int RPM_BTN = 2;
     private void joystickRpm(Joystick joy) {
@@ -214,9 +218,7 @@ public class Shooter {
             rawThrottle = !rawThrottle;
             if (!rawThrottle) {
                 // Re-enable the PID controls
-                // XXX - Tune only one motor at a time
-                lowerMotor.set(0);
-//                lowerPID.enable();
+                lowerPID.enable();
                 upperPID.enable();
             } else {
                 // Disable PID
@@ -227,35 +229,12 @@ public class Shooter {
         wasRpmPressed = nowPressed;
     }
 
-    // Allows the motors to get up to speed before enabling the PID
-    // controller.
-    private class StartUpTask extends TimerTask {
-        private double lowerRPM, upperRPM;
-
-        public StartUpTask(double _lowerRPM, double _upperRPM) {
-            lowerRPM = _lowerRPM;
-            upperRPM = _upperRPM;
-//            lowerPID.disable();
-//            lowerMotor.set(lowerRPM / MAX_RPM);
-            upperPID.disable();
-            upperMotor.set(upperRPM / MAX_RPM);
-        }
-
-        public void run() {
-//            lowerPID.setSetpoint(lowerRPM);
-//            lowerPID.enable();
-            upperPID.setSetpoint(upperRPM);
-            upperPID.enable();
-        }
-    }
-
     private void setRPM(double power) {
         // If the power is less than 10%, ignore it and just set the
         // power to zero as we're not going to shoot any baskets with
-        // such lower power!
-        if (Math.abs(power) < 0.1) {
-            power = 0;
-        }
+        // the low power.
+        if (Math.abs(power) < 0.1)
+            power = 0.0;
 
         // Turn the shooter off and disable controls!
         if (power == 0.0) {
@@ -269,10 +248,9 @@ public class Shooter {
             return;
         }
 
-        // Give the upper motor a 5% slower rate than the upper motor.
-        // In reality the speed is less than that since the upper motor
-        // has a larger pulley on the shooter, but we'll give it a bit
-        // more delta here.
+        // Give the upper motor a slower rate than the upper motor.  In
+        // reality the speed is already less since the upper motor has a
+        // larger pulley, but we'll give it a bit more delta here.
         if (rawThrottle) {
             lowerMotor.set(power);
             upperMotor.set(power * UPPER_BIAS);
@@ -280,20 +258,12 @@ public class Shooter {
             // Use PID control
             double rpm = Math.abs(power * MAX_RPM);
 
-            // If the motors aren't running, then start them up and let
-            // them run for a bit before we use the PID controller on
-            // them to avoid PID windup.
-            if (power > 0 && !upperPID.isEnable()) {
-                new Timer().schedule(
-                    new StartUpTask(rpm, rpm * UPPER_BIAS), 2000);
-            } else {
-//                lowerPID.setSetpoint(rpm);
-                upperPID.setSetpoint(rpm * UPPER_BIAS);
-            }
-            // Only print out a new value if the setpoint changes significantly
-            if (Math.abs((rpm * UPPER_BIAS) - upperPID.getSetpoint()) > 5)
-                System.out.println("SP=" + (rpm * UPPER_BIAS) +
-                                   ", PP=" + upperPID.getSetpoint());
+            if (!lowerPID.isEnable())
+                lowerPID.enable();
+            if (!upperPID.isEnable())
+                upperPID.enable();
+            lowerPID.setSetpoint(rpm);
+            upperPID.setSetpoint(rpm * UPPER_BIAS);
         }
     }
 }
