@@ -1,12 +1,12 @@
 import javax.vecmath.Point3d;
 
 public class HoopEstimate {
-    public double elevation;      // vertical angle of this estimate relative to camera orientation
-    public double azimuth;        // horizontal angle of this estimate relative to camera orientation
-    public double range;          // distance from camera to point where range estimate was taken
-    public double error;          // approx std we can expect from this estimate; used for combining estimates
+    public double elevation;      // vertical angle of this estimate relative to camera orientation (in radians)
+    public double azimuth;        // horizontal angle of this estimate relative to camera orientation (radians)
+    public double range;          // distance from camera to point where range estimate was taken (in inches, of all things)
+    public double error;          // approx std we can expect from this estimate; used for combining estimates (inches)
     public double floorRange;     // distance between camera and wall directly beneath hoop (ignores vertical component -- just takes x & z)
-    public Point3d rangePoint;    // Absolute coord system 3D point where range estimate was taken.
+    public Point3d rangePoint;    // Absolute coord system 3D point where range estimate was taken (inches)
 
     public HoopEstimate(double cornerX, double cornerY, double hoopX, double hoopY) {
 
