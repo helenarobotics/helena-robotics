@@ -236,14 +236,15 @@ public class Shooter {
         if (Math.abs(power) < 0.1)
             power = 0.0;
 
-        // Turn the shooter off and disable controls!
+        // Disable PID control and turn the shooter motors off
         if (power == 0.0) {
-            // Disable PID
+            // Disable PID (if enabled)
             lowerPID.disable();
             lowerPID.setSetpoint(0);
-            lowerMotor.set(0);
             upperPID.disable();
             upperPID.setSetpoint(0);
+            // Turn-off motors
+            lowerMotor.set(0);
             upperMotor.set(0);
             return;
         }
