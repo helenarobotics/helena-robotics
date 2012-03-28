@@ -76,7 +76,7 @@ public class ArduinoRPMSensor extends I2C implements ISensor {
      *
      * @return the array of RPM values
      */
-    public int[] getRPMs() {
+    public synchronized int[] getRPMs() {
         int retVal[] = new int[2];
 
 //        byte sndBuf[] = new byte[] { DATA_REG, BOTH_MOTORS };
@@ -89,7 +89,7 @@ public class ArduinoRPMSensor extends I2C implements ISensor {
         return retVal;
     }
 
-    public short decodeShortLE(byte buff[], int offset) {
+    private short decodeShortLE(byte buff[], int offset) {
         return (short)((buff[offset] & 0xFF) | (buff[offset + 1] << 8));
     }
 }
