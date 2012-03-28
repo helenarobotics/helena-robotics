@@ -17,7 +17,7 @@ import java.awt.*;
 
 
 
-public class IU {
+public class testIU {
     public static void main(String args[]) {
         if (args.length != 2) {
             System.err.println("requires two arguments: inputdirname outputdirname");
@@ -44,6 +44,16 @@ public class IU {
 	    String outdir = args[1];
 	    String slash = System.getProperty("file.separator");
 
+	    // Set up simple queues for sending images, and returning results (RegionGrow data) from image understanding thread
+	    ImageQueue iq = new ImageQueue();
+	    DataQueue dq = new DataQueue();
+
+	    // Create image understanding object, and begin its async processing thread; last param, 2, = desampling factor
+	    ImageUnderstanding iu = new ImageUnderstanding(iq, dq, 1);
+
+	    Thread t = new Thread(iu);
+	    t.start();
+
 	    for (int i=0; i<children.length; i++) {
 		// Get filename of file or directory
 		String filename = children[i];
@@ -52,31 +62,43 @@ public class IU {
 		    System.out.println("processing file '" + filename + "'");
 
 		    BufferedImage image = ImageIO.read(new File(filepath));
+		    iq.put(image);
 
-		    // This constructor does all the image processing work: color match, threshold, region growing, and region boundary analysis
-		    RegionGrow RG = new RegionGrow(image, 80, 200);     // 80 = image threshold, 200 = min region size (in pixels)
-		    System.out.println(RG);    // debug: report out regions we found
+		    // get the results.  Returns null if not ready (from any previous image, not just most recent)
 
-		    // Create color image from original input image.  We'll overlay region boundaries, crosshairs, etc
-		    BufferedImage cimage = new BufferedImage(image.getWidth(), image.getHeight(),  BufferedImage.TYPE_INT_RGB);
-		    Graphics g = cimage.getGraphics();  
-		    g.drawImage(image, 0, 0, null);
+		    ImageResults results = null;
+
+		    int n = 0;
+
+		    while ((results = dq.get()) == null) {
+			try {
+			    Thread.currentThread().sleep(10);  // sleep 10 msec
+			} catch (InterruptedException e) {
+			    e.printStackTrace();
+			}
+		    }
+
+		    System.out.println(results);    // debug: report out regions we found
 
 		    //draw bounding rectangles, polygons
-		    RG.drawRegions(cimage);
+		    results.drawRegions(image);
 
 		    // draw crosshairs -- location we expect ball to hit at current thrower wheel speed and distance
 		    // (just for demonstration purposes now -- we need to calculate actual distance and thrower speed)
-		    drawCrosshairs(cimage, cimage.getWidth()/2.0, cimage.getHeight() * 0.30);
+		    drawCrosshairs(image, image.getWidth()/2.0, image.getHeight() * 0.30);
 
 		    // Write image with box overlays
-		    ImageIO.write(cimage, "jpg", new File(outdir + slash + filename.substring(0, filename.length()-4) + "-overlay.jpg"));
-		    // ImageIO.write(RG.thresholdedImage, "jpg", new File(filename.substring(0, filename.length()-4) + "-thresholded.jpg"));
+		    ImageIO.write(image, "jpg", new File(outdir + slash + filename.substring(0, filename.length()-4) + "-overlay.jpg"));
+
+		    // just for debugging, also look at thresholded image
+		    ImageIO.write(results.thresholdedImage, "jpg", new File(outdir + slash + filename.substring(0, filename.length()-4) + "-thresholded.jpg"));
 
 		} catch (IOException e) {
 		    e.printStackTrace();
 		}
 	    }
+
+	    iu.stop();        // set a flag to stop at the next appropriate moment.
 	}
     }
 

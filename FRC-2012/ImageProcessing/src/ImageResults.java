@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
 import java.awt.geom.*;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
@@ -10,17 +11,32 @@ import java.awt.Rectangle;
 import java.awt.Polygon;
 import javax.vecmath.Point3d;
 
-public class RegionGrow {
-    public Vector<Region> regions;
-    BufferedImage thresholdedImage;    // color-detected and thresholded image we keep.
+public class ImageResults {
+
+    // output data
+    public Vector<Region> regions;       // each Region corresponds to a detected hoop, and contains estimated location, range, etc
+    Point3d robotPosition = null;        // robot {x, y, z} location, when available (depends on view of hoops)
+    BufferedImage thresholdedImage = null;
+
+    // input processing parameters (set by constructor)
+    int downsample;                    // 1 = no desampling, 2 = 1/2 size image, etc
     int threshold;                     // pixel threshold for on/off after color detection
     int minSize;                       // minimum acceptable pixel count in grown regions (remove and ignore anything smaller)
 
-    public RegionGrow(BufferedImage image, int _threshold, int _minSize) {
+    public ImageResults(BufferedImage image, int _downsample, int _threshold, int _minSize) {
+	downsample = _downsample;  
         minSize = _minSize;
-	regions = new Vector<Region> (10);
+	regions = new Vector<Region> (10);      // 'regions' = recognized hoops; these objects hold the key results
 	threshold = _threshold;
-	thresholdedImage = detectGreen(image, threshold);
+
+	// Create downsampled image (we can check for downsample == 1 condition, but checking the code now)
+	BufferedImage cimage = new BufferedImage(image.getWidth()/downsample, image.getHeight()/downsample,  BufferedImage.TYPE_INT_RGB);
+
+	Graphics2D g = cimage.createGraphics();
+	g.drawImage(image, 0, 0, image.getWidth()/downsample, image.getHeight()/downsample, null);
+	g.dispose();
+
+	thresholdedImage = detectGreen(cimage, threshold);
 
 	Region region;
 
@@ -37,6 +53,75 @@ public class RegionGrow {
 	labelHoops();
 	estimateRanges();
 	estimateRobotPosition();
+	adjustForDownsample();
+    }
+
+
+    // rescales results data to fit original image (prior to desampling)
+
+    private void adjustForDownsample() {
+
+	for (int i = 0; i < regions.size(); i++) {
+	    Region r = regions.elementAt(i);
+
+	    // adjust the closing rectangle, if available
+	    if (r.enclosingRectangle != null) {
+		r.enclosingRectangle.height *= downsample;
+		r.enclosingRectangle.width  *= downsample;
+		r.enclosingRectangle.x *= downsample;
+		r.enclosingRectangle.y *= downsample;
+	    }
+
+	    // adjust the four sides, as available:
+	    if (r.leftEdge != null) {
+		r.leftEdge.x1 *= downsample;
+		r.leftEdge.y1 *= downsample;
+		r.leftEdge.x2 *= downsample;
+		r.leftEdge.y2 *= downsample;
+	    }
+
+	    if (r.rightEdge != null) {
+		r.rightEdge.x1 *= downsample;
+		r.rightEdge.y1 *= downsample;
+		r.rightEdge.x2 *= downsample;
+		r.rightEdge.y2 *= downsample;
+	    }
+
+	    if (r.topEdge != null) {
+		r.topEdge.x1 *= downsample; 
+		r.topEdge.y1 *= downsample; 
+		r.topEdge.x2 *= downsample; 
+		r.topEdge.y2 *= downsample; 
+	    }
+
+	    if (r.bottomEdge != null) {
+		r.bottomEdge.x1 *= downsample;
+		r.bottomEdge.y1 *= downsample;
+		r.bottomEdge.x2 *= downsample;
+		r.bottomEdge.y2 *= downsample;
+	    }
+
+	    // Adjust the four corners, as available
+	    if (r.leftTop != null) {
+		r.leftTop.x *= downsample;
+		r.leftTop.y *= downsample;
+	    }
+
+	    if (r.rightTop != null) {
+		r.rightTop.x *= downsample;
+		r.rightTop.y *= downsample;
+	    }
+
+	    if (r.leftBottom != null) {
+		r.leftBottom.x *= downsample;
+		r.leftBottom.y *= downsample;
+	    }
+
+	    if (r.rightBottom != null) {
+		r.rightBottom.x *= downsample;
+		r.rightBottom.y *= downsample;
+	    }
+	}
     }
 
     public void estimateRanges() {
@@ -50,7 +135,7 @@ public class RegionGrow {
     // Estimates robot {x, z} location based on range estimates made on multiple hoop corners
     // (generally across different hoops).
 
-    public Point3d estimateRobotPosition() {
+    public void estimateRobotPosition() {
 	double maxBaseline = 0.0;
 	HoopEstimate e1 = null, e2 = null;
 
@@ -77,8 +162,8 @@ public class RegionGrow {
 		}
 	    }
 	}
-	System.out.println("e1 = " + e1);
-	System.out.println("e2 = " + e2);
+	//	System.out.println("e1 = " + e1);
+	//	System.out.println("e2 = " + e2);
 
 	// Law of sines solution
 	if ((e1 != null) && (e2 != null)) {
@@ -97,9 +182,9 @@ public class RegionGrow {
 	    System.out.println("Robot located at {" + (int)xloc + ", " + (int)zloc + "}; phi=" + (int) Math.toDegrees(phi) 
 			       + ", lambda=" + (int)Math.toDegrees(lambda) + ", azi to center of baseline: " + 
 			       (int)Math.toDegrees((e1.azimuth + e2.azimuth)/2.0));
-	    return new Point3d(xloc, yloc, zloc);
+	    robotPosition = new Point3d(xloc, yloc, zloc);
 	}
-	else return null;
+	else robotPosition = null;
     }
 
 
