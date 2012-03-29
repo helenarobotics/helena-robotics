@@ -25,7 +25,7 @@ public class Shooter {
     private BallFeeder feeder;
 
     // RPM maxspeed (helps the PID controller)
-    private static final double MAX_RPM = 1990.0;
+    private static final double MAX_RPM = 2500.0;
 
     // Give the upper motor a 5% slower rate than the lower motor to
     // give the ball some backspin.  In reality the speed difference is
