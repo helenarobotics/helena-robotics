@@ -251,7 +251,7 @@ public class Shooter {
             lowerMotor.set(targetLowerPower);
             upperMotor.set(targetLowerPower * UPPER_BIAS);
         } else {
-            setMotors(lowerRPM, lowerRPM * UPPER_BIAS);
+            setPIDMotors(lowerRPM, lowerRPM * UPPER_BIAS);
         }
     }
 
@@ -272,7 +272,7 @@ public class Shooter {
             }
             maxWaitTries--;
 
-            // Are we up to speed on both motors?            
+            // Are we up to speed on both motors?
             if (!rawThrottle) {
                 if (lowerPID.onTarget() && upperPID.onTarget())
                     numSuccess++;
@@ -280,7 +280,7 @@ public class Shooter {
                     numSuccess = 0;
             } else {
                 // Read the motor speeds.
-                int motorRpms[] = rpmSensor.getRPMS();
+                int motorRpms[] = rpmSensor.getRPMs();
 
                 // We need to keep track of the target power
                 double targetLowerRPM = targetLowerPower * MAX_LOWER_RPM;
@@ -293,22 +293,22 @@ public class Shooter {
                 else
                     numSuccess = 0;
             }
-        } which (maxWaitTries > 0 || numSuccess >= wantSuccess);
+        } while (maxWaitTries > 0 || numSuccess >= wantSuccess);
 
         // We've either gotten there or timed out.  Either way, we're
         // going for it!
-        return (numSucess >= wantSuccess);
+        return (numSuccess >= wantSuccess);
     }
 
-    private void setLowerPower(double power) {
+    private void setLowerPower(double lowerPower) {
         // If the power is less than 10%, ignore it and just set the
         // power to zero as we're not going to shoot any baskets with
         // the low power.
-        if (Math.abs(power) < 0.1)
-            power = 0.0;
+        if (Math.abs(lowerPower) < 0.1)
+            lowerPower = 0.0;
 
         // Disable PID control and turn the shooter motors off
-        if (power == 0.0) {
+        if (lowerPower == 0.0) {
             // Disable PID (if enabled)
             if (lowerPID.isEnable()) {
                 lowerPID.reset();
@@ -331,11 +331,11 @@ public class Shooter {
             upperMotor.set(targetLowerPower * UPPER_BIAS);
         } else {
             double lowerRPM = lowerPower * MAX_LOWER_RPM;
-            setMotors(lowerRPM, lowerRPM * UPPER_BIAS);
+            setPIDMotors(lowerRPM, lowerRPM * UPPER_BIAS);
         }
     }
 
-    private setPIDMotors(double lowerRPM, double upperRPM) {
+    private void setPIDMotors(double lowerRPM, double upperRPM) {
         if (!lowerPID.isEnable())
             lowerPID.enable();
         if (!upperPID.isEnable())
