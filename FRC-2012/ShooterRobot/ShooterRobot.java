@@ -42,7 +42,26 @@ public class ShooterRobot extends SimpleRobot {
     }
 
     public void autonomous() {
-        System.out.println("No Autonomous mode code");
+        System.out.println("Autonomous mode running");
+
+        // First thing we want to do is get the motors running and wait
+        // for them to get up to speed.
+        shooter.setLowerRPM(1800);
+        shooter.waitForMotors();
+
+        // Shoot a ball
+        shooter.shootBall();
+
+        // Wait for the motors to get back up to speed.
+        shooter.waitForMotors();
+        
+        // Shoot a second ball
+        shooter.shootBall();
+
+        // Turn off the motors
+        shooter.setLowerRPM(0);
+        
+        System.out.println("Autonomous mode completed");
     }
 
     /**
