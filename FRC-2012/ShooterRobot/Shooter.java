@@ -11,9 +11,6 @@ import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.Victor;
 
 public class Shooter {
-    // RPM maxspeed (helps the PID controller)
-    public static final double MAX_RPM = 2500.0;
-
     // The shooter motors
     private Victor lowerMotor;
     private Victor upperMotor;
@@ -27,11 +24,21 @@ public class Shooter {
     // Ball Feeder
     private BallFeeder feeder;
 
+    // Lower Motor RPM maxspeed (helps the PID controller)
+    public static final double MAX_LOWER_RPM = 2500.0;
+
     // Give the upper motor a 5% slower rate than the lower motor to
     // give the ball some backspin.  In reality the speed difference is
     // greater than 5% since the upper motor has a larger pulley on the
     // shooter, but we'll give it a bit more delta here.
     private static final double UPPER_BIAS = 0.95;
+
+    // How long will we wait for the motors to come up to speed.
+    private static final long MAX_MOTOR_WAIT_TIME = 4 * 1000;
+
+    // How long should the motors have a speed that's 'good' enough for
+    // us to consider them up-to-speed?
+    private static final long MIN_MOTOR_CORRECT_TIME = 500;
 
     // An effecient way to control the speed of the motors
     private PIDController lowerPID;
@@ -41,12 +48,12 @@ public class Shooter {
     private static final double LOWER_KP = 0.00005;
     private static final double LOWER_KI = 0.0;
     private static final double LOWER_KD = LOWER_KP * 5.0;
-    private static final double LOWER_TOLERANCE = 10.0;
+    private static final double LOWER_TOLERANCE = 50.0;
 
     private static final double UPPER_KP = 0.00005;
     private static final double UPPER_KI = 0.0;
     private static final double UPPER_KD = UPPER_KP * 5.0;
-    private static final double UPPER_TOLERANCE = 10.0;
+    private static final double UPPER_TOLERANCE = 50.0;
 
     public Shooter() {
         // Initialize the motors
@@ -109,7 +116,7 @@ public class Shooter {
         lowerPID.setTolerance(LOWER_TOLERANCE);
 
         // Set the minimum and maximum RPM range
-        lowerPID.setInputRange(0, MAX_RPM);
+        lowerPID.setInputRange(0, MAX_LOWER_RPM);
 
         // The motor range is truly all position (actually negative and
         // limited in the PIDOutput cass), but we need it to be able to
@@ -160,7 +167,7 @@ public class Shooter {
         upperPID.setTolerance(UPPER_TOLERANCE);
 
         // Set the PID ranges
-        upperPID.setInputRange(0, MAX_RPM * UPPER_BIAS);
+        upperPID.setInputRange(0, MAX_LOWER_RPM * UPPER_BIAS);
         upperPID.setOutputRange(-1.0, 1.0);
     }
 
@@ -212,6 +219,8 @@ public class Shooter {
     // Toggle between PID and straight throttle control for the shooter
     // motor speeds
     private boolean rawThrottle = false;
+    private double targetLowerPower = 0.0;
+
     private boolean wasRpmPressed = false;
     private static final int RPM_BTN = 2;
     private void joystickRpm(Joystick joy) {
@@ -238,12 +247,57 @@ public class Shooter {
     public void setLowerRPM(double lowerRPM) {
         if (rawThrottle) {
             // Convert RPM to power
-            double lowerPower = lowerRPM / MAX_RPM;
-            lowerMotor.set(lowerPower);
-            upperMotor.set(lowerPower * UPPER_BIAS);
+            targetLowerPower = lowerRPM / MAX_LOWER_RPM;
+            lowerMotor.set(targetLowerPower);
+            upperMotor.set(targetLowerPower * UPPER_BIAS);
         } else {
             setMotors(lowerRPM, lowerRPM * UPPER_BIAS);
         }
+    }
+
+    // Wait for the motors to come up to speed.
+    public boolean waitForMotors() {
+        // How long will we wait for the motors to come up to speed.
+        int maxWaitTries = 50;
+        final long myWaitPeriod = MAX_MOTOR_WAIT_TIME / maxWaitTries;
+
+        // How many successful reading do we have to have for
+        final long wantSuccess = MIN_MOTOR_CORRECT_TIME / myWaitPeriod;
+        long numSuccess = 0;
+        do {
+            // Wait a bit
+            try {
+                Thread.sleep(myWaitPeriod);
+            } catch (InterruptedException ignored) {
+            }
+            maxWaitTries--;
+
+            // Are we up to speed on both motors?            
+            if (!rawThrottle) {
+                if (lowerPID.onTarget() && upperPID.onTarget())
+                    numSuccess++;
+                else
+                    numSuccess = 0;
+            } else {
+                // Read the motor speeds.
+                int motorRpms[] = rpmSensor.getRPMS();
+
+                // We need to keep track of the target power
+                double targetLowerRPM = targetLowerPower * MAX_LOWER_RPM;
+                double targetUpperRPM = targetLowerRPM * UPPER_BIAS;
+                if (Math.abs(
+                        targetLowerRPM - motorRpms[1]) < LOWER_TOLERANCE &&
+                    Math.abs(
+                        targetUpperRPM - motorRpms[0]) < UPPER_TOLERANCE)
+                    numSuccess++;
+                else
+                    numSuccess = 0;
+            }
+        } which (maxWaitTries > 0 || numSuccess >= wantSuccess);
+
+        // We've either gotten there or timed out.  Either way, we're
+        // going for it!
+        return (numSucess >= wantSuccess);
     }
 
     private void setLowerPower(double power) {
@@ -272,10 +326,11 @@ public class Shooter {
 
         // Run the motors
         if (rawThrottle) {
-            lowerMotor.set(lowerPower);
-            upperMotor.set(lowerPower * UPPER_BIAS);
+            targetLowerPower = lowerPower;
+            lowerMotor.set(targetLowerPower);
+            upperMotor.set(targetLowerPower * UPPER_BIAS);
         } else {
-            double lowerRPM = lowerPower * MAX_RPM;
+            double lowerRPM = lowerPower * MAX_LOWER_RPM;
             setMotors(lowerRPM, lowerRPM * UPPER_BIAS);
         }
     }
