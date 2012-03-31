@@ -166,9 +166,9 @@ public class Shooter {
 
     public void disable() {
         // Shut everything down!
-        lowerPID.disable();
+        lowerPID.reset();
         lowerMotor.set(0);
-        upperPID.disable();
+        upperPID.reset();
         upperMotor.set(0);
         rotationMotor.set(0);
     }
@@ -222,8 +222,8 @@ public class Shooter {
                 upperPID.enable();
             } else {
                 // Disable PID
-                lowerPID.disable();
-                upperPID.disable();
+                lowerPID.reset();
+                upperPID.reset();
             }
         }
         wasRpmPressed = nowPressed;
@@ -239,10 +239,14 @@ public class Shooter {
         // Disable PID control and turn the shooter motors off
         if (power == 0.0) {
             // Disable PID (if enabled)
-            lowerPID.disable();
-            lowerPID.setSetpoint(0);
-            upperPID.disable();
-            upperPID.setSetpoint(0);
+            if (lowerPID.isEnable()) {
+                lowerPID.reset();
+                lowerPID.setSetpoint(0);
+            }
+            if (upperPID.isEnable()) {
+                upperPID.reset();
+                upperPID.setSetpoint(0);
+            }
             // Turn-off motors
             lowerMotor.set(0);
             upperMotor.set(0);
