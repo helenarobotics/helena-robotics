@@ -188,7 +188,7 @@ public class Shooter {
         // Read the throttle to determine the speed of the shooter motor
         // and convert it to a number between 0 and 1.  Use that number
         // to set the RPM of the shooter.
-        setRPM((joy.getThrottle() - 1.0) / 2.0);
+        setLowerPower((joy.getThrottle() - 1.0) / 2.0);
     }
 
     public void shootBall() {
@@ -233,7 +233,20 @@ public class Shooter {
         wasRpmPressed = nowPressed;
     }
 
-    public void setRPM(double power) {
+    // The lower motor is really what controls things, so we'll use it
+    // and have the upper motor slave to it.
+    public void setLowerRPM(double lowerRPM) {
+        if (rawThrottle) {
+            // Convert RPM to power
+            double lowerPower = lowerRPM / MAX_RPM;
+            lowerMotor.set(lowerPower);
+            upperMotor.set(lowerPower * UPPER_BIAS);
+        } else {
+            setMotors(lowerRPM, lowerRPM * UPPER_BIAS);
+        }
+    }
+
+    private void setLowerPower(double power) {
         // If the power is less than 10%, ignore it and just set the
         // power to zero as we're not going to shoot any baskets with
         // the low power.
@@ -257,22 +270,22 @@ public class Shooter {
             return;
         }
 
-        // Give the upper motor a slower rate than the upper motor.  In
-        // reality the speed is already less since the upper motor has a
-        // larger pulley, but we'll give it a bit more delta here.
+        // Run the motors
         if (rawThrottle) {
-            lowerMotor.set(power);
-            upperMotor.set(power * UPPER_BIAS);
+            lowerMotor.set(lowerPower);
+            upperMotor.set(lowerPower * UPPER_BIAS);
         } else {
-            // Use PID control
-            double rpm = Math.abs(power * MAX_RPM);
-
-            if (!lowerPID.isEnable())
-                lowerPID.enable();
-            if (!upperPID.isEnable())
-                upperPID.enable();
-            lowerPID.setSetpoint(rpm);
-            upperPID.setSetpoint(rpm * UPPER_BIAS);
+            double lowerRPM = lowerPower * MAX_RPM;
+            setMotors(lowerRPM, lowerRPM * UPPER_BIAS);
         }
+    }
+
+    private setPIDMotors(double lowerRPM, double upperRPM) {
+        if (!lowerPID.isEnable())
+            lowerPID.enable();
+        if (!upperPID.isEnable())
+            upperPID.enable();
+        lowerPID.setSetpoint(lowerRPM);
+        upperPID.setSetpoint(upperRPM);
     }
 }
