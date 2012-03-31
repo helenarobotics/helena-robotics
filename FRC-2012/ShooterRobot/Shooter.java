@@ -11,6 +11,9 @@ import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.Victor;
 
 public class Shooter {
+    // RPM maxspeed (helps the PID controller)
+    public static final double MAX_RPM = 2500.0;
+
     // The shooter motors
     private Victor lowerMotor;
     private Victor upperMotor;
@@ -23,9 +26,6 @@ public class Shooter {
 
     // Ball Feeder
     private BallFeeder feeder;
-
-    // RPM maxspeed (helps the PID controller)
-    private static final double MAX_RPM = 2500.0;
 
     // Give the upper motor a 5% slower rate than the lower motor to
     // give the ball some backspin.  In reality the speed difference is
@@ -176,7 +176,7 @@ public class Shooter {
     public void joystickControl(Joystick joy) {
         // Shoot the ball!
         if (joystickTrigger(joy))
-            feeder.shootBall();
+            shootBall();
 
         // Toggle between 'PID' and raw throttle control for the shooter
         // motors (debugging).
@@ -189,6 +189,10 @@ public class Shooter {
         // and convert it to a number between 0 and 1.  Use that number
         // to set the RPM of the shooter.
         setRPM((joy.getThrottle() - 1.0) / 2.0);
+    }
+
+    public void shootBall() {
+        feeder.shootBall();
     }
 
     private static final int TRIGGER_BTN = 1;
@@ -229,7 +233,7 @@ public class Shooter {
         wasRpmPressed = nowPressed;
     }
 
-    private void setRPM(double power) {
+    public void setRPM(double power) {
         // If the power is less than 10%, ignore it and just set the
         // power to zero as we're not going to shoot any baskets with
         // the low power.
