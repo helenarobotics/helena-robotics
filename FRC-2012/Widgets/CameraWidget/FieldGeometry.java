@@ -1,7 +1,6 @@
 import java.awt.geom.*;
 import java.awt.Rectangle;
 import java.awt.Polygon;
-import javax.vecmath.Point3d;
 
 //     public enum HoopLocation { unknown, left, top, right, bottom };
 
@@ -53,41 +52,23 @@ public class FieldGeometry {
 	// Estimate range to 4 corners, as possible
 
 	if (hoop.leftTop != null) {
-	    HoopEstimate hr = new HoopEstimate(hoop.leftTop.x, hoop.leftTop.y, left, top, 
-					       hoop.xPixels, hoop.yPixels);
+	    HoopEstimate hr = new HoopEstimate(hoop.leftTop.x, hoop.leftTop.y, left, top);
 	    hoop.estimates.add(hr);                            // Save for later.  We'll combine the various range estimates to calc robot position etc.
 	}
 
 	if (hoop.rightTop != null) {
-	    HoopEstimate hr = new HoopEstimate(hoop.rightTop.x, hoop.rightTop.y, right, top,
-					       hoop.xPixels, hoop.yPixels);
+	    HoopEstimate hr = new HoopEstimate(hoop.rightTop.x, hoop.rightTop.y, right, top);
 	    hoop.estimates.add(hr);                            // Save for later
 	}
 
 	if (hoop.leftBottom != null) {
-	    HoopEstimate hr = new HoopEstimate(hoop.leftBottom.x, hoop.leftBottom.y, left, bot,
-					       hoop.xPixels, hoop.yPixels);
+	    HoopEstimate hr = new HoopEstimate(hoop.leftBottom.x, hoop.leftBottom.y, left, bot);
 	    hoop.estimates.add(hr);                            // Save for later
 	}
 
 	if (hoop.rightBottom != null) {
-	    HoopEstimate hr = new HoopEstimate(hoop.rightBottom.x, hoop.rightBottom.y, right, bot,
-					       hoop.xPixels, hoop.yPixels);
+	    HoopEstimate hr = new HoopEstimate(hoop.rightBottom.x, hoop.rightBottom.y, right, bot);
 	    hoop.estimates.add(hr);                            // Save for later
-	}
-
-	// Calculate range to center of hoop (approx)
-
-	if (hoop.estimates.size() == 0) {
-	    hoop.range = -1.0;  // this should never happen
-	}
-	else {
-	    double sum = 0.0;
-	    for (int i = 0; i < hoop.estimates.size(); i++) {
-		HoopEstimate he = hoop.estimates.elementAt(i);
-		sum += he.range;
-	    }
-	    hoop.range = sum / hoop.estimates.size();
 	}
     }
 }

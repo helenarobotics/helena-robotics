@@ -9,7 +9,6 @@ import java.awt.image.WritableRaster;
 import java.awt.image.Raster;
 import java.awt.Rectangle;
 import java.awt.Polygon;
-import javax.vecmath.Point3d;
 
 public class ImageResults {
 
@@ -20,7 +19,6 @@ public class ImageResults {
 
     // input processing parameters (set by constructor)
     int downsample;                    // 1 = no desampling, 2 = 1/2 size image, etc
-    int nx, ny;                        // image size (after downsampling)
     int threshold;                     // pixel threshold for on/off after color detection
     int minSize;                       // minimum acceptable pixel count in grown regions (remove and ignore anything smaller)
 
@@ -30,14 +28,11 @@ public class ImageResults {
 	regions = new Vector<Region> (10);      // 'regions' = recognized hoops; these objects hold the key results
 	threshold = _threshold;
 
-	nx = image.getWidth() / downsample;
-	ny = image.getHeight() / downsample;
-
 	// Create downsampled image (we can check for downsample == 1 condition, but checking the code now)
-	BufferedImage cimage = new BufferedImage(nx, ny,  BufferedImage.TYPE_INT_RGB);
+	BufferedImage cimage = new BufferedImage(image.getWidth()/downsample, image.getHeight()/downsample,  BufferedImage.TYPE_INT_RGB);
 
 	Graphics2D g = cimage.createGraphics();
-	g.drawImage(image, 0, 0, nx, ny, null);
+	g.drawImage(image, 0, 0, image.getWidth()/downsample, image.getHeight()/downsample, null);
 	g.dispose();
 
 	thresholdedImage = detectGreen(cimage, threshold);
@@ -131,9 +126,8 @@ public class ImageResults {
     public void estimateRanges() {
 	for (int i = 0; i < regions.size(); i++) {
 	    Region r = regions.elementAt(i);
-	    if (r.hoopLocation != Region.HoopLocation.unknown) {
+	    if (r.hoopLocation != Region.HoopLocation.unknown)
 		FieldGeometry.estimateRange(r);
-	    }
 	}
     }
 
@@ -204,7 +198,7 @@ public class ImageResults {
 	 for (int x = 0; x < img.getWidth(); x++){
 	     for (int y = 0; y < img.getHeight(); y++){
 		 int rgb[] = getPixelData(img, x, y);
-		 int pixelValue = rgb[1] - (rgb[0] + rgb[2])/2;
+		 int pixelValue = rgb[1] - (rgb[0] + rgb[2])/3;  // was 2
 		 //   if (pixelValue > 255) pixelValue = 255;
 		 // else if (pixelValue < 0) pixelValue = 0;
 		 if (pixelValue >= thresh)
@@ -364,18 +358,13 @@ public class ImageResults {
 
 	Region highest = null, lowest = null, rightmost = null, leftmost = null;
 
-	// Punt if no regions to process (the area comparison code below will
-	// blow up (not an elegant solutions, but hey)
-
-	if (this.regions.size() == 0)
-	    return;
-
 	// Pick out the top 4 (largest, in this case) regions as candidate hoops.
 	// Looking for equality of size might be better; dunno.
 
 	Region [] sorted = new Region [this.regions.size()];
 
 	// fill array with regions for analysis.  We need to add logic to pick "the best 4", rather than the first.
+
 
 	for (int i = 0; i < this.regions.size(); i++) {
 	    sorted[i] = this.regions.elementAt(i);
@@ -384,30 +373,7 @@ public class ImageResults {
 	// Pick largest four regions (measured by area of their enclosig rectangle)
 	quickSortByArea(sorted, 0, this.regions.size() - 1);
 
-	/* 
-	 * Now remove regions that are substantially smaller than largest (probably false alarms), and keep at
-	 * most 4 (the number of hoops in FRC 2012 competition)
-	 */
-	double largestArea = sorted[0].getArea();    // largest occupies first slot after sorting (see above)
-	// min allowed region size
-	double minAllowedArea = (nx * ny) * 2.0E-03;
-
-	int nregions = 0;
-	for (int i = 0; i < Math.min(4, this.regions.size()) &&
-		 sorted[i].getArea() >= (largestArea * 0.2) &&
-		 sorted[i].getArea() >= minAllowedArea; i++) {
-	    double h = sorted[i].getEnclosingRectangle().height;
-	    double w = sorted[i].getEnclosingRectangle().width;
-	    double aspect = w / h;
-	    if ((aspect < 4.0) && (aspect > 0.25))
-		nregions++;
-	    else break;
-	}
-
-	// Remove regions to reflect the above filtering (remove false alarms from results we provided)
-	this.regions.removeAllElements();
-	for (int i = 0; i < nregions; i++)
-	    this.regions.add(sorted[i]);
+	int nregions = Math.min(4, this.regions.size());
 
 	// note that y dimension is flipped; {0, 0} pixel index sits in upper left corner of the image
 
@@ -432,7 +398,7 @@ public class ImageResults {
 
 	case 1:             
 	    // if we see only one region, we have no way to know which it is
-	    sorted[0].hoopLocation = Region.HoopLocation.top;   // XXX Was 'unknown'
+	    sorted[0].hoopLocation = Region.HoopLocation.top; // XXX was 'unknown'
 	    break;
 
 	case 2:
