@@ -25,8 +25,8 @@ public class ShooterRobot extends SimpleRobot {
         rightMotor.set(0);
 
         // Setup the transmission shifter.
-//        shifter = new Solenoid(1);
-//        shifter.set(true);
+        shifter = new Solenoid(Configuration.SOLENOID_CHANNEL);
+        shifter.set(true);
 
         // The gyro
 //        gyro = new GyroSensor(Configuration.GYRO_ANALOG_CHANNEL, 100);
@@ -116,8 +116,8 @@ public class ShooterRobot extends SimpleRobot {
 
             // Shift the transmission when the button is pressed
             if (joystickTrigger(driveStick)) {
-//                shifter.set(!shifter.get());
-//                DashboardComm.shifterStatus = shifter.get();
+                shifter.set(!shifter.get());
+                DashboardComm.shifterStatus = shifter.get();
             }
 
             // Control the shooter with the second joystick.
