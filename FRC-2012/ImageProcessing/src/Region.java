@@ -22,7 +22,7 @@ public class Region {
     Vector<Point> points;      // temporary space used while building the region.
     public HoopLocation hoopLocation;
     public Rectangle enclosingRectangle;
-    //    double range;                 // range = dist from camera to a 3D point located on the hoop (see below)
+    double range;                 // range = dist from camera to a 3D point at center of the backboard (above the rim)
     Vector<HoopEstimate> estimates;
     public Line2D.Double leftEdge;
     public Line2D.Double rightEdge;
@@ -429,7 +429,6 @@ private int partition(dataPoint arr[], int left, int right){
 	return (r1.x > (r2.x + r2.width/2.0));
     }
 
-	// Now draw a tight polygon around the hoop, if available
 
     public void drawEnclosingRectangle(BufferedImage cimage) {
 
@@ -454,16 +453,10 @@ private int partition(dataPoint arr[], int left, int right){
 	g2.drawPolygon(p2);
 
 	String distance = "";
-	if (estimates.size() > 0) {
-	    double sum = 0.0;
-	    for (int i = 0; i < estimates.size(); i++) {
-		HoopEstimate he = estimates.elementAt(i);
-		sum += he.range;
-	    }
-	    double ft = sum / (estimates.size() * 12.0);
-	    if (ft > 0.0)
-		distance = (int) ft + "." + (int)((ft - (int)ft) * 10.0) + "ft";
-	}
+	double ft = this.range / 12.0;
+	if (ft > 0.0)
+	    distance = (int) ft + "." + (int)((ft - (int)ft) * 10.0) + "ft";
+
 	// now put a label on
 	switch (this.hoopLocation) {
 	case unknown:
