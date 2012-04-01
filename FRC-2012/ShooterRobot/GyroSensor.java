@@ -17,7 +17,7 @@ class GyroSensor implements Runnable {
 
     public void run() {
         while (true) {
-            DataLogger.gyroAngle = gyro.getAngle();
+            DashboardComm.gyroAngle = gyro.getAngle();
 
             // Wait some time and do it again!
             try {

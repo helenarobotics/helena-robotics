@@ -80,7 +80,7 @@ public class Shooter {
                         rpmSensor.getRPM(ArduinoRPMSensor.BOTTOM_MOTOR);
                     if ((count++ % 25) == 0)
                         System.out.println("BtmRPM=" + btmRPM);
-                    DataLogger.rpmBottom = btmRPM;
+                    DashboardComm.rpmBottom = btmRPM;
                     return btmRPM;
                 }
             };
@@ -108,7 +108,7 @@ public class Shooter {
 //                        "BtmPow=" + newVal + ", Change=" + output);
                     lowerMotor.set(newVal);
                     previousValue = newVal;
-                    DataLogger.powerBottom = newVal;
+                    DashboardComm.powerBottom = newVal;
                 }
             };
         lowerPID = new PIDController(LOWER_KP, LOWER_KI, LOWER_KD,
@@ -131,7 +131,7 @@ public class Shooter {
                         rpmSensor.getRPM(ArduinoRPMSensor.TOP_MOTOR);
                     if ((count++ % 25) == 0)
                         System.out.println("TopRPM=" + topRPM);
-                    DataLogger.rpmTop = topRPM;
+                    DashboardComm.rpmTop = topRPM;
                     return topRPM;
                 }
             };
@@ -159,7 +159,7 @@ public class Shooter {
 //                        "TopPow=" + newVal + ", Change=" + output);
                     upperMotor.set(newVal);
                     previousValue = newVal;
-                    DataLogger.powerTop = newVal;
+                    DashboardComm.powerTop = newVal;
                 }
             };
         upperPID = new PIDController(UPPER_KP, UPPER_KI, UPPER_KD,
@@ -181,6 +181,10 @@ public class Shooter {
     }
 
     public void joystickControl(Joystick joy) {
+        // Keep track of the shooter joystick controls.
+        DashboardComm.joy2X = joy.getX();
+        DashboardComm.joy2Y = joy.getY();
+
         // Shoot the ball!
         if (joystickTrigger(joy))
             shootBall();
@@ -301,6 +305,8 @@ public class Shooter {
     }
 
     private void setLowerPower(double lowerPower) {
+        DashboardComm.shooterThrottle = lowerPower;
+
         // If the power is less than 10%, ignore it and just set the
         // power to zero as we're not going to shoot any baskets with
         // the low power.
@@ -330,7 +336,7 @@ public class Shooter {
             lowerMotor.set(targetLowerPower);
             upperMotor.set(targetLowerPower * UPPER_BIAS);
         } else {
-            double lowerRPM = lowerPower * MAX_LOWER_RPM;
+            double lowerRPM = Math.abs(lowerPower * MAX_LOWER_RPM);
             setPIDMotors(lowerRPM, lowerRPM * UPPER_BIAS);
         }
     }

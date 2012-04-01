@@ -43,6 +43,7 @@ public class ShooterRobot extends SimpleRobot {
 
     public void autonomous() {
         System.out.println("Autonomous mode running");
+        DashboardComm.startTimer();
 
         // First thing we want to do is get the motors running and wait
         // for them to get up to speed.
@@ -61,6 +62,7 @@ public class ShooterRobot extends SimpleRobot {
         // Turn off the motors
         shooter.setLowerRPM(0);
 
+        DashboardComm.stopTimer();
         System.out.println("Autonomous mode completed");
     }
 
@@ -71,6 +73,7 @@ public class ShooterRobot extends SimpleRobot {
      */
     public void operatorControl() {
         System.out.println("Starting operatorControl");
+        DashboardComm.startTimer();
 
         // Drive control is done with the first joystick
         Joystick driveStick = new Joystick(Configuration.JOYSTICK_DRIVER);
@@ -91,7 +94,11 @@ public class ShooterRobot extends SimpleRobot {
             // Feed the watchdog to keep the drive motors running
             getWatchdog().feed();
 
-            // Ignore the dead-spot near the center of the joystick
+            // Set the joystick values in the DataLogger.
+            DashboardComm.joy1Direction = driveStick.getDirectionRadians();
+            DashboardComm.joy1Magnitude = driveStick.getMagnitude();
+
+            // Ignore the dead-spot near the center of the jotick
             if (Math.abs(driveStick.getMagnitude()) > 0.05) {
                 // Setting the second parameter to true adds greater
                 // sensitivity at lower speeds.
@@ -101,12 +108,13 @@ public class ShooterRobot extends SimpleRobot {
             // Shift the transmission when the button is pressed
             if (joystickTrigger(driveStick)) {
 //                shifter.set(!shifter.get());
-//                DataLogger.shifterStatus = shifter.get();
+//                DashboardComm.shifterStatus = shifter.get();
             }
 
             // Control the shooter with the second joystick.
             shooter.joystickControl(shootStick);
         }
+        DashboardComm.stopTimer();
     }
 
     private static final int TRIGGER_BTN = 1;
