@@ -392,12 +392,12 @@ public class ImageResults {
 
 	int nregions = 0;
 	for (int i = 0; i < Math.min(4, this.regions.size()) &&
-		 sorted[i].getArea() >= (largestArea * 0.3) &&
+		 sorted[i].getArea() >= (largestArea * 0.2) &&
 		 sorted[i].getArea() >= minAllowedArea; i++) {
 	    double h = sorted[i].getEnclosingRectangle().height;
 	    double w = sorted[i].getEnclosingRectangle().width;
 	    double aspect = w / h;
-	    if ((aspect < 2.0) && (aspect > 0.5))
+	    if ((aspect < 4.0) && (aspect > 0.25))
 		nregions++;
 	    else break;
 	}
