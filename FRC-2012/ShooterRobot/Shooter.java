@@ -15,6 +15,9 @@ public class Shooter {
     private Victor lowerMotor;
     private Victor upperMotor;
 
+    // Bridge Arm
+    private Victor bridgeMotor;
+
     // RPM Sensor
     private ArduinoRPMSensor rpmSensor;
 
@@ -61,6 +64,9 @@ public class Shooter {
         upperMotor = new Victor(Configuration.VICTOR_UPPER_SHOOTER);
         lowerMotor.set(0);
         upperMotor.set(0);
+
+        // Bridge Motor
+        bridgeMotor = new Victor(Configuration.VICTOR_BRIDGE_ARM);
 
         // Initialize the RPM sensor.
         rpmSensor = new ArduinoRPMSensor(Configuration.I2C_ARDUINO);
@@ -194,7 +200,21 @@ public class Shooter {
         joystickRpm(joy);
 
         // Rotate the shooter on the lazy susan
-        rotationMotor.set(joy.getX());
+        double joyX = joy.getX();
+        if (Math.abs(joyX) > 0.1)
+            rotationMotor.set(joyX);
+        else
+            rotationMotor.set(0);
+
+        // Move the bridge arm
+        double joyY = joy.getY();
+        if (Math.abs(joyY) > 0.1) {
+            if (joyY < 0)
+                bridgeMotor.set(-0.25);
+            else
+                bridgeMotor.set(0.25);
+        } else
+            bridgeMotor.set(0);
 
         // Read the throttle to determine the speed of the shooter motor
         // and convert it to a number between 0 and 1.  Use that number
