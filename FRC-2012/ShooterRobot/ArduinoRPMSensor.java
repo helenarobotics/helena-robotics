@@ -62,10 +62,10 @@ public class ArduinoRPMSensor extends I2C implements ISensor {
             // http://code.google.com/p/arduino/issues/detail?id=848&q=Wire
             // Fix:
             // https://github.com/arduino/Arduino/pull/66
-//            byte sndBuf[] = new byte[] { DATA_REG, (byte)motorerNum };
-//            if (!this.transaction(sndBuf, sndBuf.length, inBuf, 2))
-            if (!write(DATA_REG, (byte)motorNum) &&
-                !transaction(null, 0, inBuf, 2))
+            byte sndBuf[] = new byte[] { DATA_REG, (byte)motorNum };
+            if (!this.transaction(sndBuf, sndBuf.length, inBuf, 2))
+//            if (!write(DATA_REG, (byte)motorNum) &&
+//                !transaction(null, 0, inBuf, 2))
                 return (int)decodeShortLE(inBuf, 0);
         }
         return 0;
