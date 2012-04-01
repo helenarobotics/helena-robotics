@@ -34,11 +34,11 @@ public class Shooter {
     private static final double UPPER_BIAS = 0.95;
 
     // How long will we wait for the motors to come up to speed.
-    private static final long MAX_MOTOR_WAIT_TIME = 4 * 1000;
+    private static final long MAX_MOTOR_WAIT_TIME = 8 * 1000;
 
     // How long should the motors have a speed that's 'good' enough for
     // us to consider them up-to-speed?
-    private static final long MIN_MOTOR_CORRECT_TIME = 500;
+    private static final long MIN_MOTOR_CORRECT_TIME = 750;
 
     // An effecient way to control the speed of the motors
     private PIDController lowerPID;
@@ -48,12 +48,12 @@ public class Shooter {
     private static final double LOWER_KP = 0.00005;
     private static final double LOWER_KI = 0.0;
     private static final double LOWER_KD = LOWER_KP * 5.0;
-    private static final double LOWER_TOLERANCE = 50.0;
+    private static final double LOWER_TOLERANCE = 25.0;
 
     private static final double UPPER_KP = 0.00005;
     private static final double UPPER_KI = 0.0;
     private static final double UPPER_KD = UPPER_KP * 5.0;
-    private static final double UPPER_TOLERANCE = 50.0;
+    private static final double UPPER_TOLERANCE = 25.0;
 
     public Shooter() {
         // Initialize the motors
@@ -78,8 +78,8 @@ public class Shooter {
                 public double pidGet() {
                     double btmRPM =
                         rpmSensor.getRPM(ArduinoRPMSensor.BOTTOM_MOTOR);
-                    if ((count++ % 25) == 0)
-                        System.out.println("BtmRPM=" + btmRPM);
+//                    if ((count++ % 25) == 0)
+//                        System.out.println("BtmRPM=" + btmRPM);
                     DashboardComm.rpmBottom = btmRPM;
                     return btmRPM;
                 }
@@ -129,8 +129,8 @@ public class Shooter {
                 public double pidGet() {
                     double topRPM =
                         rpmSensor.getRPM(ArduinoRPMSensor.TOP_MOTOR);
-                    if ((count++ % 25) == 0)
-                        System.out.println("TopRPM=" + topRPM);
+//                    if ((count++ % 25) == 0)
+//                        System.out.println("TopRPM=" + topRPM);
                     DashboardComm.rpmTop = topRPM;
                     return topRPM;
                 }
@@ -276,16 +276,17 @@ public class Shooter {
             }
             maxWaitTries--;
 
-            // Are we up to speed on both motors?
+            // Are we up to speed on both motors?            
+            int motorRpms[] = rpmSensor.getRPMs();
             if (!rawThrottle) {
-                if (lowerPID.onTarget() && upperPID.onTarget())
+                if (Math.abs(
+                        (int)lowerPID.getSetpoint() - motorRpms[1]) < LOWER_TOLERANCE &&
+                    Math.abs(
+                        (int)upperPID.getSetpoint() - motorRpms[0]) < UPPER_TOLERANCE)
                     numSuccess++;
                 else
                     numSuccess = 0;
             } else {
-                // Read the motor speeds.
-                int motorRpms[] = rpmSensor.getRPMs();
-
                 // We need to keep track of the target power
                 double targetLowerRPM = targetLowerPower * MAX_LOWER_RPM;
                 double targetUpperRPM = targetLowerRPM * UPPER_BIAS;
@@ -297,7 +298,7 @@ public class Shooter {
                 else
                     numSuccess = 0;
             }
-        } while (maxWaitTries > 0 || numSuccess >= wantSuccess);
+        } while (maxWaitTries > 0 && numSuccess < wantSuccess);
 
         // We've either gotten there or timed out.  Either way, we're
         // going for it!
