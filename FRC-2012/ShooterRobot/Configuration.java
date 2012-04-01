@@ -13,7 +13,7 @@ public class Configuration {
     public static final int VICTOR_LOWER_SHOOTER = 4;
     public static final int JAGUAR_SHOOTER_ROTATION = 6;
     public static final int SERVO_SHOOTER_FEEDER = 8;
-    public static final int BRIDGE_ARM_MOTOR_FEEDER = 10;
+    public static final int BRIDGE_ARM_MOTOR = 10;
 
     // I2C bus
     public static final int I2C_ARDUINO = 1;
