@@ -53,22 +53,26 @@ public class FieldGeometry {
 	// Estimate range to 4 corners, as possible
 
 	if (hoop.leftTop != null) {
-	    HoopEstimate hr = new HoopEstimate(hoop.leftTop.x, hoop.leftTop.y, left, top);
+	    HoopEstimate hr = new HoopEstimate(hoop.leftTop.x, hoop.leftTop.y, left, top, 
+					       hoop.xPixels, hoop.yPixels);
 	    hoop.estimates.add(hr);                            // Save for later.  We'll combine the various range estimates to calc robot position etc.
 	}
 
 	if (hoop.rightTop != null) {
-	    HoopEstimate hr = new HoopEstimate(hoop.rightTop.x, hoop.rightTop.y, right, top);
+	    HoopEstimate hr = new HoopEstimate(hoop.rightTop.x, hoop.rightTop.y, right, top,
+					       hoop.xPixels, hoop.yPixels);
 	    hoop.estimates.add(hr);                            // Save for later
 	}
 
 	if (hoop.leftBottom != null) {
-	    HoopEstimate hr = new HoopEstimate(hoop.leftBottom.x, hoop.leftBottom.y, left, bot);
+	    HoopEstimate hr = new HoopEstimate(hoop.leftBottom.x, hoop.leftBottom.y, left, bot,
+					       hoop.xPixels, hoop.yPixels);
 	    hoop.estimates.add(hr);                            // Save for later
 	}
 
 	if (hoop.rightBottom != null) {
-	    HoopEstimate hr = new HoopEstimate(hoop.rightBottom.x, hoop.rightBottom.y, right, bot);
+	    HoopEstimate hr = new HoopEstimate(hoop.rightBottom.x, hoop.rightBottom.y, right, bot,
+					       hoop.xPixels, hoop.yPixels);
 	    hoop.estimates.add(hr);                            // Save for later
 	}
 

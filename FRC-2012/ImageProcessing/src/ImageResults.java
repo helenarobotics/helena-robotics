@@ -20,6 +20,7 @@ public class ImageResults {
 
     // input processing parameters (set by constructor)
     int downsample;                    // 1 = no desampling, 2 = 1/2 size image, etc
+    int nx, ny;                        // image size (after downsampling)
     int threshold;                     // pixel threshold for on/off after color detection
     int minSize;                       // minimum acceptable pixel count in grown regions (remove and ignore anything smaller)
 
@@ -29,15 +30,15 @@ public class ImageResults {
 	regions = new Vector<Region> (10);      // 'regions' = recognized hoops; these objects hold the key results
 	threshold = _threshold;
 
+	nx = image.getWidth() / downsample;
+	ny = image.getHeight() / downsample;
+
 	// Create downsampled image (we can check for downsample == 1 condition, but checking the code now)
-	BufferedImage cimage = new BufferedImage(image.getWidth()/downsample, image.getHeight()/downsample,  BufferedImage.TYPE_INT_RGB);
+	BufferedImage cimage = new BufferedImage(nx, ny,  BufferedImage.TYPE_INT_RGB);
 
 	Graphics2D g = cimage.createGraphics();
-	g.drawImage(image, 0, 0, image.getWidth()/downsample, image.getHeight()/downsample, null);
+	g.drawImage(image, 0, 0, nx, ny, null);
 	g.dispose();
-
-	//	System.out.println("Downsampled from {" + image.getWidth() + "x" + image.getHeight() + " to {" + 
-	//	   cimage.getWidth() + "x" + cimage.getHeight() + "}");
 
 	thresholdedImage = detectGreen(cimage, threshold);
 
@@ -130,8 +131,9 @@ public class ImageResults {
     public void estimateRanges() {
 	for (int i = 0; i < regions.size(); i++) {
 	    Region r = regions.elementAt(i);
-	    if (r.hoopLocation != Region.HoopLocation.unknown)
+	    if (r.hoopLocation != Region.HoopLocation.unknown) {
 		FieldGeometry.estimateRange(r);
+	    }
 	}
     }
 
@@ -388,7 +390,7 @@ public class ImageResults {
 	 */
 	double largestArea = sorted[0].getArea();    // largest occupies first slot after sorting (see above)
 	// min allowed region size
-	double minAllowedArea = (CameraModel.cameraXpixels * CameraModel.cameraYpixels) * 2.0E-03;
+	double minAllowedArea = (nx * ny) * 2.0E-03;
 
 	int nregions = 0;
 	for (int i = 0; i < Math.min(4, this.regions.size()) &&

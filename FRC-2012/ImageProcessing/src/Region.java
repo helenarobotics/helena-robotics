@@ -29,6 +29,7 @@ public class Region {
     public Line2D.Double topEdge;
     public Line2D.Double bottomEdge;
     Point2D.Double leftTop, rightTop, leftBottom, rightBottom;
+    int xPixels, yPixels;   // size of processed imaged (note that it may be downsampled from original)
 
     public Region() {
 	points = new Vector<Point> (2000);
@@ -37,12 +38,15 @@ public class Region {
 	leftEdge = rightEdge = topEdge = bottomEdge = null;
 	leftTop = rightTop = leftBottom = rightBottom = null;
 	estimates = new Vector<HoopEstimate>(4);
+	xPixels = yPixels = 0;
     }
 
 
     public void finish(BufferedImage image) {
 	calculateEnclosingRectangle();
 	calculateHoopEdges(image);
+	xPixels = image.getWidth();
+	yPixels = image.getHeight();
 	points = null;      // free memory
     }
 
