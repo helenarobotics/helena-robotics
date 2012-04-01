@@ -36,8 +36,8 @@ public class ImageResults {
 	g.drawImage(image, 0, 0, image.getWidth()/downsample, image.getHeight()/downsample, null);
 	g.dispose();
 
-	System.out.println("Downsampled from {" + image.getWidth() + "x" + image.getHeight() + " to {" + 
-			   cimage.getWidth() + "x" + cimage.getHeight() + "}");
+	//	System.out.println("Downsampled from {" + image.getWidth() + "x" + image.getHeight() + " to {" + 
+	//	   cimage.getWidth() + "x" + cimage.getHeight() + "}");
 
 	thresholdedImage = detectGreen(cimage, threshold);
 
