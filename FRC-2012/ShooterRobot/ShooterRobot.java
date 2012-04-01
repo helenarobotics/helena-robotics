@@ -47,21 +47,30 @@ public class ShooterRobot extends SimpleRobot {
 
         // First thing we want to do is get the motors running and wait
         // for them to get up to speed.
-        shooter.setLowerRPM(1800);
+        System.out.println("Starting motor");
+        shooter.setLowerRPM(1100);
+        System.out.println("Waiting");
         shooter.waitForMotors();
 
         // Shoot a ball
+        System.out.println("Shooting");
         shooter.shootBall();
 
         // Wait for the motors to get back up to speed.
         shooter.waitForMotors();
-
+        
         // Shoot a second ball
         shooter.shootBall();
 
+        // Keep th motor's going while we shoot the ball
+        try {
+            Thread.sleep(2 * 1000);
+        } catch (InterruptedException ignored) {
+        }
+
         // Turn off the motors
         shooter.setLowerRPM(0);
-
+        
         DashboardComm.stopTimer();
         System.out.println("Autonomous mode completed");
     }
