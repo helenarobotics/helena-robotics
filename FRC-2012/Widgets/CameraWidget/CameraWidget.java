@@ -1,6 +1,7 @@
 import edu.wpi.first.smartdashboard.gui.DashboardFrame;
 import edu.wpi.first.smartdashboard.gui.DashboardPrefs;
 import edu.wpi.first.smartdashboard.gui.StaticWidget;
+
 import edu.wpi.first.smartdashboard.properties.BooleanProperty;
 import edu.wpi.first.smartdashboard.properties.DoubleProperty;
 import edu.wpi.first.smartdashboard.properties.IPAddressProperty;
@@ -8,11 +9,18 @@ import edu.wpi.first.smartdashboard.properties.Property;
 
 import net.sf.jipcam.axis.CameraAPI;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
+
 import java.net.URL;
+
+import javax.swing.JOptionPane;
 
 public class CameraWidget extends StaticWidget {
     public static final String NAME = "Camera w/ Overlay (EK)";
@@ -26,7 +34,6 @@ public class CameraWidget extends StaticWidget {
                 DashboardPrefs.getInstance().team.getValue().intValue() / 100,
                 DashboardPrefs.getInstance().team.getValue().intValue() % 100,
                 11 });
-
     public final BooleanProperty overlayProperty =
         new BooleanProperty(this, "Overlay", true);
     public final DoubleProperty aspectProperty =
