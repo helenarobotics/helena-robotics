@@ -169,17 +169,21 @@ public class CameraWidget extends StaticWidget {
     }
 
     protected void paintComponent(Graphics g) {
+        double currAspectRatio = getSize().getWidth() / getSize().getHeight();
+
         if (cameraImage != null) {
             if (autoSetAspect && !aspectAutoBeenSet) {
                 aspectProperty.setValue(
                     (double)cameraImage.getWidth() / (double)cameraImage.getHeight());
                 aspectAutoBeenSet = true;
             }
+
             g.setColor(Color.GREEN);
             g.drawString(Integer.toString(cameraImage.getWidth()) + " : " +
                          Integer.toString(cameraImage.getHeight()), 5, 70);
-            if (getSize().getWidth() / getSize().getHeight() > aspectRatio) {
-                // Width is too large
+
+            // Width is too large
+            if (currAspectRatio > aspectRatio) {
                 int width = (int)(getSize().getHeight() * aspectRatio);
                 int height = (int)getSize().getHeight();
                 g.drawImage(cameraImage,
@@ -187,7 +191,7 @@ public class CameraWidget extends StaticWidget {
                             ((int)getSize().getWidth() + width) / 2, height,
                             0, 0,
                             cameraImage.getWidth(), cameraImage.getHeight(), null);
-            } else if (getSize().getWidth() / getSize().getHeight() < aspectRatio) {
+            } else if (currAspectRatio < aspectRatio) {
                 // Height is too large
                 int width = (int)getSize().getWidth();
                 int height = (int)(getSize().getWidth() / aspectRatio);
@@ -221,12 +225,12 @@ public class CameraWidget extends StaticWidget {
         } else {
             // No image found!
             g.setColor(Color.RED);
-            if (getSize().getWidth() / getSize().getHeight() > aspectRatio) {
+            if (currAspectRatio > aspectRatio) {
                 // Width is too large
                 int width = (int)(getSize().getHeight() * aspectRatio);
                 int height = (int)getSize().getHeight();
                 g.fillRect(((int)getSize().getWidth() - width) / 2, 0, width, height);
-            } else if (getSize().getWidth() / getSize().getHeight() < aspectRatio) {
+            } else if (currAspectRatio < aspectRatio) {
                 // Height is too large
                 int width = (int)getSize().getWidth();
                 int height = (int)(getSize().getWidth() / aspectRatio);
@@ -246,10 +250,12 @@ public class CameraWidget extends StaticWidget {
         int height = (int)getSize().getHeight();
         int baseX = 0;
         int baseY = 0;
-        if (getSize().getWidth() / getSize().getHeight() > aspectRatio) {
+
+        double currAspectRatio = getSize().getWidth() / getSize().getHeight();
+        if (currAspectRatio > aspectRatio) {
             width = (int)(height * aspectRatio);
             baseX = (int)((getSize().getWidth() - width) / 2);
-        } else if (getSize().getWidth() / getSize().getHeight() < aspectRatio) {
+        } else if (currAspectRatio < aspectRatio) {
             height = (int)(width / aspectRatio);
             baseY = (int)((getSize().getHeight() - height) / 2);
         }
