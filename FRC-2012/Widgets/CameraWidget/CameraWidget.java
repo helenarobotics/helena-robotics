@@ -177,9 +177,9 @@ public class CameraWidget extends StaticWidget {
 
         if (cameraImage != null) {
             if (autoSetAspect && !aspectAutoBeenSet) {
+                aspectAutoBeenSet = true;
                 aspectProperty.setValue(
                     (double)cameraImage.getWidth() / (double)cameraImage.getHeight());
-                aspectAutoBeenSet = true;
             }
 
             g.setColor(Color.GREEN);
