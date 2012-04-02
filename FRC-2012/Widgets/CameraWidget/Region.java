@@ -1,21 +1,14 @@
 import java.util.Vector;
 
-import java.awt.*;
-import java.awt.Graphics;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Rectangle;
-import java.awt.geom.*;
+
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.WritableRaster;
-import java.awt.image.Raster;
-
-import javax.imageio.ImageIO;
-import javax.vecmath.Point3d;
-
-import java.io.File;
-import java.io.IOException;
 
 public class Region {
     public enum HoopLocation { unknown, left, top, right, bottom };
