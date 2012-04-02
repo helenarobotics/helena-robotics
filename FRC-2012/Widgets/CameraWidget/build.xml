@@ -1,7 +1,8 @@
 <project name="CameraWidget" default="jar" basedir=".">
   <property name="build.dir" location="build"/>
   <property name="lib.dir" location="jars"/>
-  <property name="extension.lib.dir" value="extensions/lib"/>
+  <property name="extension.dir" value="extensions"/>
+  <property name="extension.lib.dir" value="${extensions.dir}/lib"/>
   <property name="project.jar" value="${ant.project.name}.jar"/>
   <property name="src.dir" location="src"/>
 
@@ -44,7 +45,7 @@
   </target>
 
   <target name="deploy" depends="jar">
-    <copy file="${build.dir}/${project.jar}" todir="${extension.lib.dir}"/>
+    <copy file="${build.dir}/${project.jar}" todir="${extension.dir}"/>
   </target>
 
   <target name="run" depends="deploy">
