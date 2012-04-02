@@ -22,28 +22,29 @@ public class ImageUnderstanding implements Runnable {
     }
 
     public void run() {
-
-        stop = false;     // we set a flag in above access function to stop the thread
-
-        BufferedImage image;
+        // we set a flag in above access function to stop the thread
+        stop = false;
 
         while (!stop) {
-
             // wait until the next image is available
-            while (((image = iq.get()) == null) && !stop) {
-                try {
-                    Thread.currentThread().sleep(10);  // sleep 10msec
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
+            BufferedImage image = iq.get();
 
-            // This constructor does all the image processing work: color match, threshold, region growing, and region boundary analysis
-            //  downsampling, 80 = image threshold, 200 = min region size (in pixels)
-            if (image != null) {          // image is null if 'stop' was set true, so avoid crashing this thread(untidy ending!)
-                ImageResults results = new ImageResults(image, downsample, 80, 200);  // constructor does it all
-                dq.put(results);                // put the results back onto the queue where main thread can see them
-                System.out.println(results);    // debug: report out results we found
+            // image is null if 'stop' was set true, so avoid crashing
+            // this thread(untidy ending!)
+            if (image != null) {
+                // This constructor does all the image processing work:
+                // color match, threshold, region growing, and region
+                // boundary analysis downsampling,
+                // 80 = image threshold, 200 = min region size (in pixels)
+                ImageResults results =
+                    new ImageResults(image, downsample, 80, 200);
+
+                // put the results back onto the queue where main thread
+                // can see them
+                dq.put(results);
+                
+                // debug: report out results we found
+                System.out.println(results);
             }
         }
     }
