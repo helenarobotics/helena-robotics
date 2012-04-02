@@ -101,8 +101,7 @@ public class CameraWidget extends StaticWidget {
         if (property == ipProperty) {
             // Stop the two threads
             ih.stop();
-            ih = new Thread(new ImageHandler(), "Image Handler");
-            imUn.stop();
+            iu.stop();
 
             // Reconnect to the camera
             cam = null;
@@ -113,6 +112,8 @@ public class CameraWidget extends StaticWidget {
             } catch (Exception ignored) {
             }
             // Restart up the image processing threads.
+            ih = new Thread(imH, "Image Handler");
+            iu = new Thread(imUn, "Image Understanding");
             ih.start();
             iu.start();
         } else if (property == overlayProperty) {
