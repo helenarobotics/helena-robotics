@@ -175,8 +175,9 @@ public class CameraWidget extends StaticWidget {
                     (double)cameraImage.getWidth() / (double)cameraImage.getHeight());
                 aspectAutoBeenSet = true;
             }
-            g.setColor(Color.green);
-            g.drawString(Integer.toString(cameraImage.getWidth()) + " : " + Integer.toString(cameraImage.getHeight()), 5, 70);
+            g.setColor(Color.GREEN);
+            g.drawString(Integer.toString(cameraImage.getWidth()) + " : " +
+                         Integer.toString(cameraImage.getHeight()), 5, 70);
             if (getSize().getWidth() / getSize().getHeight() > aspectRatio) {
                 // Width is too large
                 int width = (int)(getSize().getHeight() * aspectRatio);
@@ -199,11 +200,12 @@ public class CameraWidget extends StaticWidget {
                 // Just right
                 g.drawImage(cameraImage,
                             0, 0,
-                            (int)getSize().getWidth(),
-                            (int)getSize().getHeight(),
+                            (int)getSize().getWidth(), (int)getSize().getHeight(),
                             0, 0,
                             cameraImage.getWidth(), cameraImage.getHeight(), null);
             }
+
+            // Draw the overlay on top of the image!
             if (showOverlay && results != null) {
                 drawResults(g);
                 g.setColor(Color.ORANGE);
@@ -217,7 +219,8 @@ public class CameraWidget extends StaticWidget {
                 g.drawString("No Overlay", 5, 10);
             }
         } else {
-            g.setColor(Color.red);
+            // No image found!
+            g.setColor(Color.RED);
             if (getSize().getWidth() / getSize().getHeight() > aspectRatio) {
                 // Width is too large
                 int width = (int)(getSize().getHeight() * aspectRatio);
@@ -232,7 +235,7 @@ public class CameraWidget extends StaticWidget {
                 // Just right
                 g.fillRect(0, 0, (int)getSize().getWidth(), (int)getSize().getHeight());
             }
-            g.setColor(Color.black);
+            g.setColor(Color.BLACK);
             g.setFont(new Font("Dialog", Font.PLAIN, 12));
             g.drawString("No Camera Connection", 5, 10);
         }
@@ -264,7 +267,8 @@ public class CameraWidget extends StaticWidget {
             g.drawString("" + (int)results.regions.elementAt(0).estimates.elementAt(0).range,
                          (int)(rec.x * scale + baseX), (int)((rec.y + rec.width / 2) * scale + baseY));
             g.setColor(Color.BLUE);
-            g.drawString("Scale: " + Double.toString(scale) + " Base: (" + Integer.toString(baseX) + ", " +
+            g.drawString("Scale: " + Double.toString(scale) +
+                         " Base: (" + Integer.toString(baseX) + ", " +
                          Integer.toString(baseY) + ")", 5, 30);
         }
 
