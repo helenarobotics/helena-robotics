@@ -39,11 +39,16 @@
   </target>
 
   <target name="jar" depends="compile">
-    <jar jarfile="${build.dir}/${project.jar}" basedir="${build.dir}"/>
+    <jar jarfile="${build.dir}/${project.jar}" basedir="${build.dir}"
+       excludes="${project.jar}"/>
   </target>
 
-  <target name="test" depends="compile">
-    <java classname="GUI" fork="true"
+  <target name="deploy" depends="jar">
+    <copy file="${build.dir}/${project.jar}" todir="${extension.lib.dir}"/>
+  </target>
+
+  <target name="run" depends="deploy">
+    <java jar="${lib.dir}/SmartDashboard2012.jar" fork="true"
       failonerror="true" inputstring="">
       <classpath>
         <path refid="proj.classpath"/>
