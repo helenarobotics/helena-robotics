@@ -1,20 +1,18 @@
-import java.io.*;
-import java.io.IOException;
 import java.awt.image.BufferedImage;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.util.Vector;
 
 public class ImageUnderstanding implements Runnable {
-    ImageQueue iq;
-    DataQueue dq;
-    boolean stop;
-    int downsample;
+    private ImageQueue iq;
+    private DataQueue dq;
+    private int downsample;
+    private volatile boolean stop;
 
     public ImageUnderstanding(ImageQueue _iq, DataQueue _dq, int _downsample) {
         iq = _iq;
         dq = _dq;
         downsample = _downsample;
+
+        // we set a flag in above access function to stop the thread
+        stop = false;
     }
 
     public void stop() {
@@ -22,9 +20,6 @@ public class ImageUnderstanding implements Runnable {
     }
 
     public void run() {
-        // we set a flag in above access function to stop the thread
-        stop = false;
-
         while (!stop) {
             // wait until the next image is available
             BufferedImage image = iq.get();
