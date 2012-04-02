@@ -5,6 +5,7 @@ import edu.wpi.first.smartdashboard.properties.BooleanProperty;
 import edu.wpi.first.smartdashboard.properties.DoubleProperty;
 import edu.wpi.first.smartdashboard.properties.IPAddressProperty;
 import edu.wpi.first.smartdashboard.properties.Property;
+
 import net.sf.jipcam.axis.CameraAPI;
 
 import javax.swing.*;
@@ -15,10 +16,23 @@ import java.net.URL;
 
 public class CameraWidget extends StaticWidget {
     public static final String NAME = "Camera w/ Overlay (EK)";
-    public final IPAddressProperty ipProperty = new IPAddressProperty(this, "Camera IP Address", new int[] { 10, DashboardPrefs.getInstance().team.getValue().intValue() / 100, DashboardPrefs.getInstance().team.getValue().intValue() % 100, 11 });
-    public final BooleanProperty overlayProperty = new BooleanProperty(this, "Overlay", true);
-    public final DoubleProperty aspectProperty = new DoubleProperty(this, "Aspect Ratio", 1.5);
-    public final BooleanProperty autoSetAspectProperty = new BooleanProperty(this, "Auto-set Aspect Ratio", false);
+
+    // The camera should have an address related to the team number with
+    // a final IP of '11'.
+    public final IPAddressProperty ipProperty =
+        new IPAddressProperty(
+            this, "Camera IP Address", new int[] {
+                10,
+                DashboardPrefs.getInstance().team.getValue().intValue() / 100,
+                DashboardPrefs.getInstance().team.getValue().intValue() % 100,
+                11 });
+
+    public final BooleanProperty overlayProperty =
+        new BooleanProperty(this, "Overlay", true);
+    public final DoubleProperty aspectProperty =
+        new DoubleProperty(this, "Aspect Ratio", 1.5);
+    public final BooleanProperty autoSetAspectProperty =
+        new BooleanProperty(this, "Auto-set Aspect Ratio", false);
 
     private boolean overlay;
     private boolean aspectAutoBeenSet = false;
@@ -26,12 +40,12 @@ public class CameraWidget extends StaticWidget {
     private double aspectRatio;
 
     private CameraAPI cam = null;
-    private URL camURL;
 
     private BufferedImage im = null;
     private ImageResults results = null;
     private ImageQueue iq;
     private DataQueue dq;
+
     private ImageUnderstanding imUn;
     private ImageHandler imH;
     private Thread iu;
@@ -40,28 +54,30 @@ public class CameraWidget extends StaticWidget {
     int counter = 0, counter2 = 0;
 
     public void init() {
-       setPreferredSize(new Dimension(200, 200));
-       try {
-           camURL = new URL("http://" + ipProperty.getSaveValue() + "/mjpg/video.mjpg");
-           cam = new CameraAPI(camURL);
-       } catch (Exception e) { }
-       overlay = overlayProperty.getValue();
-       aspectRatio = aspectProperty.getValue();
-       autoSetAspect = autoSetAspectProperty.getValue();
+        setPreferredSize(new Dimension(200, 200));
+        try {
+            URL camURL = new URL(
+                "http://" + ipProperty.getSaveValue() + "/mjpg/video.mjpg");
+            cam = new CameraAPI(camURL);
+        } catch (Exception ignored) {
+        }
+        overlay = overlayProperty.getValue();
+        aspectRatio = aspectProperty.getValue();
+        autoSetAspect = autoSetAspectProperty.getValue();
 
-       iq = new ImageQueue();
-       dq = new DataQueue();
+        iq = new ImageQueue();
+        dq = new DataQueue();
 
-       imH = new ImageHandler();
-       imUn = new ImageUnderstanding(iq, dq, 1);
+        imH = new ImageHandler();
+        imUn = new ImageUnderstanding(iq, dq, 1);
 
-       ih = new Thread(imH, "Image Handler");
-       iu = new Thread(imUn, "Image Understanding");
-       gc = new GarbageCollectorThread();
+        ih = new Thread(imH, "Image Handler");
+        iu = new Thread(imUn, "Image Understanding");
+        gc = new GarbageCollectorThread();
 
-       ih.start();
-       iu.start();
-       gc.start();
+        ih.start();
+        iu.start();
+        gc.start();
     }
 
     public void propertyChanged(Property property) {
@@ -71,9 +87,11 @@ public class CameraWidget extends StaticWidget {
             imUn.stop();
             cam = null;
             try {
-                camURL = new URL("http://" + ipProperty.getSaveValue() + "/mjpg/video.mjpg");
+                URL camURL = new URL(
+                    "http://" + ipProperty.getSaveValue() + "/mjpg/video.mjpg");
                 cam = new CameraAPI(camURL);
-            } catch (Exception e) { }
+            } catch (Exception ignored) {
+            }
             ih.start();
             iu.start();
         } else if (property == overlayProperty) {
@@ -83,36 +101,34 @@ public class CameraWidget extends StaticWidget {
             aspectAutoBeenSet = true;
         } else if (property == autoSetAspectProperty) {
             autoSetAspect = autoSetAspectProperty.getValue();
-            if (autoSetAspect) {
+            if (autoSetAspect)
                 aspectAutoBeenSet = false;
-            }
         }
     }
 
     class ImageHandler implements Runnable {
-        private ImageResults res = null;
         private boolean running = true;
 
         public void run() {
-                while (running) {
-                             try {
-                                 im = (BufferedImage)cam.getImage();
-                             } catch (Exception e) { im = null; JOptionPane.showMessageDialog(null, "Exception!"); }
-
-                            iq.put(im);
-                            counter2++;
-                            res = dq.get();
-                            if (res != null) {
-                               results = res;
-                               counter++;
-                             }
-
-                            DashboardFrame.getInstance().getPanel().repaint(getBounds());
+            while (running) {
+                try {
+                    im = (BufferedImage)cam.getImage();
+                    iq.put(im);
+                    counter2++;
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, "Exception!");
                 }
+                ImageResults res = dq.get();
+                if (res != null) {
+                    results = res;
+                    counter++;
+                }
+                DashboardFrame.getInstance().getPanel().repaint(getBounds());
+            }
         }
 
         public void stop() {
-                running = false;
+            running = false;
         }
     }
 
@@ -122,8 +138,9 @@ public class CameraWidget extends StaticWidget {
             running = true;
             while (running) {
                 try {
-                    Thread.sleep(10000);
-                } catch (Exception e) {}
+                    Thread.sleep(10 * 1000);
+                } catch (Exception ignored) {
+                }
                 System.gc();
             }
         }
@@ -234,6 +251,5 @@ public class CameraWidget extends StaticWidget {
                        (int)(bottom.x2 * scale + basex),
                        (int)(bottom.y2 * scale + basey));
         }
-
     }
 }
