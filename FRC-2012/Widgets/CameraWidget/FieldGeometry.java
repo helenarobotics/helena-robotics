@@ -1,22 +1,19 @@
-import java.awt.geom.*;
-import java.awt.Rectangle;
-import java.awt.Polygon;
-import javax.vecmath.Point3d;
-
-//public enum HoopLocation { unknown, left, top, right, bottom };
+import java.awt.geom.Rectangle2D;
 
 public class FieldGeometry {
     // Known locations of the outside corners of the four hoops:
-    public static Rectangle2D.Double leftHoop = new Rectangle2D.Double(-39.375, 81.0, 24.0, 18.0);
-    public static Rectangle2D.Double rightHoop = new Rectangle2D.Double(39.375, 81.0, 24.0, 18.0);
-    public static Rectangle2D.Double topHoop = new Rectangle2D.Double(-12.0, 118.0, 24.0, 18.0);
-    public static Rectangle2D.Double bottomHoop = new Rectangle2D.Double(-12.0, 48.0, 24.0, 18.0);
+    public static Rectangle2D.Double leftHoop =
+        new Rectangle2D.Double(-39.375, 81.0, 24.0, 18.0);
+    public static Rectangle2D.Double rightHoop =
+        new Rectangle2D.Double(39.375, 81.0, 24.0, 18.0);
+    public static Rectangle2D.Double topHoop =
+        new Rectangle2D.Double(-12.0, 118.0, 24.0, 18.0);
+    public static Rectangle2D.Double bottomHoop =
+        new Rectangle2D.Double(-12.0, 48.0, 24.0, 18.0);
 
     // leftTop, rightTop, leftBottom, rightBottom;
     static void estimateRange(Region hoop) {
         double top = 0.0, bot = 0.0, left = 0.0, right = 0.0;
-
-        Line2D.Double edge = null;
 
         switch (hoop.hoopLocation) {
         case unknown:
