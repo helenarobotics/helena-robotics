@@ -29,23 +29,19 @@ public class ImageUnderstanding implements Runnable {
             // wait until the next image is available
             BufferedImage image = iq.get();
 
-            // image is null if 'stop' was set true, so avoid crashing
-            // this thread(untidy ending!)
-            if (image != null) {
-                // This constructor does all the image processing work:
-                // color match, threshold, region growing, and region
-                // boundary analysis downsampling,
-                // 80 = image threshold, 200 = min region size (in pixels)
-                ImageResults results =
-                    new ImageResults(image, downsample, 80, 200);
+            // This constructor does all the image processing work:
+            // color match, threshold, region growing, and region
+            // boundary analysis downsampling,
+            // 80 = image threshold, 200 = min region size (in pixels)
+            ImageResults results =
+                new ImageResults(image, downsample, 80, 200);
 
-                // put the results back onto the queue where main thread
-                // can see them
-                dq.put(results);
+            // put the results back onto the queue where main thread
+            // can see them
+            dq.put(results);
                 
-                // debug: report out results we found
-                System.out.println(results);
-            }
+            // debug: report out results we found
+            System.out.println(results);
         }
     }
 }
