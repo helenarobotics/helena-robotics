@@ -99,9 +99,12 @@ public class CameraWidget extends StaticWidget {
     public void propertyChanged(Property property) {
         // IP address changed
         if (property == ipProperty) {
+            // Stop the two threads
             ih.stop();
             ih = new Thread(new ImageHandler(), "Image Handler");
             imUn.stop();
+
+            // Reconnect to the camera
             cam = null;
             try {
                 URL camURL = new URL(
@@ -109,6 +112,7 @@ public class CameraWidget extends StaticWidget {
                 cam = new CameraAPI(camURL);
             } catch (Exception ignored) {
             }
+            // Restart up the image processing threads.
             ih.start();
             iu.start();
         } else if (property == overlayProperty) {
@@ -124,7 +128,7 @@ public class CameraWidget extends StaticWidget {
     }
 
     private class ImageHandler implements Runnable {
-        private boolean running = true;
+        private volatile boolean running = true;
 
         public void run() {
             while (running) {
@@ -150,9 +154,8 @@ public class CameraWidget extends StaticWidget {
     }
 
     private class GarbageCollectorThread extends Thread {
-        private boolean running;
+        private volatile boolean running = true;
         public void run() {
-            running = true;
             while (running) {
                 try {
                     Thread.sleep(10 * 1000);
