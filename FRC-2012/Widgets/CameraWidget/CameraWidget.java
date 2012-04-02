@@ -36,6 +36,7 @@ public class CameraWidget extends StaticWidget{
 	private ImageHandler imH;
 	private Thread iu;
 	private Thread ih;
+	private Thread gc;
     int counter = 0, counter2 = 0;
 
     public void init() {
@@ -56,15 +57,19 @@ public class CameraWidget extends StaticWidget{
 
        ih = new Thread(imH, "Image Handler");
        iu = new Thread(imUn, "Image Understanding");
+       gc = new GarbageCollectorThread();
 
        ih.start();
        iu.start();
+       gc.start();
     }
 
     public void propertyChanged(Property property) {
         if(property == ipProperty){
             ih.stop();
+            ih = new Thread(new ImageHandler(), "Image Handler");
             imUn.stop();
+            cam = null;
             try{
                 camURL = new URL("http://" + ipProperty.getSaveValue() + "/mjpg/video.mjpg");
                 cam = new CameraAPI(camURL);
@@ -108,6 +113,24 @@ public class CameraWidget extends StaticWidget{
 
         public void stop(){
                 running = false;
+        }
+    }
+
+    class GarbageCollectorThread extends Thread{
+        private boolean running;
+        public void run(){
+            running = true;
+            while(running){
+                try{
+                    Thread.sleep(10000);
+                } catch (Exception e){}
+                System.gc();
+            }
+        }
+
+        public void end(){
+            running = false;
+            interrupt();
         }
     }
 
@@ -172,7 +195,7 @@ public class CameraWidget extends StaticWidget{
             height = (int)(width / aspectRatio);
             basey = (int)((getSize().getHeight() - height)/2);
         }
-        double scale = (double)width/im.getWidth() * results.downsample;
+        double scale = (double)width/im.getWidth();
 
         g.setColor(Color.red);
         for(int i = 0; i < results.regions.size(); i++){
@@ -194,22 +217,22 @@ public class CameraWidget extends StaticWidget{
             Line2D.Double right = results.regions.get(i).rightEdge;
             Line2D.Double top = results.regions.get(i).topEdge;
             Line2D.Double bottom = results.regions.get(i).bottomEdge;
-            g.drawLine((int)(left.x1*results.downsample * scale + basex),
-                       (int)(left.y1*results.downsample * scale + basey),
-                       (int)(left.x2*results.downsample * scale + basex),
-                       (int)(left.y2*results.downsample * scale + basey));
-            g.drawLine((int)(right.x1*results.downsample * scale + basex),
-                       (int)(right.y1*results.downsample * scale + basey),
-                       (int)(right.x2*results.downsample * scale + basex),
-                       (int)(right.y2*results.downsample * scale + basey));
-            g.drawLine((int)(top.x1*results.downsample * scale + basex),
-                       (int)(top.y1*results.downsample * scale + basey),
-                       (int)(top.x2*results.downsample * scale + basex),
-                       (int)(top.y2*results.downsample * scale + basey));
-            g.drawLine((int)(bottom.x1*results.downsample * scale + basex),
-                       (int)(bottom.y1*results.downsample * scale + basey),
-                       (int)(bottom.x2*results.downsample * scale + basex),
-                       (int)(bottom.y2*results.downsample * scale + basey));
+            g.drawLine((int)(left.x1 * scale + basex),
+                       (int)(left.y1 * scale + basey),
+                       (int)(left.x2 * scale + basex),
+                       (int)(left.y2 * scale + basey));
+            g.drawLine((int)(right.x1 * scale + basex),
+                       (int)(right.y1 * scale + basey),
+                       (int)(right.x2 * scale + basex),
+                       (int)(right.y2 * scale + basey));
+            g.drawLine((int)(top.x1 * scale + basex),
+                       (int)(top.y1 * scale + basey),
+                       (int)(top.x2 * scale + basex),
+                       (int)(top.y2 * scale + basey));
+            g.drawLine((int)(bottom.x1 * scale + basex),
+                       (int)(bottom.y1 * scale + basey),
+                       (int)(bottom.x2 * scale + basex),
+                       (int)(bottom.y2 * scale + basey));
         }
 
     }

@@ -9,6 +9,7 @@ import java.awt.image.Raster;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import javax.imageio.ImageIO;
+import javax.vecmath.Point3d;
 import java.io.File;
 import java.io.IOException;
 import java.awt.*;
@@ -21,13 +22,14 @@ public class Region {
     Vector<Point> points;      // temporary space used while building the region.
     public HoopLocation hoopLocation;
     public Rectangle enclosingRectangle;
-    public double centerRange;                 // range = dist from camera to a 3D point located on the hoop (see below)
+    double range;                 // range = dist from camera to a 3D point at center of the backboard (above the rim)
     Vector<HoopEstimate> estimates;
     public Line2D.Double leftEdge;
     public Line2D.Double rightEdge;
     public Line2D.Double topEdge;
     public Line2D.Double bottomEdge;
     Point2D.Double leftTop, rightTop, leftBottom, rightBottom;
+    int xPixels, yPixels;   // size of processed imaged (note that it may be downsampled from original)
 
     public Region() {
 	points = new Vector<Point> (2000);
@@ -36,13 +38,15 @@ public class Region {
 	leftEdge = rightEdge = topEdge = bottomEdge = null;
 	leftTop = rightTop = leftBottom = rightBottom = null;
 	estimates = new Vector<HoopEstimate>(4);
-        centerRange = -1.0;
+	xPixels = yPixels = 0;
     }
 
 
     public void finish(BufferedImage image) {
 	calculateEnclosingRectangle();
 	calculateHoopEdges(image);
+	xPixels = image.getWidth();
+	yPixels = image.getHeight();
 	points = null;      // free memory
     }
 
@@ -429,7 +433,6 @@ private int partition(dataPoint arr[], int left, int right){
 	return (r1.x > (r2.x + r2.width/2.0));
     }
 
-	// Now draw a tight polygon around the hoop, if available
 
     public void drawEnclosingRectangle(BufferedImage cimage) {
 
@@ -454,16 +457,10 @@ private int partition(dataPoint arr[], int left, int right){
 	g2.drawPolygon(p2);
 
 	String distance = "";
-	if (estimates.size() > 0) {
-	    double sum = 0.0;
-	    for (int i = 0; i < estimates.size(); i++) {
-		HoopEstimate he = estimates.elementAt(i);
-		sum += he.range;
-	    }
-	    double ft = sum / (estimates.size() * 12.0);
-	    if (ft > 0.0)
-		distance = (int) ft + "." + (int)((ft - (int)ft) * 10.0) + "ft";
-	}
+	double ft = this.range / 12.0;
+	if (ft > 0.0)
+	    distance = (int) ft + "." + (int)((ft - (int)ft) * 10.0) + "ft";
+
 	// now put a label on
 	switch (this.hoopLocation) {
 	case unknown:
