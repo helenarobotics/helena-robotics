@@ -41,24 +41,33 @@ public class CameraWidget extends StaticWidget {
     public final BooleanProperty autoSetAspectProperty =
         new BooleanProperty(this, "Auto-set Aspect Ratio", false);
 
-    private boolean overlay;
+    // Data contained in the 'Property' above.
+    private boolean showOverlay;
     private boolean aspectAutoBeenSet = false;
     private boolean autoSetAspect;
     private double aspectRatio;
 
+    // The code that fetches the images and hands them off the the image
+    // processing code.
     private CameraAPI cam = null;
-
-    private BufferedImage im = null;
+    private BufferedImage cameraImage = null;
     private ImageResults results = null;
+
+    // The structures used to communicate the data between the camera
+    // fetching and image processing threads.
     private ImageQueue iq;
     private DataQueue dq;
 
+    // The code to process the images
     private ImageUnderstanding imUn;
     private ImageHandler imH;
+
     private Thread iu;
     private Thread ih;
     private Thread gc;
-    int counter = 0, counter2 = 0;
+
+    // Keep track of how many images have been fetched/processed.
+    private int imageCounter = 0, processedImageCounter = 0;
 
     public void init() {
         setPreferredSize(new Dimension(200, 200));
@@ -68,7 +77,7 @@ public class CameraWidget extends StaticWidget {
             cam = new CameraAPI(camURL);
         } catch (Exception ignored) {
         }
-        overlay = overlayProperty.getValue();
+        showOverlay = overlayProperty.getValue();
         aspectRatio = aspectProperty.getValue();
         autoSetAspect = autoSetAspectProperty.getValue();
 
@@ -88,6 +97,7 @@ public class CameraWidget extends StaticWidget {
     }
 
     public void propertyChanged(Property property) {
+        // IP address changed
         if (property == ipProperty) {
             ih.stop();
             ih = new Thread(new ImageHandler(), "Image Handler");
@@ -102,7 +112,7 @@ public class CameraWidget extends StaticWidget {
             ih.start();
             iu.start();
         } else if (property == overlayProperty) {
-            overlay = overlayProperty.getValue();
+            showOverlay = overlayProperty.getValue();
         } else if (property == aspectProperty) {
             aspectRatio = aspectProperty.getValue();
             aspectAutoBeenSet = true;
@@ -113,22 +123,22 @@ public class CameraWidget extends StaticWidget {
         }
     }
 
-    class ImageHandler implements Runnable {
+    private class ImageHandler implements Runnable {
         private boolean running = true;
 
         public void run() {
             while (running) {
                 try {
-                    im = (BufferedImage)cam.getImage();
-                    iq.put(im);
-                    counter2++;
+                    cameraImage = (BufferedImage)cam.getImage();
+                    iq.put(cameraImage);
+                    imageCounter++;
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, "Exception!");
                 }
                 ImageResults res = dq.get();
                 if (res != null) {
                     results = res;
-                    counter++;
+                    processedImageCounter++;
                 }
                 DashboardFrame.getInstance().getPanel().repaint(getBounds());
             }
@@ -139,7 +149,7 @@ public class CameraWidget extends StaticWidget {
         }
     }
 
-    class GarbageCollectorThread extends Thread {
+    private class GarbageCollectorThread extends Thread {
         private boolean running;
         public void run() {
             running = true;
@@ -159,29 +169,48 @@ public class CameraWidget extends StaticWidget {
     }
 
     protected void paintComponent(Graphics g) {
-        if (im != null) {
+        if (cameraImage != null) {
             if (autoSetAspect && !aspectAutoBeenSet) {
-                aspectProperty.setValue((double)im.getWidth() / (double)im.getHeight());
+                aspectProperty.setValue(
+                    (double)cameraImage.getWidth() / (double)cameraImage.getHeight());
                 aspectAutoBeenSet = true;
             }
             g.setColor(Color.green);
-            g.drawString(Integer.toString(im.getWidth()) + " : " + Integer.toString(im.getHeight()), 5, 70);
-            if (getSize().getWidth() / getSize().getHeight() > aspectRatio) { // Width is too large
+            g.drawString(Integer.toString(cameraImage.getWidth()) + " : " + Integer.toString(cameraImage.getHeight()), 5, 70);
+            if (getSize().getWidth() / getSize().getHeight() > aspectRatio) {
+                // Width is too large
                 int width = (int)(getSize().getHeight() * aspectRatio);
                 int height = (int)getSize().getHeight();
-                g.drawImage(im, ((int) getSize().getWidth() - width) / 2, 0, ((int) getSize().getWidth() + width) / 2, height, 0, 0, im.getWidth(), im.getHeight(), null);
-            } else if (getSize().getWidth() / getSize().getHeight() < aspectRatio) { // Height is too large
+                g.drawImage(cameraImage,
+                            ((int)getSize().getWidth() - width) / 2, 0,
+                            ((int)getSize().getWidth() + width) / 2, height,
+                            0, 0,
+                            cameraImage.getWidth(), cameraImage.getHeight(), null);
+            } else if (getSize().getWidth() / getSize().getHeight() < aspectRatio) {
+                // Height is too large
                 int width = (int)getSize().getWidth();
                 int height = (int)(getSize().getWidth() / aspectRatio);
-                g.drawImage(im, 0, ((int) getSize().getHeight() - height) / 2, width, ((int) getSize().getHeight() + height) / 2, 0, 0, im.getWidth(), im.getHeight(), null);
-            } else { // Just right
-                g.drawImage(im, 0, 0, (int)getSize().getWidth(), (int)getSize().getHeight(), 0, 0, im.getWidth(), im.getHeight(), null);
+                g.drawImage(cameraImage,
+                            0, ((int)getSize().getHeight() - height) / 2,
+                            width, ((int)getSize().getHeight() + height) / 2,
+                            0, 0,
+                            cameraImage.getWidth(), cameraImage.getHeight(), null);
+            } else {
+                // Just right
+                g.drawImage(cameraImage,
+                            0, 0,
+                            (int)getSize().getWidth(),
+                            (int)getSize().getHeight(),
+                            0, 0,
+                            cameraImage.getWidth(), cameraImage.getHeight(), null);
             }
-            if (overlay && results != null) {
+            if (showOverlay && results != null) {
                 drawResults(g);
                 g.setColor(Color.ORANGE);
                 g.setFont(new Font("Dialog", Font.PLAIN, 12));
-                g.drawString("Overlay Successful #" + Integer.toString(counter) + "/" + Integer.toString(counter2), 5, 10);
+                g.drawString("Overlay Successful #" +
+                             Integer.toString(processedImageCounter) + "/" +
+                             Integer.toString(imageCounter), 5, 10);
             } else {
                 g.setColor(Color.GREEN);
                 g.setFont(new Font("Dialog", Font.PLAIN, 12));
@@ -189,15 +218,18 @@ public class CameraWidget extends StaticWidget {
             }
         } else {
             g.setColor(Color.red);
-            if (getSize().getWidth() / getSize().getHeight() > aspectRatio) { // Width is too large
+            if (getSize().getWidth() / getSize().getHeight() > aspectRatio) {
+                // Width is too large
                 int width = (int)(getSize().getHeight() * aspectRatio);
                 int height = (int)getSize().getHeight();
-                g.fillRect(((int) getSize().getWidth() - width) / 2, 0, width, height);
-            } else if (getSize().getWidth() / getSize().getHeight() < aspectRatio) { // Height is too large
+                g.fillRect(((int)getSize().getWidth() - width) / 2, 0, width, height);
+            } else if (getSize().getWidth() / getSize().getHeight() < aspectRatio) {
+                // Height is too large
                 int width = (int)getSize().getWidth();
                 int height = (int)(getSize().getWidth() / aspectRatio);
-                g.fillRect(0, ((int) getSize().getHeight() - height) / 2, width, height);
-            } else { // Just right
+                g.fillRect(0, ((int)getSize().getHeight() - height) / 2, width, height);
+            } else {
+                // Just right
                 g.fillRect(0, 0, (int)getSize().getWidth(), (int)getSize().getHeight());
             }
             g.setColor(Color.black);
@@ -207,56 +239,57 @@ public class CameraWidget extends StaticWidget {
     }
 
     public void drawResults(Graphics g) {
-
         int width = (int)getSize().getWidth();
         int height = (int)getSize().getHeight();
-        int basex = 0;
-        int basey = 0;
+        int baseX = 0;
+        int baseY = 0;
         if (getSize().getWidth() / getSize().getHeight() > aspectRatio) {
             width = (int)(height * aspectRatio);
-            basex = (int)((getSize().getWidth() - width) / 2);
+            baseX = (int)((getSize().getWidth() - width) / 2);
         } else if (getSize().getWidth() / getSize().getHeight() < aspectRatio) {
             height = (int)(width / aspectRatio);
-            basey = (int)((getSize().getHeight() - height) / 2);
+            baseY = (int)((getSize().getHeight() - height) / 2);
         }
-        double scale = (double)width / im.getWidth();
+        double scale = (double)width / cameraImage.getWidth();
 
-        g.setColor(Color.red);
+        g.setColor(Color.RED);
         for (int i = 0; i < results.regions.size(); i++) {
             Polygon p = new Polygon();
-            Rectangle r = results.regions.elementAt(i).getEnclosingRectangle();
-            p.addPoint((int)(r.x * scale + basex), (int)(r.y * scale + basey));
-            p.addPoint((int)((r.x + r.width) * scale + basex), (int)(r.y * scale + basey));
-            p.addPoint((int)((r.x + r.width) * scale + basex), (int)((r.y + r.height) * scale + basey));
-            p.addPoint((int)(r.x * scale + basex), (int)((r.y + r.height) * scale + basey));
+            Rectangle rec = results.regions.elementAt(i).getEnclosingRectangle();
+            p.addPoint((int)(rec.x * scale + baseX), (int)(rec.y * scale + baseY));
+            p.addPoint((int)((rec.x + rec.width) * scale + baseX), (int)(rec.y * scale + baseY));
+            p.addPoint((int)((rec.x + rec.width) * scale + baseX), (int)((rec.y + rec.height) * scale + baseY));
+            p.addPoint((int)(rec.x * scale + baseX), (int)((rec.y + rec.height) * scale + baseY));
             g.drawPolygon(p);
-            g.drawString("" + (int)results.regions.elementAt(0).estimates.elementAt(0).range, (int)(r.x * scale + basex), (int)((r.y + r.width / 2) * scale + basey));
-            g.setColor(Color.blue);
-            g.drawString("Scale: " + Double.toString(scale) + " Base: (" + Integer.toString(basex) + ", " + Integer.toString(basey) + ")", 5, 30);
+            g.drawString("" + (int)results.regions.elementAt(0).estimates.elementAt(0).range,
+                         (int)(rec.x * scale + baseX), (int)((rec.y + rec.width / 2) * scale + baseY));
+            g.setColor(Color.BLUE);
+            g.drawString("Scale: " + Double.toString(scale) + " Base: (" + Integer.toString(baseX) + ", " +
+                         Integer.toString(baseY) + ")", 5, 30);
         }
 
-        //Draw Hoop Detection
+        // Draw Hoop Detection
         for (int i = 0; i < results.regions.size(); i++) {
             Line2D.Double left = results.regions.get(i).leftEdge;
             Line2D.Double right = results.regions.get(i).rightEdge;
             Line2D.Double top = results.regions.get(i).topEdge;
             Line2D.Double bottom = results.regions.get(i).bottomEdge;
-            g.drawLine((int)(left.x1 * scale + basex),
-                       (int)(left.y1 * scale + basey),
-                       (int)(left.x2 * scale + basex),
-                       (int)(left.y2 * scale + basey));
-            g.drawLine((int)(right.x1 * scale + basex),
-                       (int)(right.y1 * scale + basey),
-                       (int)(right.x2 * scale + basex),
-                       (int)(right.y2 * scale + basey));
-            g.drawLine((int)(top.x1 * scale + basex),
-                       (int)(top.y1 * scale + basey),
-                       (int)(top.x2 * scale + basex),
-                       (int)(top.y2 * scale + basey));
-            g.drawLine((int)(bottom.x1 * scale + basex),
-                       (int)(bottom.y1 * scale + basey),
-                       (int)(bottom.x2 * scale + basex),
-                       (int)(bottom.y2 * scale + basey));
+            g.drawLine((int)(left.x1 * scale + baseX),
+                       (int)(left.y1 * scale + baseY),
+                       (int)(left.x2 * scale + baseX),
+                       (int)(left.y2 * scale + baseY));
+            g.drawLine((int)(right.x1 * scale + baseX),
+                       (int)(right.y1 * scale + baseY),
+                       (int)(right.x2 * scale + baseX),
+                       (int)(right.y2 * scale + baseY));
+            g.drawLine((int)(top.x1 * scale + baseX),
+                       (int)(top.y1 * scale + baseY),
+                       (int)(top.x2 * scale + baseX),
+                       (int)(top.y2 * scale + baseY));
+            g.drawLine((int)(bottom.x1 * scale + baseX),
+                       (int)(bottom.y1 * scale + baseY),
+                       (int)(bottom.x2 * scale + baseX),
+                       (int)(bottom.y2 * scale + baseY));
         }
     }
 }
