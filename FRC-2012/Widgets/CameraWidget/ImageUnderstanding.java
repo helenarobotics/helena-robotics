@@ -34,7 +34,7 @@ public class ImageUnderstanding implements Runnable {
             // put the results back onto the queue where main thread
             // can see them
             dq.put(results);
-                
+
             // debug: report out results we found
             System.out.println(results);
         }
