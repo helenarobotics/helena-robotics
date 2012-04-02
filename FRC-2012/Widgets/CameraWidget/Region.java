@@ -1,4 +1,5 @@
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -14,14 +15,14 @@ public class Region {
     public enum HoopLocation { unknown, left, top, right, bottom };
 
     // temporary space used while building the region.
-    Vector<Point> points;
+    List<Point> points;
 
     public HoopLocation hoopLocation;
     public Rectangle enclosingRectangle;
     // range = dist from camera to a 3D point at center of the backboard
     // (above the rim)
     double range;
-    Vector<HoopEstimate> estimates;
+    List<HoopEstimate> estimates;
 
     public Line2D.Double leftEdge;
     public Line2D.Double rightEdge;
@@ -34,12 +35,12 @@ public class Region {
     int xPixels, yPixels;
 
     public Region() {
-        points = new Vector<Point>(2000);
+        points = new ArrayList<Point>(2000);
         hoopLocation = HoopLocation.unknown;
         enclosingRectangle = null;
         leftEdge = rightEdge = topEdge = bottomEdge = null;
         leftTop = rightTop = leftBottom = rightBottom = null;
-        estimates = new Vector<HoopEstimate>(4);
+        estimates = new ArrayList<HoopEstimate>(4);
         xPixels = yPixels = 0;
     }
 
@@ -48,7 +49,7 @@ public class Region {
         calculateHoopEdges(image);
         xPixels = image.getWidth();
         yPixels = image.getHeight();
-        points = null;      // free memory
+        points = null;
     }
 
     public void add(Point p) {
@@ -60,7 +61,7 @@ public class Region {
     }
 
     public Point elementAt(int index) {
-        return points.elementAt(index);
+        return points.get(index);
     }
 
     public Rectangle getEnclosingRectangle() {
@@ -509,8 +510,7 @@ public class Region {
                   (r.x + r.height) + "}";
         } else if (estimates.size() > 0) {
             double sum = 0.0, wgtsum = 0.0;
-            for (int i = 0; i < estimates.size(); i++) {
-                HoopEstimate he = estimates.elementAt(i);
+            for (HoopEstimate he: estimates) {
                 double wgt = 1.0 / he.error;
                 sum += he.range * wgt;
                 wgtsum += wgt;

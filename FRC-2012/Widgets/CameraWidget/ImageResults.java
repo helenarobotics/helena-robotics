@@ -1,24 +1,22 @@
-import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.util.Vector;
-
-import java.awt.geom.*;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
-import java.awt.Rectangle;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.awt.image.Raster;
-
 import javax.vecmath.Point3d;
 
 public class ImageResults {
     // output data
-    public Vector<Region> regions;       // each Region corresponds to a detected hoop, and contains estimated location, range, etc
-    Point3d robotPosition = null;        // robot {x, y, z} location, when available(depends on view of hoops)
+
+    // each Region corresponds to a detected hoop, and contains estimated location, range, etc
+    public List<Region> regions;
+
+    // robot {x, y, z} location, when available(depends on view of hoops)
+    Point3d robotPosition = null;
+
     BufferedImage thresholdedImage = null;
 
     // input processing parameters (set by constructor)
@@ -30,14 +28,16 @@ public class ImageResults {
     public ImageResults(BufferedImage image, int _downsample, int _threshold, int _minSize) {
         downsample = _downsample;
         minSize = _minSize;
-        regions = new Vector<Region>(10);      // 'regions' = recognized hoops; these objects hold the key results
+        regions = new ArrayList<Region>(10);
         threshold = _threshold;
 
         nx = image.getWidth() / downsample;
         ny = image.getHeight() / downsample;
 
-        // Create downsampled image (we can check for downsample == 1 condition, but checking the code now)
-        BufferedImage cimage = new BufferedImage(nx, ny,  BufferedImage.TYPE_INT_RGB);
+        // Create downsampled image (we can check for downsample == 1
+        // condition, but checking the code now)
+        BufferedImage cimage =
+            new BufferedImage(nx, ny,  BufferedImage.TYPE_INT_RGB);
 
         Graphics2D g = cimage.createGraphics();
         g.drawImage(image, 0, 0, nx, ny, null);
@@ -45,15 +45,16 @@ public class ImageResults {
 
         thresholdedImage = detectGreen(cimage, threshold);
 
-        Region region;
-
-        // Note that 'grow' zero's out pixels after they've been grouped. We'll need the original
-        // later for geometry calculations (polygon in particular), so create and use a throw-away copy
-
+        // Note that 'grow' zero's out pixels after they've been
+        // grouped. We'll need the original later for geometry
+        // calculations (polygon in particular), so create and use a
+        // throw-away copy
         BufferedImage tmp = deepCopyGrayscale(thresholdedImage);
 
+        Region region;
         while ((region = grow(tmp)) != null) {
-            region.finish(thresholdedImage);       // calculates and saves rect and tight polygon boundaries, etc.
+            // calculates and saves rect and tight polygon boundaries, etc.
+            region.finish(thresholdedImage);
             regions.add(region);
 //            System.out.println("Found region " + region);
         }
@@ -65,9 +66,7 @@ public class ImageResults {
 
     // rescales results data to fit original image (prior to desampling)
     private void adjustForDownsample() {
-        for (int i = 0; i < regions.size(); i++) {
-            Region r = regions.elementAt(i);
-
+        for (Region r: regions) {
             // adjust the closing rectangle, if available
             if (r.enclosingRectangle != null) {
                 r.enclosingRectangle.height *= downsample;
@@ -129,8 +128,7 @@ public class ImageResults {
     }
 
     public void estimateRanges() {
-        for (int i = 0; i < regions.size(); i++) {
-            Region r = regions.elementAt(i);
+        for (Region r: regions) {
             if (r.hoopLocation != Region.HoopLocation.unknown) {
                 FieldGeometry.estimateRange(r);
             }
@@ -147,13 +145,13 @@ public class ImageResults {
         // we could also combine weighted estimates from multiple
         // baselines)
         for (int i = 0; i < regions.size(); i++) {
-            Region ri = regions.elementAt(i);
+            Region ri = regions.get(i);
             for (int j = i; j < regions.size(); j++) {
-                Region rj = regions.elementAt(j);
+                Region rj = regions.get(j);
                 for (int rii = 0; rii < ri.estimates.size(); rii++) {
-                    HoopEstimate eii = ri.estimates.elementAt(rii);
+                    HoopEstimate eii = ri.estimates.get(rii);
                     for (int rjj = rii; rjj < rj.estimates.size(); rjj++) {
-                        HoopEstimate ejj = rj.estimates.elementAt(rjj);
+                        HoopEstimate ejj = rj.estimates.get(rjj);
                         // same approx height? (measured in inches!)
                         if (Math.abs(ejj.rangePoint.y - eii.rangePoint.y) < 1) {
                             double baseline = Math.abs(ejj.rangePoint.x - eii.rangePoint.x);
@@ -367,8 +365,6 @@ public class ImageResults {
         return out;
     }
 
-//    public enum HoopLocation { unknown, left, top, right, bottom };
-
     public void labelHoops() {
         Region highest = null, lowest = null, rightmost = null, leftmost = null;
 
@@ -385,7 +381,7 @@ public class ImageResults {
         // fill array with regions for analysis.  We need to add logic
         // to pick "the best 4", rather than the first.
         for (int i = 0; i < this.regions.size(); i++) {
-            sorted[i] = this.regions.elementAt(i);
+            sorted[i] = this.regions.get(i);
         }
 
         // Pick largest four regions (measured by area of their enclosig
@@ -417,7 +413,7 @@ public class ImageResults {
 
         // Remove regions to reflect the above filtering (remove false
         // alarms from results we provided)
-        this.regions.removeAllElements();
+        this.regions.clear();
         for (int i = 0; i < nregions; i++)
             this.regions.add(sorted[i]);
 
@@ -523,7 +519,6 @@ public class ImageResults {
         return i;
     }
 
-
     // Sorts Regions by area by area, descending.
     private void quickSortByArea(Region arr[], int left, int right)  {
         //  watch out for case of zero - length vector
@@ -538,15 +533,14 @@ public class ImageResults {
     }
 
     public void drawRegions(BufferedImage cimage) {
-        for (int ir = 0; ir < this.regions.size(); ir++) {
-            this.regions.elementAt(ir).drawEnclosingPolygon(cimage);
-            this.regions.elementAt(ir).drawEnclosingRectangle(cimage);
+        for (Region r: regions) {
+            r.drawEnclosingPolygon(cimage);
+            r.drawEnclosingRectangle(cimage);
         }
     }
 
     public Region getHoop(Region.HoopLocation hl) {
-        for (int i = 0; i < regions.size(); i++) {
-            Region r = regions.elementAt(i);
+        for (Region r: regions) {
             if (r.hoopLocation == hl)
                 return r;
         }
@@ -595,10 +589,14 @@ public class ImageResults {
     }
 
     public String toString() {
-        String str = "";
-        for (int i = 0; i < regions.size(); i++) {
-            str = str + " " + i + ":  " + regions.elementAt(i) + '\n';
+        StringBuffer sb = new StringBuffer();
+        int count = 0;
+        for (Region r: regions) {
+            sb.append(" ")
+                .append(count).append(":  ")
+                .append(r).append("\n");
+            count++;
         }
-        return str;
+        return sb.toString();
     }
 }

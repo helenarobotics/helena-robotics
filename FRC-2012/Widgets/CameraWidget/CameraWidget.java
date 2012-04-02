@@ -268,13 +268,13 @@ public class CameraWidget extends StaticWidget {
         g.setColor(Color.RED);
         for (int i = 0; i < results.regions.size(); i++) {
             Polygon p = new Polygon();
-            Rectangle rec = results.regions.elementAt(i).getEnclosingRectangle();
+            Rectangle rec = results.regions.get(i).getEnclosingRectangle();
             p.addPoint((int)(rec.x * scale + baseX), (int)(rec.y * scale + baseY));
             p.addPoint((int)((rec.x + rec.width) * scale + baseX), (int)(rec.y * scale + baseY));
             p.addPoint((int)((rec.x + rec.width) * scale + baseX), (int)((rec.y + rec.height) * scale + baseY));
             p.addPoint((int)(rec.x * scale + baseX), (int)((rec.y + rec.height) * scale + baseY));
             g.drawPolygon(p);
-            g.drawString("" + (int)results.regions.elementAt(0).estimates.elementAt(0).range,
+            g.drawString("" + (int)results.regions.get(0).estimates.get(0).range,
                          (int)(rec.x * scale + baseX), (int)((rec.y + rec.width / 2) * scale + baseY));
             g.setColor(Color.BLUE);
             g.drawString("Scale: " + Double.toString(scale) +

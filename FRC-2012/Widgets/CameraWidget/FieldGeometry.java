@@ -87,10 +87,8 @@ public class FieldGeometry {
             hoop.range = -1.0;  // this should never happen
         } else {
             double sum = 0.0;
-            for (int i = 0; i < hoop.estimates.size(); i++) {
-                HoopEstimate he = hoop.estimates.elementAt(i);
+            for (HoopEstimate he: hoop.estimates)
                 sum += he.range;
-            }
             hoop.range = sum / hoop.estimates.size();
         }
     }
