@@ -27,9 +27,9 @@ public class ImageUnderstanding implements Runnable {
             // This constructor does all the image processing work:
             // color match, threshold, region growing, and region
             // boundary analysis downsampling,
-            // 80 = image threshold, 200 = min region size (in pixels)
+            // 60 = image threshold, 200 = min region size (in pixels)
             ImageResults results =
-                new ImageResults(image, downsample, 80, 200);
+                new ImageResults(image, downsample, 60, 200);
 
             // put the results back onto the queue where main thread
             // can see them
