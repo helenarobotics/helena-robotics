@@ -2,7 +2,7 @@
   <property name="build.dir" location="build"/>
   <property name="lib.dir" location="jars"/>
   <property name="extension.dir" value="extensions"/>
-  <property name="extension.lib.dir" value="${extensions.dir}/lib"/>
+  <property name="extension.lib.dir" value="${extension.dir}/lib"/>
   <property name="project.jar" value="${ant.project.name}.jar"/>
   <property name="src.dir" location="src"/>
 
@@ -12,7 +12,9 @@
 
   <!-- Set the base classpath -->
   <path id="lib.classpath">
+<!--
     <fileset file="${javahome.dir}/jre/lib/rt.jar"/>
+-->
   </path>
 
   <!-- Classpath entry only needed if compiling -->
