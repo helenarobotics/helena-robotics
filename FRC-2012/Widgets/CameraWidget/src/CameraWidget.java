@@ -20,6 +20,10 @@ import java.awt.image.BufferedImage;
 
 import java.net.URL;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import javax.swing.JOptionPane;
 
 public class CameraWidget extends StaticWidget {
@@ -132,8 +136,10 @@ public class CameraWidget extends StaticWidget {
     }
 
     // Makes sure that we don't change the image out from under the
-    // paint method.
-    private Object paintLock = new Object();
+    // paint method.  We use a Lock instead of synchronized methods so
+    // we can continue to work if we can't get the lock in a
+    // 'reasonable' period of time.
+    private Lock paintLock = new ReentrantLock();
 
     private class ImageHandler implements Runnable {
         private volatile boolean running = true;
@@ -143,19 +149,33 @@ public class CameraWidget extends StaticWidget {
             while (running) {
                 try {
                     image = (BufferedImage)cam.getImage();
-                    iq.put(image);
                     imageCounter++;
+                    iq.put(image);
                 } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "Exception!");
+                    JOptionPane.showMessageDialog(
+                        null, "Exception:" + e.getMessage());
                 }
+
+                // We consider it a success if we process an image, even
+                // if we don't get to use it in the repaint method.
                 ImageResults res = dq.get();
-                if (res != null) {
-                    synchronized (paintLock) {
+                if (res != null)
+                    processedImageCounter++;
+
+                // Safely update the image and results for the paint
+                // method to use.
+                boolean gotLock = false;
+                try {
+                    gotLock = paintLock.tryLock();
+                    if (gotLock) {
                         if (image != null)
                             cameraImage = image;
-                        results = res;
-                        processedImageCounter++;
+                        if (res != null)
+                            results = res;
                     }
+                } finally {
+                    if (gotLock)
+                        paintLock.unlock();
                 }
                 DashboardFrame.getInstance().getPanel().repaint(getBounds());
             }
@@ -187,7 +207,18 @@ public class CameraWidget extends StaticWidget {
     protected void paintComponent(Graphics g) {
         double currAspectRatio = getSize().getWidth() / getSize().getHeight();
 
-        synchronized (paintLock) {
+        boolean gotLock = false;
+        try {
+            // If we can't get the lock in 100ms, give up and let the
+            // AWT thread continue.  We cleanup in the finally clause.
+            try {
+                gotLock = paintLock.tryLock(100L, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException ignored) {
+                gotLock = false;
+            }
+            if (!gotLock)
+                return;
+            
             if (cameraImage != null) {
                 if (autoSetAspect && !aspectAutoBeenSet) {
                     aspectAutoBeenSet = true;
@@ -260,6 +291,9 @@ public class CameraWidget extends StaticWidget {
                 g.setFont(new Font("Dialog", Font.PLAIN, 12));
                 g.drawString("No Camera Connection", 5, 10);
             }
+        } finally {
+            if (gotLock)
+                paintLock.unlock();
         }
     }
 
