@@ -340,10 +340,13 @@ public class Shooter {
             if (lowerPID.isEnable()) {
                 lowerPID.reset();
                 lowerPID.setSetpoint(0);
+                DashboardComm.rpmBottom = 0;
             }
             if (upperPID.isEnable()) {
                 upperPID.reset();
                 upperPID.setSetpoint(0);
+                DashboardComm.rpmTop = 0;
+            }
             }
             // Turn-off motors
             lowerMotor.set(0);
