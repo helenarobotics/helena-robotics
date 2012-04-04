@@ -13,6 +13,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
@@ -71,7 +72,7 @@ public class CameraWidget extends StaticWidget {
 
     private Thread iu;
     private Thread ih;
-    private Thread gc;
+    //private Thread gc;
 
     // Keep track of how many images have been fetched/processed.
     private int imageCounter = 0, processedImageCounter = 0;
@@ -92,15 +93,15 @@ public class CameraWidget extends StaticWidget {
         dq = new DataQueue();
 
         imH = new ImageHandler();
-        imUn = new ImageUnderstanding(iq, dq, 1);
+        imUn = new ImageUnderstanding(iq, dq, 2);
 
         ih = new Thread(imH, "Image Handler");
         iu = new Thread(imUn, "Image Understanding");
-        gc = new GarbageCollectorThread();
+        //gc = new GarbageCollectorThread();
 
         ih.start();
         iu.start();
-        gc.start();
+        //gc.start();
     }
 
     public void propertyChanged(Property property) {
@@ -209,9 +210,9 @@ public class CameraWidget extends StaticWidget {
         Graphics bufferGraphics = buffer.getGraphics();
         paintStuff(bufferGraphics);
         g.drawImage(buffer, 0, 0, null);
-	}
+    }
 
-	public void paintStuff(Graphics g){
+    private void paintStuff(Graphics g){
         double currAspectRatio = getSize().getWidth() / getSize().getHeight();
 
         boolean gotLock = false;
@@ -225,7 +226,7 @@ public class CameraWidget extends StaticWidget {
             }
             if (!gotLock)
                 return;
-
+            
             if (cameraImage != null) {
                 if (autoSetAspect && !aspectAutoBeenSet) {
                     aspectAutoBeenSet = true;
