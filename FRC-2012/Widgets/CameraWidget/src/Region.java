@@ -22,6 +22,7 @@ public class Region {
     // range = dist from camera to a 3D point at center of the backboard
     // (above the rim)
     double range;
+    double azimuth;
     List<HoopEstimate> estimates;
 
     public Line2D.Double leftEdge;
