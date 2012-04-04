@@ -86,10 +86,14 @@ public class FieldGeometry {
         if (hoop.estimates.size() == 0) {
             hoop.range = -1.0;  // this should never happen
         } else {
-            double sum = 0.0;
-            for (HoopEstimate he: hoop.estimates)
-                sum += he.range;
-            hoop.range = sum / hoop.estimates.size();
+            double rangeSum = 0.0;
+            double azimuthSum = 0.0;
+            for (HoopEstimate he: hoop.estimates) {
+                rangeSum += he.range;
+                azimuthSum += he.azimuth;
+            }
+            hoop.range = rangeSum / hoop.estimates.size();
+            hoop.azimuth = azimuthSum / hoop.estimates.size();
         }
     }
 }
