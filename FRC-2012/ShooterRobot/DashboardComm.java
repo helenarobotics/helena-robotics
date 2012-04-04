@@ -20,21 +20,21 @@ public class DashboardComm extends Thread {
     public static final int TIME_RESET = 2;
     private static int timeState = TIME_RESET;
 
-    public static void startTimer(){
-        if (timeState != TIME_RUNNING){
+    public static void startTimer() {
+        if (timeState != TIME_RUNNING) {
             s.putInt("Timer", TIME_RUNNING);
             timeState = TIME_RUNNING;
         }
     }
 
-    public static void stopTimer(){
-        if (timeState == TIME_RUNNING){
+    public static void stopTimer() {
+        if (timeState == TIME_RUNNING) {
             s.putInt("Timer", TIME_STOPPED);
             timeState = TIME_STOPPED;
         }
     }
 
-    public static void resetTimer(){
+    public static void resetTimer() {
         if (timeState != TIME_RESET) {
             s.putInt("Timer", TIME_RESET);
             timeState = TIME_RESET;
@@ -49,7 +49,7 @@ public class DashboardComm extends Thread {
     public static final int MO_BALANCE = 4;
     private int mode = MO_NONE;
 
-    public void setMode(int set){
+    public void setMode(int set) {
         mode = set;
     }
 
@@ -116,7 +116,7 @@ public class DashboardComm extends Thread {
         }
     }
 
-    public void send(){
+    public void send() {
         //Only need to send Joystick and Sensor info
         //Joystick 1
         s.putDouble("Joystick 1", joy1Direction);
