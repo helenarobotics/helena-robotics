@@ -226,6 +226,65 @@ public class Shooter {
         feeder.shootBall();
     }
 
+    // The lower motor is really what controls things, so we'll use it
+    // and have the upper motor slave to it.
+    public void setLowerRPM(double lowerRPM) {
+        if (rawThrottle) {
+            // Convert RPM to power
+            targetLowerPower = lowerRPM / MAX_LOWER_RPM;
+            lowerMotor.set(targetLowerPower);
+            upperMotor.set(targetLowerPower * UPPER_BIAS);
+        } else {
+            setPIDMotors(lowerRPM, lowerRPM * UPPER_BIAS);
+        }
+    }
+
+    // Wait for the motors to come up to speed.
+    public boolean waitForMotors() {
+        // How long will we wait for the motors to come up to speed.
+        int maxWaitTries = 50;
+        final long myWaitPeriod = MAX_MOTOR_WAIT_TIME / maxWaitTries;
+
+        // How many successful reading do we have to have for
+        final long wantSuccess = MIN_MOTOR_CORRECT_TIME / myWaitPeriod;
+        long numSuccess = 0;
+        do {
+            // Wait a bit
+            maxWaitTries--;
+            try {
+                Thread.sleep(myWaitPeriod);
+            } catch (InterruptedException ignored) {
+            }
+
+            // Are we up to speed on both motors?            
+            int motorRpms[] = rpmSensor.getRPMs();
+            if (!rawThrottle) {
+                if (Math.abs(
+                        (int)lowerPID.getSetpoint() - motorRpms[1]) < LOWER_TOLERANCE &&
+                    Math.abs(
+                        (int)upperPID.getSetpoint() - motorRpms[0]) < UPPER_TOLERANCE)
+                    numSuccess++;
+                else
+                    numSuccess = 0;
+            } else {
+                // We need to keep track of the target power
+                double targetLowerRPM = targetLowerPower * MAX_LOWER_RPM;
+                double targetUpperRPM = targetLowerRPM * UPPER_BIAS;
+                if (Math.abs(
+                        targetLowerRPM - motorRpms[1]) < LOWER_TOLERANCE &&
+                    Math.abs(
+                        targetUpperRPM - motorRpms[0]) < UPPER_TOLERANCE)
+                    numSuccess++;
+                else
+                    numSuccess = 0;
+            }
+        } while (maxWaitTries > 0 && numSuccess < wantSuccess);
+
+        // We've either gotten there or timed out.  Either way, we're
+        // going for it!
+        return (numSuccess >= wantSuccess);
+    }
+
     private static final int TRIGGER_BTN = 1;
     private boolean wasTrigPressed = false;
     private boolean joystickTrigger(Joystick joy) {
@@ -264,65 +323,6 @@ public class Shooter {
             }
         }
         wasRpmPressed = nowPressed;
-    }
-
-    // The lower motor is really what controls things, so we'll use it
-    // and have the upper motor slave to it.
-    public void setLowerRPM(double lowerRPM) {
-        if (rawThrottle) {
-            // Convert RPM to power
-            targetLowerPower = lowerRPM / MAX_LOWER_RPM;
-            lowerMotor.set(targetLowerPower);
-            upperMotor.set(targetLowerPower * UPPER_BIAS);
-        } else {
-            setPIDMotors(lowerRPM, lowerRPM * UPPER_BIAS);
-        }
-    }
-
-    // Wait for the motors to come up to speed.
-    public boolean waitForMotors() {
-        // How long will we wait for the motors to come up to speed.
-        int maxWaitTries = 50;
-        final long myWaitPeriod = MAX_MOTOR_WAIT_TIME / maxWaitTries;
-
-        // How many successful reading do we have to have for
-        final long wantSuccess = MIN_MOTOR_CORRECT_TIME / myWaitPeriod;
-        long numSuccess = 0;
-        do {
-            // Wait a bit
-            try {
-                Thread.sleep(myWaitPeriod);
-            } catch (InterruptedException ignored) {
-            }
-            maxWaitTries--;
-
-            // Are we up to speed on both motors?            
-            int motorRpms[] = rpmSensor.getRPMs();
-            if (!rawThrottle) {
-                if (Math.abs(
-                        (int)lowerPID.getSetpoint() - motorRpms[1]) < LOWER_TOLERANCE &&
-                    Math.abs(
-                        (int)upperPID.getSetpoint() - motorRpms[0]) < UPPER_TOLERANCE)
-                    numSuccess++;
-                else
-                    numSuccess = 0;
-            } else {
-                // We need to keep track of the target power
-                double targetLowerRPM = targetLowerPower * MAX_LOWER_RPM;
-                double targetUpperRPM = targetLowerRPM * UPPER_BIAS;
-                if (Math.abs(
-                        targetLowerRPM - motorRpms[1]) < LOWER_TOLERANCE &&
-                    Math.abs(
-                        targetUpperRPM - motorRpms[0]) < UPPER_TOLERANCE)
-                    numSuccess++;
-                else
-                    numSuccess = 0;
-            }
-        } while (maxWaitTries > 0 && numSuccess < wantSuccess);
-
-        // We've either gotten there or timed out.  Either way, we're
-        // going for it!
-        return (numSuccess >= wantSuccess);
     }
 
     private void setLowerPower(double lowerPower) {
