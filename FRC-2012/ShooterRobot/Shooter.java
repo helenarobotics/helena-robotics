@@ -279,18 +279,33 @@ public class Shooter {
         return btnPressed;
     }
 
-    // Toggle between PID and straight throttle control for the shooter
-    // motor speeds
-    private boolean rawThrottle = false;
+    // The range of the throttle control.
+    private double rpmRange[] = { 0.0, MAX_LOWER_RPM };
 
+    // Toggle between full-range and 'magnified' throttle control for
+    // the shooter motor speeds.
+    private boolean fullRange = true;
     private boolean wasBtn2Pressed = false;
     private static final int RPM_BTN = 2;
     private void joystickRpm(Joystick joy) {
-        boolean btnPressed = false;
         // Toggle when the button is pressed
         boolean nowPressed = joy.getRawButton(RPM_BTN);
         if (nowPressed && !wasBtn2Pressed) {
-            rawThrottle = !rawThrottle;
+            // Calculate the new upper-lower range based on the current
+            // throttle settings.
+            fullRange = !fullRange;
+            if (fullRange) {
+                rpmRange[0] = 0.0;
+                rpmRange[1] = MAX_LOWER_RPM;
+            } else {
+                // Make it so the throttle's current setting keeps the
+                // RPM at the same setting.
+                double newRange = MAX_LOWER_RPM / 5.0;
+                double currPower = Math.abs((joy.getThrottle() - 1.0) / 2.0);
+                double currRPM = currPower * MAX_LOWER_RPM;
+                rpmRange[0] = currRPM - currPower * newRange;
+                rpmRange[1] = rpmRange[0] + newRange;
+            }
         }
         wasBtn2Pressed = nowPressed;
     }
@@ -298,33 +313,36 @@ public class Shooter {
     private void setLowerPower(double lowerPower) {
         DashboardComm.shooterThrottle = lowerPower;
 
-        // If the power is less than 10%, ignore it and just set the
-        // power to zero as we're not going to shoot any baskets with
-        // the low power.
-        if (Math.abs(lowerPower) < 0.1)
-            lowerPower = 0.0;
+        if (fullRange) {
+            // If we're in full range mode and the power is less than 10%,
+            // ignore it and just set the power to zero as we're not going
+            // to shoot any baskets with such low power.
+            if (Math.abs(lowerPower) < 0.1)
+                lowerPower = 0.0;
 
-        // Disable PID control and turn the shooter motors off
-        if (lowerPower == 0.0) {
-            // Disable PID (if enabled)
-            if (lowerPID.isEnable()) {
-                lowerPID.reset();
-                lowerPID.setSetpoint(0);
-                DashboardComm.rpmBottom = 0;
+            // Disable PID control and turn the shooter motors off
+            if (lowerPower == 0.0) {
+                // Disable PID (if enabled)
+                if (lowerPID.isEnable()) {
+                    lowerPID.reset();
+                    lowerPID.setSetpoint(0);
+                    DashboardComm.rpmBottom = 0;
+                }
+                if (upperPID.isEnable()) {
+                    upperPID.reset();
+                    upperPID.setSetpoint(0);
+                    DashboardComm.rpmTop = 0;
+                }
+                // Turn-off motors
+                lowerMotor.set(0);
+                upperMotor.set(0);
+                return;
             }
-            if (upperPID.isEnable()) {
-                upperPID.reset();
-                upperPID.setSetpoint(0);
-                DashboardComm.rpmTop = 0;
-            }
-            // Turn-off motors
-            lowerMotor.set(0);
-            upperMotor.set(0);
-            return;
         }
 
-        // Run the motors
-        double lowerRPM = Math.abs(lowerPower * MAX_LOWER_RPM);
+        // Calculate the RPM based on the full range available on the
+        // throttle and set both RPMs
+        double lowerRPM = lowerPower * (rpmRange[1] - rpmRange[0]);
         setPIDMotors(lowerRPM, lowerRPM * UPPER_BIAS);
     }
 
