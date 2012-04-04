@@ -226,57 +226,10 @@ public class Shooter {
         feeder.shootBall();
     }
 
-    private static final int TRIGGER_BTN = 1;
-    private boolean wasTrigPressed = false;
-    private boolean joystickTrigger(Joystick joy) {
-        boolean btnPressed = false;
-        // Toggle when the button is pressed
-        boolean nowPressed = joy.getRawButton(TRIGGER_BTN);
-        if (nowPressed && !wasTrigPressed) {
-            btnPressed = true;
-        }
-        wasTrigPressed = nowPressed;
-
-        return btnPressed;
-    }
-
-    // Toggle between PID and straight throttle control for the shooter
-    // motor speeds
-    private boolean rawThrottle = false;
-    private double targetLowerPower = 0.0;
-
-    private boolean wasRpmPressed = false;
-    private static final int RPM_BTN = 2;
-    private void joystickRpm(Joystick joy) {
-        boolean btnPressed = false;
-        // Toggle when the button is pressed
-        boolean nowPressed = joy.getRawButton(RPM_BTN);
-        if (nowPressed && !wasRpmPressed) {
-            rawThrottle = !rawThrottle;
-            if (!rawThrottle) {
-                // Re-enable the PID controls
-                lowerPID.enable();
-                upperPID.enable();
-            } else {
-                // Disable PID
-                lowerPID.reset();
-                upperPID.reset();
-            }
-        }
-        wasRpmPressed = nowPressed;
-    }
-
     // The lower motor is really what controls things, so we'll use it
     // and have the upper motor slave to it.
     public void setLowerRPM(double lowerRPM) {
-        if (rawThrottle) {
-            // Convert RPM to power
-            targetLowerPower = lowerRPM / MAX_LOWER_RPM;
-            lowerMotor.set(targetLowerPower);
-            upperMotor.set(targetLowerPower * UPPER_BIAS);
-        } else {
-            setPIDMotors(lowerRPM, lowerRPM * UPPER_BIAS);
-        }
+        setPIDMotors(lowerRPM, lowerRPM * UPPER_BIAS);
     }
 
     // Wait for the motors to come up to speed.
@@ -290,34 +243,22 @@ public class Shooter {
         long numSuccess = 0;
         do {
             // Wait a bit
+            maxWaitTries--;
             try {
                 Thread.sleep(myWaitPeriod);
             } catch (InterruptedException ignored) {
             }
-            maxWaitTries--;
 
             // Are we up to speed on both motors?            
             int motorRpms[] = rpmSensor.getRPMs();
-            if (!rawThrottle) {
-                if (Math.abs(
-                        (int)lowerPID.getSetpoint() - motorRpms[1]) < LOWER_TOLERANCE &&
-                    Math.abs(
-                        (int)upperPID.getSetpoint() - motorRpms[0]) < UPPER_TOLERANCE)
-                    numSuccess++;
-                else
-                    numSuccess = 0;
-            } else {
-                // We need to keep track of the target power
-                double targetLowerRPM = targetLowerPower * MAX_LOWER_RPM;
-                double targetUpperRPM = targetLowerRPM * UPPER_BIAS;
-                if (Math.abs(
-                        targetLowerRPM - motorRpms[1]) < LOWER_TOLERANCE &&
-                    Math.abs(
-                        targetUpperRPM - motorRpms[0]) < UPPER_TOLERANCE)
-                    numSuccess++;
-                else
-                    numSuccess = 0;
-            }
+            int lowerDiff =
+                Math.abs((int)lowerPID.getSetpoint() - motorRpms[1]);
+            int upperDiff =
+                Math.abs((int)upperPID.getSetpoint() - motorRpms[0]);
+            if (lowerDiff < LOWER_TOLERANCE && upperDiff < UPPER_TOLERANCE)
+                numSuccess++;
+            else
+                numSuccess = 0;
         } while (maxWaitTries > 0 && numSuccess < wantSuccess);
 
         // We've either gotten there or timed out.  Either way, we're
@@ -325,44 +266,84 @@ public class Shooter {
         return (numSuccess >= wantSuccess);
     }
 
+    private static final int TRIGGER_BTN = 1;
+    private boolean wasTrigPressed = false;
+    private boolean joystickTrigger(Joystick joy) {
+        // Toggle when the button is pressed
+        boolean nowPressed = joy.getRawButton(TRIGGER_BTN);
+        if (nowPressed && !wasTrigPressed) {
+            btnPressed = true;
+        }
+        wasTrigPressed = nowPressed;
+
+        return btnPressed;
+    }
+
+    // The range of the throttle control.
+    private double rpmRange[] = { 0.0, MAX_LOWER_RPM };
+
+    // Toggle between full-range and 'magnified' throttle control for
+    // the shooter motor speeds.
+    private boolean fullRange = true;
+    private boolean wasBtn2Pressed = false;
+    private static final int RPM_BTN = 2;
+    private void joystickRpm(Joystick joy) {
+        // Toggle when the button is pressed
+        boolean nowPressed = joy.getRawButton(RPM_BTN);
+        if (nowPressed && !wasBtn2Pressed) {
+            // Calculate the new upper-lower range based on the current
+            // throttle settings.
+            fullRange = !fullRange;
+            if (fullRange) {
+                rpmRange[0] = 0.0;
+                rpmRange[1] = MAX_LOWER_RPM;
+            } else {
+                // Make it so the throttle's current setting keeps the
+                // RPM at the same setting.
+                double newRange = MAX_LOWER_RPM / 5.0;
+                double currPower = Math.abs((joy.getThrottle() - 1.0) / 2.0);
+                double currRPM = currPower * MAX_LOWER_RPM;
+                rpmRange[0] = currRPM - currPower * newRange;
+                rpmRange[1] = rpmRange[0] + newRange;
+            }
+        }
+        wasBtn2Pressed = nowPressed;
+    }
+
     private void setLowerPower(double lowerPower) {
         DashboardComm.shooterThrottle = lowerPower;
 
-        // If the power is less than 10%, ignore it and just set the
-        // power to zero as we're not going to shoot any baskets with
-        // the low power.
-        if (Math.abs(lowerPower) < 0.1)
-            lowerPower = 0.0;
+        if (fullRange) {
+            // If we're in full range mode and the power is less than 10%,
+            // ignore it and just set the power to zero as we're not going
+            // to shoot any baskets with such low power.
+            if (Math.abs(lowerPower) < 0.1)
+                lowerPower = 0.0;
 
-        // Disable PID control and turn the shooter motors off
-        if (lowerPower == 0.0) {
-            // Disable PID (if enabled)
-            if (lowerPID.isEnable()) {
-                lowerPID.reset();
-                lowerPID.setSetpoint(0);
-                DashboardComm.rpmBottom = 0;
+            // Disable PID control and turn the shooter motors off
+            if (lowerPower == 0.0) {
+                // Disable PID (if enabled)
+                if (lowerPID.isEnable()) {
+                    lowerPID.reset();
+                    lowerPID.setSetpoint(0);
+                    DashboardComm.rpmBottom = 0;
+                }
+                if (upperPID.isEnable()) {
+                    upperPID.reset();
+                    upperPID.setSetpoint(0);
+                    DashboardComm.rpmTop = 0;
+                }
+                // Turn-off motors
+                lowerMotor.set(0);
+                upperMotor.set(0);
+                return;
             }
-            if (upperPID.isEnable()) {
-                upperPID.reset();
-                upperPID.setSetpoint(0);
-                DashboardComm.rpmTop = 0;
-            }
-            }
-            // Turn-off motors
-            lowerMotor.set(0);
-            upperMotor.set(0);
-            return;
         }
 
-        // Run the motors
-        if (rawThrottle) {
-            targetLowerPower = lowerPower;
-            lowerMotor.set(targetLowerPower);
-            upperMotor.set(targetLowerPower * UPPER_BIAS);
-        } else {
-            double lowerRPM = Math.abs(lowerPower * MAX_LOWER_RPM);
-            setPIDMotors(lowerRPM, lowerRPM * UPPER_BIAS);
-        }
+        // Calculate the RPM based on the full range available on the
+        // throttle and set both RPMs
+        double lowerRPM = lowerPower * (rpmRange[1] - rpmRange[0]);
+        setPIDMotors(lowerRPM, lowerRPM * UPPER_BIAS);
     }
 
     private void setPIDMotors(double lowerRPM, double upperRPM) {
