@@ -269,13 +269,13 @@ public class Shooter {
     private static final int TRIGGER_BTN = 1;
     private boolean wasTrigPressed = false;
     private boolean joystickTrigger(Joystick joy) {
+        boolean btnPressed = false;
         // Toggle when the button is pressed
         boolean nowPressed = joy.getRawButton(TRIGGER_BTN);
         if (nowPressed && !wasTrigPressed) {
             btnPressed = true;
         }
         wasTrigPressed = nowPressed;
-
         return btnPressed;
     }
 
