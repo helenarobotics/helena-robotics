@@ -14,8 +14,16 @@ public class ShooterRobot extends SimpleRobot {
     // Shooter
     private Shooter shooter;
 
+    // Bridge Arm
+    private Victor bridgeMotor;
+
+    // Bridge controls
+    private static final double BRIDGE_POWER = 0.5;
+    private static final int BRIDGE_UP_BTN = 2;
+    private static final int BRIDGE_DOWN_BTN = 3;
+
     // Gyro
-    private GyroSensor gyro;
+//    private GyroSensor gyro;
 
     ShooterRobot() {
         System.out.println("Starting ShooterRobot");
@@ -27,6 +35,9 @@ public class ShooterRobot extends SimpleRobot {
         // Setup the transmission shifter.
         shifter = new Solenoid(Configuration.SOLENOID_CHANNEL);
         shifter.set(true);
+
+        // Bridge Motor
+        bridgeMotor = new Victor(Configuration.VICTOR_BRIDGE_ARM);
 
         // The gyro
 //        gyro = new GyroSensor(Configuration.GYRO_ANALOG_CHANNEL, 100);
@@ -122,6 +133,14 @@ public class ShooterRobot extends SimpleRobot {
 
             // Control the shooter with the second joystick.
             shooter.joystickControl(shootStick);
+
+            // Move the bridge arm
+            if (driveStick.getRawButton(BRIDGE_UP_BTN))
+                bridgeMotor.set(BRIDGE_POWER);
+            else if (driveStick.getRawButton(BRIDGE_DOWN_BTN))
+                bridgeMotor.set(-BRIDGE_POWER);
+            else
+                bridgeMotor.set(0);
         }
         DashboardComm.stopTimer();
     }
