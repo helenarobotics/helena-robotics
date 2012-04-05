@@ -5,18 +5,12 @@ import java.util.TimerTask;
 
 import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.PIDController;
-import edu.wpi.first.wpilibj.PIDOutput;
-import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.Victor;
 
 public class Shooter {
     // The shooter motors
     private Victor lowerMotor;
     private Victor upperMotor;
-
-    // Bridge Arm
-    private Victor bridgeMotor;
 
     // RPM Sensor
     private ArduinoRPMSensor rpmSensor;
@@ -44,8 +38,8 @@ public class Shooter {
     private static final long MIN_MOTOR_CORRECT_TIME = 750;
 
     // An effecient way to control the speed of the motors
-    private PIDController lowerPID;
-    private PIDController upperPID;
+    private ShooterPIDController lowerPID;
+    private ShooterPIDController upperPID;
 
     // PID constants - XXX - Need tuning
     private static final double LOWER_KP = 0.00005;
@@ -65,9 +59,6 @@ public class Shooter {
         lowerMotor.set(0);
         upperMotor.set(0);
 
-        // Bridge Motor
-        bridgeMotor = new Victor(Configuration.VICTOR_BRIDGE_ARM);
-
         // Initialize the RPM sensor.
         rpmSensor = new ArduinoRPMSensor(Configuration.I2C_ARDUINO);
 
@@ -78,110 +69,24 @@ public class Shooter {
         // Finally, the ball feeder
         feeder = new BallFeeder();
 
-        // Initialize the setup for the lower PID controller
-        PIDSource lowerRPM = new PIDSource() {
-                int count = 0;
-                public double pidGet() {
-                    double btmRPM =
-                        rpmSensor.getRPM(ArduinoRPMSensor.BOTTOM_MOTOR);
-//                    if ((count++ % 25) == 0)
-//                        System.out.println("BtmRPM=" + btmRPM);
-                    DashboardComm.rpmBottom = btmRPM;
-                    return btmRPM;
-                }
-            };
-        PIDOutput lowerMotorCtl = new PIDOutput() {
-                // RPM or speed control needs to take into account the
-                // previous value, since we want to 'slow' the motor
-                // down, not stop and reverse it.
-                private double previousValue = 0.0;
+        // Initialize PID controller for the lower and upper shooter
+        // motors.
+        lowerPID = new ShooterPIDController(
+            "Btm", rpmSensor, ArduinoRPMSensor.BOTTOM_MOTOR,
+            lowerMotor, LOWER_KP, LOWER_KI, LOWER_KD,
+            LOWER_TOLERANCE, MAX_LOWER_RPM);
 
-                public void pidWrite(double output) {
-                    // Output is subtracted since we use negative powers
-                    // to give us the proper direction as the RPM
-                    // counter doesn't care the direction, just the
-                    // value of the RPM.
-                    double newVal = previousValue - output;
-
-                    // Limit power from 0 -> -1.0 to keep the motor from
-                    // reversing itself if the controls oscillate too
-                    // far one way or the other.
-                    if (newVal < -1.0)
-                        newVal = -1.0;
-                    else if (newVal > 0.0)
-                        newVal = 0.0;
-//                    System.out.println(
-//                        "BtmPow=" + newVal + ", Change=" + output);
-                    lowerMotor.set(newVal);
-                    previousValue = newVal;
-                    DashboardComm.powerBottom = newVal;
-                }
-            };
-        lowerPID = new PIDController(LOWER_KP, LOWER_KI, LOWER_KD,
-                                     lowerRPM, lowerMotorCtl);
-        lowerPID.setTolerance(LOWER_TOLERANCE);
-
-        // Set the minimum and maximum RPM range
-        lowerPID.setInputRange(0, MAX_LOWER_RPM);
-
-        // The motor range is truly all position (actually negative and
-        // limited in the PIDOutput cass), but we need it to be able to
-        // go negative in order to reduce power.
-        lowerPID.setOutputRange(-1.0, 1.0);
-
-        // Initialize the setup for the lower PID controller
-        PIDSource upperRPM = new PIDSource() {
-                int count = 0;
-                public double pidGet() {
-                    double topRPM =
-                        rpmSensor.getRPM(ArduinoRPMSensor.TOP_MOTOR);
-//                    if ((count++ % 25) == 0)
-//                        System.out.println("TopRPM=" + topRPM);
-                    DashboardComm.rpmTop = topRPM;
-                    return topRPM;
-                }
-            };
-        PIDOutput upperMotorCtl = new PIDOutput() {
-                // RPM or speed control needs to take into account the
-                // previous value, since we want to 'slow' the motor
-                // down, not stop and reverse it.
-                private double previousValue = 0.0;
-
-                public void pidWrite(double output) {
-                    // Output is subtracted since we use negative powers
-                    // to give us the proper direction as the RPM
-                    // counter doesn't care the direction, just the
-                    // value of the RPM.
-                    double newVal = previousValue - output;
-
-                    // Limit power from 0 -> -1.0 to keep the motor from
-                    // reversing itself if the controls oscillate too
-                    // far one way or the other.
-                    if (newVal < -1.0)
-                        newVal = -1.0;
-                    else if (newVal > 0.0)
-                        newVal = 0.0;
-//                    System.out.println(
-//                        "TopPow=" + newVal + ", Change=" + output);
-                    upperMotor.set(newVal);
-                    previousValue = newVal;
-                    DashboardComm.powerTop = newVal;
-                }
-            };
-        upperPID = new PIDController(UPPER_KP, UPPER_KI, UPPER_KD,
-                                     upperRPM, upperMotorCtl);
-        upperPID.setTolerance(UPPER_TOLERANCE);
-
-        // Set the PID ranges
-        upperPID.setInputRange(0, MAX_LOWER_RPM * UPPER_BIAS);
-        upperPID.setOutputRange(-1.0, 1.0);
+        upperPID = new ShooterPIDController(
+            "Top", rpmSensor, ArduinoRPMSensor.TOP_MOTOR,
+            upperMotor, UPPER_KP, UPPER_KI, UPPER_KD,
+            UPPER_TOLERANCE, MAX_LOWER_RPM * UPPER_BIAS);
     }
 
     public void disable() {
         // Shut everything down!
-        lowerPID.reset();
+        lowerPID.disable();
         lowerMotor.set(0);
-        upperPID.reset();
+        upperPID.disable();
         upperMotor.set(0);
         rotationMotor.set(0);
     }
@@ -195,10 +100,6 @@ public class Shooter {
         if (joystickTrigger(joy))
             shootBall();
 
-        // Toggle between 'PID' and raw throttle control for the shooter
-        // motors (debugging).
-        joystickRpm(joy);
-
         // Rotate the shooter on the lazy susan
         double joyX = joy.getX();
         if (Math.abs(joyX) > 0.1)
@@ -206,20 +107,8 @@ public class Shooter {
         else
             rotationMotor.set(0);
 
-        // Move the bridge arm
-        double joyY = joy.getY();
-        if (Math.abs(joyY) > 0.1) {
-            if (joyY < 0)
-                bridgeMotor.set(-0.25);
-            else
-                bridgeMotor.set(0.25);
-        } else
-            bridgeMotor.set(0);
-
-        // Read the throttle to determine the speed of the shooter motor
-        // and convert it to a number between 0 and 1.  Use that number
-        // to set the RPM of the shooter.
-        setLowerPower((joy.getThrottle() - 1.0) / 2.0);
+        // Set the shooter motor speed.
+        joystickThrottle(joy);
     }
 
     public void shootBall() {
@@ -249,13 +138,8 @@ public class Shooter {
             } catch (InterruptedException ignored) {
             }
 
-            // Are we up to speed on both motors?            
-            int motorRpms[] = rpmSensor.getRPMs();
-            int lowerDiff =
-                Math.abs((int)lowerPID.getSetpoint() - motorRpms[1]);
-            int upperDiff =
-                Math.abs((int)upperPID.getSetpoint() - motorRpms[0]);
-            if (lowerDiff < LOWER_TOLERANCE && upperDiff < UPPER_TOLERANCE)
+            // Are we up to speed on both motors?
+            if (lowerPID.onTarget() && upperPID.onTarget())
                 numSuccess++;
             else
                 numSuccess = 0;
@@ -264,6 +148,47 @@ public class Shooter {
         // We've either gotten there or timed out.  Either way, we're
         // going for it!
         return (numSuccess >= wantSuccess);
+    }
+
+    // Allows the motors to get up to speed before enabling the PID
+    // controller.
+    private volatile boolean startupActive = false;
+    private class StartupTask extends TimerTask {
+        private double lowerRPM, upperRPM;
+        public StartupTask(double _lowerRPM, double _upperRPM) {
+            startupActive = true;
+
+            // We feed-forward the target power to the PID controller so
+            // when we enable the controller, the speed control should
+            // already be 'close' to the target value, thus decreasing
+            // the time necessary to get a stable shooter speed.
+            lowerRPM = _lowerRPM;
+            double lowerPwr = lowerRPM / MAX_LOWER_RPM;
+            lowerPID.disable();
+            lowerPID.setTargetPower(-lowerPwr);
+            lowerMotor.set(-lowerPwr);
+
+            upperRPM = _upperRPM;
+            double upperPwr = upperRPM / MAX_LOWER_RPM;
+            upperPID.disable();
+            upperPID.setTargetPower(-upperPwr);
+            upperMotor.set(-upperPwr);
+        }
+
+        public void run() {
+            lowerPID.setTargetRpm(lowerRPM);
+            upperPID.setTargetRpm(upperRPM);
+
+            // Give the PID controller a bit more time to read the RPM's
+            // before considering the startup complete.  Otherwise, we
+            // might try to restart the motors if the RPM value isn't
+            // read.
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ignored) {
+            }
+            startupActive = false;
+        }
     }
 
     private static final int TRIGGER_BTN = 1;
@@ -279,79 +204,85 @@ public class Shooter {
         return btnPressed;
     }
 
-    // The range of the throttle control.
-    private double rpmRange[] = { 0.0, MAX_LOWER_RPM };
-
     // Toggle between full-range and 'magnified' throttle control for
     // the shooter motor speeds.
     private boolean fullRange = true;
     private boolean wasBtn2Pressed = false;
     private static final int RPM_BTN = 2;
-    private void joystickRpm(Joystick joy) {
+    private void joystickThrottle(Joystick joy) {
+        // Range of the throttle end-points
+        double btmRpmRange, topRpmRange;
+
         // Toggle when the button is pressed
         boolean nowPressed = joy.getRawButton(RPM_BTN);
         if (nowPressed && !wasBtn2Pressed) {
             // Calculate the new upper-lower range based on the current
             // throttle settings.
             fullRange = !fullRange;
-            if (fullRange) {
-                rpmRange[0] = 0.0;
-                rpmRange[1] = MAX_LOWER_RPM;
-            } else {
-                // Make it so the throttle's current setting keeps the
-                // RPM at the same setting.
-                double newRange = MAX_LOWER_RPM / 5.0;
-                double currPower = Math.abs((joy.getThrottle() - 1.0) / 2.0);
-                double currRPM = currPower * MAX_LOWER_RPM;
-                rpmRange[0] = currRPM - currPower * newRange;
-                rpmRange[1] = rpmRange[0] + newRange;
-            }
         }
         wasBtn2Pressed = nowPressed;
-    }
-
-    private void setLowerPower(double lowerPower) {
-        DashboardComm.shooterThrottle = lowerPower;
 
         if (fullRange) {
-            // If we're in full range mode and the power is less than 10%,
-            // ignore it and just set the power to zero as we're not going
-            // to shoot any baskets with such low power.
-            if (Math.abs(lowerPower) < 0.1)
-                lowerPower = 0.0;
-
-            // Disable PID control and turn the shooter motors off
-            if (lowerPower == 0.0) {
-                // Disable PID (if enabled)
-                if (lowerPID.isEnable()) {
-                    lowerPID.reset();
-                    lowerPID.setSetpoint(0);
-                    DashboardComm.rpmBottom = 0;
-                }
-                if (upperPID.isEnable()) {
-                    upperPID.reset();
-                    upperPID.setSetpoint(0);
-                    DashboardComm.rpmTop = 0;
-                }
-                // Turn-off motors
-                lowerMotor.set(0);
-                upperMotor.set(0);
-                return;
-            }
+            btmRpmRange = 0.0;
+            topRpmRange = MAX_LOWER_RPM;
+        } else {
+            // Make it so the throttle's current setting keeps the
+            // RPM at the same setting.
+            double newRange = MAX_LOWER_RPM / 5.0;
+            double currPower = Math.abs((joy.getThrottle() - 1.0) / 2.0);
+            double currRPM = currPower * MAX_LOWER_RPM;
+            btmRpmRange = currRPM - currPower * newRange;
+            topRpmRange = btmRpmRange + newRange;
         }
+
+        // Read the throttle to determine the speed of the shooter motor
+        // and convert it to a number between 0 and 1.  Use that number
+        // to set the RPM of the shooter along with the range of the
+        // throttle.
+        setLowerPower(
+            (joy.getThrottle() - 1.0) / 2.0, btmRpmRange, topRpmRange);
+
+        // Update the Dashboard with the latest PID values.
+        DashboardComm.rpmBottom = lowerPID.getRpm();
+        DashboardComm.powerBottom = lowerPID.getPower();
+        DashboardComm.rpmTop = upperPID.getRpm();
+        DashboardComm.powerTop = upperPID.getPower();
+    }
+
+    private void setLowerPower(double lowerPower,
+                               double btmRange, double topRange) {
+        DashboardComm.shooterThrottle = lowerPower;
+
+        // If we're in full range mode and the power is less than 10%,
+        // ignore it and just set the power to zero as we're not going
+        // to shoot any baskets with such low power.
+        if (fullRange && Math.abs(lowerPower) < 0.1)
+            lowerPower = 0.0;
 
         // Calculate the RPM based on the full range available on the
         // throttle and set both RPMs
-        double lowerRPM = lowerPower * (rpmRange[1] - rpmRange[0]);
+        double lowerRPM = lowerPower * (btmRange - topRange);
         setPIDMotors(lowerRPM, lowerRPM * UPPER_BIAS);
     }
 
     private void setPIDMotors(double lowerRPM, double upperRPM) {
-        if (!lowerPID.isEnable())
-            lowerPID.enable();
-        if (!upperPID.isEnable())
-            upperPID.enable();
-        lowerPID.setSetpoint(lowerRPM);
-        upperPID.setSetpoint(upperRPM);
+        // If we're in the process of starting up the motors, let them
+        // startup before we do anything else.
+        if (startupActive)
+            return;
+
+        // Update the dashboard
+        DashboardComm.rpmBottomTarget = lowerRPM;
+        DashboardComm.rpmTopTarget = upperRPM;
+        
+        // If the motors aren't running, then start them up and let
+        // them run for a bit before we use the PID controller on
+        // them to avoid PID windup.
+        if (lowerPID.getRpm() == 0) {
+            new Timer().schedule(new StartupTask(lowerRPM, upperRPM), 2000);
+        } else {
+            lowerPID.setTargetRpm(lowerRPM);
+            upperPID.setTargetRpm(upperRPM);
+        }
     }
 }
