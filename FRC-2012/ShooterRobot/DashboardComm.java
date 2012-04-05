@@ -81,7 +81,9 @@ public class DashboardComm extends Thread {
     // Shooter motors!
     public static double shooterThrottle;
     public static double rpmTop;
+    public static double rpmTopTarget;
     public static double rpmBottom;
+    public static double rpmBottomTarget;
     public static double powerTop;
     public static double powerBottom;
 
