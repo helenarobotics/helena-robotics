@@ -154,9 +154,13 @@ public class Shooter {
     // controller.
     private volatile boolean startupActive = false;
     private class StartupTask extends TimerTask {
+        private Timer t;
         private double lowerRPM, upperRPM;
-        public StartupTask(double _lowerRPM, double _upperRPM) {
+        public StartupTask(Timer _t,double _lowerRPM, double _upperRPM) {
             startupActive = true;
+
+            // Keep track of the timer that initiated us.
+            t = _t;
 
             // We feed-forward the target power to the PID controller so
             // when we enable the controller, the speed control should
@@ -176,6 +180,9 @@ public class Shooter {
         }
 
         public void run() {
+            // Timer is running, so let the parent timer thread go away.
+            t.cancel();
+
             lowerPID.setTargetRpm(lowerRPM);
             upperPID.setTargetRpm(upperRPM);
 
@@ -280,7 +287,8 @@ public class Shooter {
         // them run for a bit before we use the PID controller on
         // them to avoid PID windup.
         if (lowerPID.getRpm() == 0) {
-            new Timer().schedule(new StartupTask(lowerRPM, upperRPM), 2000);
+            Timer t = new Timer();
+            t.schedule(new StartupTask(t, lowerRPM, upperRPM), 2000);
         } else {
             lowerPID.setTargetRpm(lowerRPM);
             upperPID.setTargetRpm(upperRPM);
