@@ -261,7 +261,8 @@ public class Shooter {
 
         // Calculate the RPM based on the full range available on the
         // throttle and set both RPMs
-        double lowerRPM = lowerPower * (btmRange - topRange);
+        double lowerRPM =
+            Math.abs(lowerPower * (topRange - btmRange)) + btmRange;
         setPIDMotors(lowerRPM, lowerRPM * UPPER_BIAS);
     }
 
