@@ -1,0 +1,65 @@
+<project name="WidgetPack" default="jar" basedir=".">
+  <property name="build.dir" location="build"/>
+  <property name="lib.dir" location="jars"/>
+  <property name="extension.dir" value="extensions"/>
+  <property name="extension.lib.dir" value="${extension.dir}/lib"/>
+  <property name="project.jar" value="${ant.project.name}.jar"/>
+  <property name="src.dir" location="src"/>
+
+  <!-- Environment variables that must be set -->
+  <property environment="env"/>
+  <property name="javahome.dir" location="${env.JAVA_HOME}"/>
+
+  <!-- Set the base classpath -->
+  <path id="lib.classpath">
+<!--
+    <fileset file="${javahome.dir}/jre/lib/rt.jar"/>
+-->
+  </path>
+
+  <!-- Classpath entry only needed if compiling -->
+  <path id="compile.classpath">
+    <path refid="lib.classpath"/>
+    <fileset dir="${lib.dir}" includes="*.jar"/>
+    <fileset dir="${extension.lib.dir}" includes="*.jar"/>
+  </path>
+
+  <!-- Classpath entry only needed if running -->
+  <path id="proj.classpath">
+    <path refid="lib.classpath"/>
+    <pathelement path="${build.dir}"/>
+  </path>
+
+  <target name="init">
+    <mkdir dir="${build.dir}"/>
+  </target>
+
+  <target name="compile" depends="init">
+    <javac includeantruntime="false" srcdir="${src.dir}" destdir="${build.dir}" debug="true">
+      <compilerarg value="-Xlint:all,-path"/>
+      <classpath refid="compile.classpath"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile">
+    <jar jarfile="${build.dir}/${project.jar}" basedir="${build.dir}"
+       excludes="${project.jar}"/>
+  </target>
+
+  <target name="deploy" depends="jar">
+    <copy file="${build.dir}/${project.jar}" todir="${extension.dir}"/>
+  </target>
+
+  <target name="run" depends="deploy">
+    <java jar="${lib.dir}/SmartDashboard2012.jar" fork="true"
+      failonerror="true" inputstring="">
+      <classpath>
+        <path refid="proj.classpath"/>
+      </classpath>
+    </java>
+  </target>
+
+  <target name="clean">
+    <delete dir="${build.dir}"/>
+  </target>
+</project>
