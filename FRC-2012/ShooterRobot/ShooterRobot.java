@@ -18,7 +18,7 @@ public class ShooterRobot extends SimpleRobot {
     private Victor bridgeMotor;
 
     // Bridge controls
-    private static final double BRIDGE_POWER = 0.5;
+    private static final double BRIDGE_POWER = 1.0;
     private static final int BRIDGE_UP_BTN = 2;
     private static final int BRIDGE_DOWN_BTN = 3;
 
@@ -136,7 +136,7 @@ public class ShooterRobot extends SimpleRobot {
 
             // Move the bridge arm
             if (driveStick.getRawButton(BRIDGE_UP_BTN))
-                bridgeMotor.set(BRIDGE_POWER);
+                bridgeMotor.set(BRIDGE_POWER / 2);
             else if (driveStick.getRawButton(BRIDGE_DOWN_BTN))
                 bridgeMotor.set(-BRIDGE_POWER);
             else
