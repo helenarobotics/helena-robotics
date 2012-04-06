@@ -121,28 +121,30 @@ public class DashboardComm extends Thread {
     public void send() {
         //Only need to send Joystick and Sensor info
         //Joystick 1
-        s.putDouble("Joystick 1", joy1Direction);
-        s.putDouble("Joystick 1", joy1Magnitude);
+        s.putDouble("Joystick 1 Direction", joy1Direction);
+        s.putDouble("Joystick 1 Magnitude", joy1Magnitude);
         s.putBoolean("Transmission", shifterStatus);
 
         s.putInt("Mode", mode);
 
         //Joystick 2
-        s.putDouble("Joystick 2", joy2X);
-        s.putDouble("Joystick 2", joy2Y);
-        s.putDouble("Joystick 2", shooterThrottle);
+        s.putDouble("Joystick 2 X", joy2X);
+        s.putDouble("Joystick 2 Y", joy2Y);
+        s.putDouble("Joystick 2 Throttle", shooterThrottle);
         s.putBoolean("BallFeeder", shooting);
 
         //For Field - Gyro
 //        s.putDouble("Gyro", gyroAngle);
 
         //Accelerometer
-//        s.putDouble("Accel", accel.getAcceleration().kX);
-//        s.putDouble("Accel", accel.getAcceleration().kY);
-//        s.putDouble("Accel", accel.getAcceleration().kZ);
+//        s.putDouble("Accel X", accel.getAcceleration().kX);
+//        s.putDouble("Accel Y", accel.getAcceleration().kY);
+//        s.putDouble("Accel Z", accel.getAcceleration().kZ);
 
         //RPM Sensor
         s.putDouble("RPM 1", (int)rpmBottom);
         s.putDouble("RPM 2", (int)rpmTop);
+        s.putDouble("RPM 1 Target", (int)rpmTopTarget);
+        s.putDouble("RPM 2 Target", (int)rpmBottomTarget);
     }
 }
