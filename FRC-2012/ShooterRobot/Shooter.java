@@ -35,7 +35,7 @@ public class Shooter {
 
     // How long should the motors have a speed that's 'good' enough for
     // us to consider them up-to-speed?
-    private static final long MIN_MOTOR_CORRECT_TIME = 750;
+    private static final long MIN_MOTOR_CORRECT_TIME = 1000;
 
     // An effecient way to control the speed of the motors
     private ShooterPIDController lowerPID;
