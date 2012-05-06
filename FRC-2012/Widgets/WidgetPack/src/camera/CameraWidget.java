@@ -4,14 +4,12 @@ import edu.wpi.first.smartdashboard.gui.DashboardFrame;
 import edu.wpi.first.smartdashboard.gui.DashboardPrefs;
 import edu.wpi.first.smartdashboard.gui.StaticWidget;
 
-import edu.wpi.first.smartdashboard.gui.Widget;
 import edu.wpi.first.smartdashboard.properties.BooleanProperty;
 import edu.wpi.first.smartdashboard.properties.DoubleProperty;
 import edu.wpi.first.smartdashboard.properties.IPAddressProperty;
 import edu.wpi.first.smartdashboard.properties.Property;
 
 import net.sf.jipcam.axis.CameraAPI;
-import robotics.helena.widget.WidgetComm;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -35,8 +33,9 @@ public class CameraWidget extends StaticWidget {
     // Keep the compiler happy
     private static final long serialVersionUID = 1L;
 
-    private static final double linePos = 0.625;
     public static final String NAME = "Camera w/ Overlay (EK)";
+
+    private static final double linePos = (double)5/(double)8;
 
     // The camera should have an address related to the team number with
     // a final IP of '11'.
@@ -77,7 +76,7 @@ public class CameraWidget extends StaticWidget {
 
     private Thread iu;
     private Thread ih;
-    //private Thread gc;
+    private Thread gc;
 
     // Keep track of how many images have been fetched/processed.
     private int imageCounter = 0, processedImageCounter = 0;
@@ -98,15 +97,13 @@ public class CameraWidget extends StaticWidget {
         dq = new DataQueue();
 
         imH = new ImageHandler();
-        imUn = new ImageUnderstanding(iq, dq, 2);
+        imUn = new ImageUnderstanding(iq, dq, 1);
 
         ih = new Thread(imH, "Image Handler");
         iu = new Thread(imUn, "Image Understanding");
-        //gc = new GarbageCollectorThread();
 
         ih.start();
         iu.start();
-        //gc.start();
     }
 
     public void propertyChanged(Property property) {
@@ -158,17 +155,15 @@ public class CameraWidget extends StaticWidget {
                     imageCounter++;
                     iq.put(image);
                 } catch (Exception e) {
-                    System.out.println("ERROR: " + e.getMessage());
+                    JOptionPane.showMessageDialog(
+                        null, "Exception:" + e.getMessage());
                 }
 
                 // We consider it a success if we process an image, even
                 // if we don't get to use it in the repaint method.
                 ImageResults res = dq.get();
-                if (res != null){
+                if (res != null)
                     processedImageCounter++;
-                    WidgetComm.table.putDouble("Distance from Top Hoop", res.getTopHoop().estimates.get(0).azimuth);
-                    //WidgetComm.table.putSubTable("ImageResults", ImageResultsTable.toNetworkTable(res));
-                }
 
                 // Safely update the image and results for the paint
                 // method to use.
@@ -213,15 +208,6 @@ public class CameraWidget extends StaticWidget {
     }
 
     protected void paintComponent(Graphics g) {
-        Image buffer = createImage(getSize().width, getSize().height);
-        Graphics bufferGraphics = buffer.getGraphics();
-        paintStuff(bufferGraphics);
-        g.drawImage(buffer, 0, 0, null);
-    }
-
-    private void paintStuff(Graphics g){
-        double currAspectRatio = getSize().getWidth() / getSize().getHeight();
-
         boolean gotLock = false;
         try {
             // If we can't get the lock in 100ms, give up and let the
@@ -233,91 +219,102 @@ public class CameraWidget extends StaticWidget {
             }
             if (!gotLock)
                 return;
-            
-            if (cameraImage != null) {
-                if (autoSetAspect && !aspectAutoBeenSet) {
-                    aspectAutoBeenSet = true;
-                    aspectProperty.setValue(
-                        (double)cameraImage.getWidth() / (double)cameraImage.getHeight());
-                }
 
-                g.setColor(Color.GREEN);
-                g.drawString(Integer.toString(cameraImage.getWidth()) + " : " +
-                             Integer.toString(cameraImage.getHeight()), 5, 70);
-
-                // Width is too large
-                if (currAspectRatio > aspectRatio) {
-                    int width = (int)(getSize().getHeight() * aspectRatio);
-                    int height = (int)getSize().getHeight();
-                    g.drawImage(cameraImage,
-                                ((int)getSize().getWidth() - width) / 2, 0,
-                                ((int)getSize().getWidth() + width) / 2, height,
-                                0, 0,
-                                cameraImage.getWidth(), cameraImage.getHeight(), null);
-                } else if (currAspectRatio < aspectRatio) {
-                    // Height is too large
-                    int width = (int)getSize().getWidth();
-                    int height = (int)(getSize().getWidth() / aspectRatio);
-                    g.drawImage(cameraImage,
-                                0, ((int)getSize().getHeight() - height) / 2,
-                                width, ((int)getSize().getHeight() + height) / 2,
-                                0, 0,
-                                cameraImage.getWidth(), cameraImage.getHeight(), null);
-                } else {
-                    // Just right
-                    g.drawImage(cameraImage,
-                                0, 0,
-                                (int)getSize().getWidth(), (int)getSize().getHeight(),
-                                0, 0,
-                                cameraImage.getWidth(), cameraImage.getHeight(), null);
-                }
-
-                // Draw the overlay on top of the image!
-                if (showOverlay && results != null) {
-                    drawResults(g);
-                    g.setColor(Color.ORANGE);
-                    g.setFont(new Font("Dialog", Font.PLAIN, 12));
-                    g.drawString("Overlay Successful #" +
-                                 Integer.toString(processedImageCounter) + "/" +
-                                 Integer.toString(imageCounter), 5, 10);
-                } else {
-                    g.setColor(Color.GREEN);
-                    g.setFont(new Font("Dialog", Font.PLAIN, 12));
-                    g.drawString("No Overlay", 5, 10);
-                }
-            } else {
-                // No image found!
-                g.setColor(Color.RED);
-                if (currAspectRatio > aspectRatio) {
-                    // Width is too large
-                    int width = (int)(getSize().getHeight() * aspectRatio);
-                    int height = (int)getSize().getHeight();
-                    g.fillRect(((int)getSize().getWidth() - width) / 2, 0, width, height);
-                } else if (currAspectRatio < aspectRatio) {
-                    // Height is too large
-                    int width = (int)getSize().getWidth();
-                    int height = (int)(getSize().getWidth() / aspectRatio);
-                    g.fillRect(0, ((int)getSize().getHeight() - height) / 2, width, height);
-                } else {
-                    // Just right
-                    g.fillRect(0, 0, (int)getSize().getWidth(), (int)getSize().getHeight());
-                }
-                g.setColor(Color.BLACK);
-                g.setFont(new Font("Dialog", Font.PLAIN, 12));
-                g.drawString("No Camera Connection", 5, 10);
-            }
-            g.setColor(Color.orange);
-            int width = (int)getSize().getWidth();
-            int basex = 0;
-            if(currAspectRatio > aspectRatio){
-                width = (int)(getSize().getHeight() * aspectRatio);
-                basex = (int)((getSize().getWidth() - width) / 2);
-            }
-            g.drawLine((int)(linePos*width + basex),0,(int)(linePos*width + basex),(int)getSize().getHeight());
+            // Double buffer by drawing the image onto a background
+            // image which we then redraw after it's all done drawing.
+            Image buffer = createImage(getSize().width, getSize().height);
+            paintStuff(buffer.getGraphics());
+            g.drawImage(buffer, 0, 0, null);
         } finally {
             if (gotLock)
                 paintLock.unlock();
         }
+	}
+
+	private void paintStuff(Graphics g) {
+        double currAspectRatio = getSize().getWidth() / getSize().getHeight();
+
+        if (cameraImage != null) {
+            if (autoSetAspect && !aspectAutoBeenSet) {
+                aspectAutoBeenSet = true;
+                aspectProperty.setValue(
+                    (double)cameraImage.getWidth() / (double)cameraImage.getHeight());
+            }
+
+            g.setColor(Color.GREEN);
+            g.drawString(Integer.toString(cameraImage.getWidth()) + " : " +
+                         Integer.toString(cameraImage.getHeight()), 5, 70);
+
+            // Width is too large
+            if (currAspectRatio > aspectRatio) {
+                int width = (int)(getSize().getHeight() * aspectRatio);
+                int height = (int)getSize().getHeight();
+                g.drawImage(cameraImage,
+                            ((int)getSize().getWidth() - width) / 2, 0,
+                            ((int)getSize().getWidth() + width) / 2, height,
+                            0, 0,
+                            cameraImage.getWidth(), cameraImage.getHeight(), null);
+            } else if (currAspectRatio < aspectRatio) {
+                // Height is too large
+                int width = (int)getSize().getWidth();
+                int height = (int)(getSize().getWidth() / aspectRatio);
+                g.drawImage(cameraImage,
+                            0, ((int)getSize().getHeight() - height) / 2,
+                            width, ((int)getSize().getHeight() + height) / 2,
+                            0, 0,
+                            cameraImage.getWidth(), cameraImage.getHeight(), null);
+            } else {
+                // Just right
+                g.drawImage(cameraImage,
+                            0, 0,
+                            (int)getSize().getWidth(), (int)getSize().getHeight(),
+                            0, 0,
+                            cameraImage.getWidth(), cameraImage.getHeight(), null);
+            }
+
+            // Draw the overlay on top of the image!
+            if (showOverlay && results != null) {
+                drawResults(g);
+                g.setColor(Color.ORANGE);
+                g.setFont(new Font("Dialog", Font.PLAIN, 12));
+                g.drawString("Overlay Successful #" +
+                             Integer.toString(processedImageCounter) + "/" +
+                             Integer.toString(imageCounter), 5, 10);
+            } else {
+                g.setColor(Color.GREEN);
+                g.setFont(new Font("Dialog", Font.PLAIN, 12));
+                g.drawString("No Overlay", 5, 10);
+            }
+        } else {
+            // No image found!
+            g.setColor(Color.RED);
+            if (currAspectRatio > aspectRatio) {
+                // Width is too large
+                int width = (int)(getSize().getHeight() * aspectRatio);
+                int height = (int)getSize().getHeight();
+                g.fillRect(((int)getSize().getWidth() - width) / 2, 0, width, height);
+            } else if (currAspectRatio < aspectRatio) {
+                // Height is too large
+                int width = (int)getSize().getWidth();
+                int height = (int)(getSize().getWidth() / aspectRatio);
+                g.fillRect(0, ((int)getSize().getHeight() - height) / 2, width, height);
+            } else {
+                // Just right
+                g.fillRect(0, 0, (int)getSize().getWidth(), (int)getSize().getHeight());
+            }
+            g.setColor(Color.BLACK);
+            g.setFont(new Font("Dialog", Font.PLAIN, 12));
+            g.drawString("No Camera Connection", 5, 10);
+        }
+        double width = getSize().getWidth();
+        double basex = 0;
+        if(currAspectRatio > aspectRatio){
+            width = getSize().getHeight() * aspectRatio;
+            basex = (getSize().getWidth()-width)/2;
+        }
+
+        g.setColor(Color.orange);
+        g.drawLine((int)(linePos*width+basex),0,(int)(linePos*width+basex),(int)getSize().getHeight());
     }
 
     private void drawResults(Graphics g) {
@@ -336,8 +333,8 @@ public class CameraWidget extends StaticWidget {
         }
         double scale = (double)width / cameraImage.getWidth();
 
+        g.setColor(Color.RED);
         for (int i = 0; i < results.regions.size(); i++) {
-            g.setColor(Color.RED);
             Polygon p = new Polygon();
             Rectangle rec = results.regions.get(i).getEnclosingRectangle();
             p.addPoint((int)(rec.x * scale + baseX), (int)(rec.y * scale + baseY));
@@ -347,6 +344,10 @@ public class CameraWidget extends StaticWidget {
             g.drawPolygon(p);
             g.drawString("" + (int)results.regions.get(0).estimates.get(0).range,
                          (int)(rec.x * scale + baseX), (int)((rec.y + rec.width / 2) * scale + baseY));
+            g.setColor(Color.BLUE);
+            g.drawString("Scale: " + Double.toString(scale) +
+                         " Base: (" + Integer.toString(baseX) + ", " +
+                         Integer.toString(baseY) + ")", 5, 30);
         }
 
         // Draw Hoop Detection

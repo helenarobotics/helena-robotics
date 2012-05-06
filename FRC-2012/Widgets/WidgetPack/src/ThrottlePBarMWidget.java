@@ -38,12 +38,10 @@ public class ThrottlePBarMWidget extends StaticWidget implements VarNotifier{
 
     protected void paintComponent(Graphics g){
         if(active){
-            g.setColor(outlineColorProp.getValue());
-            g.fillRect(0,0,(int)getSize().getWidth(),(int)getSize().getHeight());
             g.setColor(blankColorProp.getValue());
-            g.fillRect(1,1,(int)getSize().getWidth()-2,(int)getSize().getHeight()-2);
+            g.fillRect(0,0,(int)getSize().getWidth(),(int)getSize().getHeight()-2);
             g.setColor(fillColorProp.getValue());
-            g.fillRect(1,(int)((1-(throttle+1.0)/2)*((int)getSize().getHeight()-2)),(int)getSize().getWidth()-2,(int)((throttle+1)/2*((int)getSize().getHeight()-2)+2));
+            g.fillRect(0,(int)((throttle+1.0)*((int)getSize().getHeight())),(int)getSize().getWidth(),(int)(-throttle*((int)getSize().getHeight())));
         }else{
             g.setFont(new Font("Dialog", Font.BOLD, 20));
             g.setColor(Color.red);

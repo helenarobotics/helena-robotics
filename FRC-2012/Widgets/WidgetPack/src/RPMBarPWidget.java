@@ -105,6 +105,5 @@ public class RPMBarPWidget extends StaticWidget implements VarNotifier{
             btmRPMBar.setString("Lower RPM: " + WidgetComm.rpm2);
             btmTargetBar.setString("Lower Target: " + WidgetComm.rpm2Target);
         }
-        updateUI();
     }
 }

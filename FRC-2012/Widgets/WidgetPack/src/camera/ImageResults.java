@@ -1,6 +1,5 @@
 package robotics.helena.widget.camera;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +10,7 @@ import java.awt.image.WritableRaster;
 import java.awt.image.Raster;
 import javax.vecmath.Point3d;
 
-public class ImageResults implements Serializable {
+public class ImageResults {
     // output data
 
     // each Region corresponds to a detected hoop, and contains estimated location, range, etc
@@ -20,7 +19,7 @@ public class ImageResults implements Serializable {
     // robot {x, y, z} location, when available(depends on view of hoops)
     Point3d robotPosition = null;
 
-    SerializableImage thresholdedImage = null;
+    BufferedImage thresholdedImage = null;
 
     // input processing parameters (set by constructor)
     int downsample;                    // 1 = no desampling, 2 = 1 / 2 size image, etc
@@ -40,7 +39,7 @@ public class ImageResults implements Serializable {
         // Create downsampled image (we can check for downsample == 1
         // condition, but checking the code now)
         BufferedImage cimage =
-                new BufferedImage(nx, ny,  BufferedImage.TYPE_INT_RGB);
+            new BufferedImage(nx, ny,  BufferedImage.TYPE_INT_RGB);
 
         Graphics2D g = cimage.createGraphics();
         g.drawImage(image, 0, 0, nx, ny, null);
@@ -201,8 +200,8 @@ public class ImageResults implements Serializable {
     // detects FRC reflective tape.  Works remarkably well IN OUR
     // TESTING; need to verify onsite at competition, and adjust as
     // required.
-    private static SerializableImage detectGreen(BufferedImage img, int thresh) {
-        SerializableImage green = new SerializableImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+    private static BufferedImage detectGreen(BufferedImage img, int thresh) {
+        BufferedImage green = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
         WritableRaster raster = green.getRaster();
         for (int x = 0; x < img.getWidth(); x++) {
             for (int y = 0; y < img.getHeight(); y++) {
@@ -602,26 +601,4 @@ public class ImageResults implements Serializable {
         }
         return sb.toString();
     }
-
-	public static byte[] serializeResults(Object obj) throws IOException {
-		ByteArrayOutputStream baOStream = new ByteArrayOutputStream();
-		ObjectOutputStream objOStream = new ObjectOutputStream(baOStream);
-
-		objOStream.writeObject(obj);
-		objOStream.flush();
-		objOStream.close();
-		return baOStream.toByteArray();
-	}
-
-	public static ImageResults deserializeResults(byte[] buf) throws IOException, ClassNotFoundException{
-		Object obj = null;
-
-		if(buf != null){
-			ObjectInputStream objIStream = new ObjectInputStream(new ByteArrayInputStream(buf));
-
-			obj = objIStream.readObject();
-		}
-
-		return (ImageResults)obj;
-	}
 }

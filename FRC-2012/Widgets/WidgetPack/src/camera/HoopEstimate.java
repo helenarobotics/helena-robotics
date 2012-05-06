@@ -1,9 +1,8 @@
 package robotics.helena.widget.camera;
 
 import javax.vecmath.Point3d;
-import java.io.Serializable;
 
-public class HoopEstimate implements Serializable {
+public class HoopEstimate {
     // vertical angle of this estimate relative to camera orientation(in
     // radians)
     public double elevation;

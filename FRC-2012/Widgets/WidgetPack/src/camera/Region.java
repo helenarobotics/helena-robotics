@@ -1,7 +1,7 @@
 package robotics.helena.widget.camera;
 
-import java.io.Serializable;
 import java.util.ArrayList;
+
 import java.util.List;
 
 import java.awt.Color;
@@ -14,7 +14,7 @@ import java.awt.geom.Point2D;
 
 import java.awt.image.BufferedImage;
 
-public class Region implements Serializable {
+public class Region {
     public enum HoopLocation { unknown, left, top, right, bottom };
 
     // temporary space used while building the region.
@@ -25,6 +25,7 @@ public class Region implements Serializable {
     // range = dist from camera to a 3D point at center of the backboard
     // (above the rim)
     double range;
+    double azimuth;
     List<HoopEstimate> estimates;
 
     public Line2D.Double leftEdge;
