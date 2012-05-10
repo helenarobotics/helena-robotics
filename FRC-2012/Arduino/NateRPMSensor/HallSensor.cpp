@@ -8,59 +8,47 @@
 #include <Arduino.h>
 
 HallSensor::HallSensor(int _sensorPort, int _ledPort) {
-  sensorPort = _sensorPort;
-  ledPort = _ledPort;
+    sensorPort = _sensorPort;
+    ledPort = _ledPort;
 
-  pinMode(sensorPort, INPUT);
-  pinMode(ledPort, OUTPUT);
+    pinMode(sensorPort, INPUT);
+    pinMode(ledPort, OUTPUT);
 
-  lastRevTime = 0;
-  for (int i = 0; i < RPM_HISTORY; i++)
-    rpmHistory[i] = 0;
+    currRpm = 0;
+    lastRevTime = 0;
 }
 
 void HallSensor::addRevolution() {
-  // toggle output led
-  digitalWrite(ledPort, !digitalRead(ledPort));
+    // toggle output led
+    digitalWrite(ledPort, !digitalRead(ledPort));
 
-  // Calculate the RPM
-  unsigned long currRevTime = micros();
-  if (lastRevTime > 0) {
-    double diffTime = currRevTime - lastRevTime;
-    // The instantaneous RPM is the time to make one revolution:
-    // RPM = 60 secs/min * 1000 ms/sec * 1000 us/ms * 1 rev / us
-    int newRpm = (int)(60.0 * 1000.0 * 1000.0 / diffTime);
+    // Calculate the RPM
+    unsigned long currRevTime = micros();
+    if (lastRevTime > 0) {
+        double diffTime = currRevTime - lastRevTime;
+        // The instantaneous RPM is the time to make one revolution:
+        // RPM = 60 secs/min * 1000 ms/sec * 1000 us/ms * 1 rev / us
+        int newRpm = (int)(60.0 * 1000.0 * 1000.0 / diffTime);
 
-    // Avoid overflow from spurious electrical values.
-    if (newRpm > 0) {
-      // Keep track of the RPM history!
-      rpmHistory[historyIndex] = newRpm;
-      historyIndex++;
-      if (historyIndex >= RPM_HISTORY)
-        historyIndex = 0;
+        // Avoid overflow from spurious electrical values.
+        if (newRpm > 0)
+            currRpm = newRpm;
     }
-  }
-  lastRevTime = currRevTime;
+    lastRevTime = currRevTime;
 }
 
 void HallSensor::noRevolution() {
-  if (lastRevTime > 0) {
-    double diffTime = micros() - lastRevTime;
-    if (diffTime > (1000.0 * 1000.0)) {
-      // No revolution in over a second, so assume the RPM is zero and
-      // zero out all the calculations
-      for (int i = 0; i < RPM_HISTORY; i++)
-        rpmHistory[i] = 0;
-      historyIndex = 0;
-      lastRevTime = 0;
+    if (lastRevTime > 0) {
+        double diffTime = micros() - lastRevTime;
+        if (diffTime > (1000.0 * 1000.0)) {
+            // No revolution in over a second, so assume the RPM is zero
+            // and zero out all the calculations
+            currRpm = 0;
+            lastRevTime = 0;
+        }
     }
-  }
 }
 
 int HallSensor::getRPM() {
-  // Return the average of all the calculations
-  long total = 0;
-  for (int i = 0; i < RPM_HISTORY; i++)
-    total += rpmHistory[i];
-  return (int)(total / RPM_HISTORY);
+    return currRpm;
 }
