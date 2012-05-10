@@ -1,0 +1,63 @@
+Notes from meeting Bridger, Joe, and Nate had on May 6, 2012
+------------------------------------------------------------
+
+Goal:
+=====
+  Finish up some of the software projects that weren't completed and/or
+completely integrated in the 2012 FRC robot during the FRC competition in
+Cheney in April.
+
+Tasks:
+======
+
+Unassigned
+^^^^^^^^^^
+* Prototype an angle measurement using potentiometers
+* Lock the lazy susan from rotation
+* Balance the shooter wheels
+* Review drive shifter pneumatics for air leaks
+
+Hardware team
+^^^^^^^^^^^^^
+* Update the ball feeder to be more consistent.  In particular, the current
+  single servo solution doesn't give a very good load mechanism, and sometimes
+  allows for multiple balls to be loaded.  In both cases, the inconsistent
+  behavior makes it difficult to get consistent shooting behavior.
+
+Joe
+^^^
+* Work with Mr. Miller to get a cRIO setup so that Joe and/or Bridger can
+  program on it at home
+* Get the Gyro and Accelerometer working
+* Tune the PID control on the shooter motors to make them respond more
+  quickly
+* Joystick nudge controls for moving the robot forward/backward a 
+ 'little bit'
+* Joystick nudge controls for increasing/decreasing the speed of the
+  shooter motors by a 'little bit'
+* Joystick controls that allow the user to differentiate between manual
+  shooter RPM control and automatic RPM control based on imaging data.
+  In addition, the controls should allow for small adjustments in both
+  modes using the above nudge controls.
+
+Bridger
+^^^^^^^
+* Commit the latest code to the Google Code Repository
+* Work with Joe to help him get access to the Google code repository
+* Verify the existing code widget functionality
+  - Camera images are displayed on the dashboard
+  - Verify RPM data is shown on dashboard
+  + (optional) - Gyro and Accelerometer data is shown on dashboard
+* Modify the existing code to only expect to see a single backboard
+  (vs. the original code that expects to see 4 backboards)
+* Verify Image Processing code is functional 
+  - calculated backboard image is overlaid onto the dashboard image
+  - Both distance and location are calculated and displayed on Dashboard
+* Once the new ball feeder has been created by the hardware team, updated
+  controls to feed balls must be coded
+* Calculated Distance -> target RPM values should be calculated based on
+  results obtained prior to the competition
+* Calculated RPM values needs to be sent back to the robot and used to
+  control the shooter motors at a speed
+* Joystick control to enable automated/manual RPM shooter speed control
+  based on calculated distance/RPM information from the image processing.
