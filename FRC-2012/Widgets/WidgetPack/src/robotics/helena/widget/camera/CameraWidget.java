@@ -1,3 +1,5 @@
+package robotics.helena.widget.camera;
+
 import edu.wpi.first.smartdashboard.gui.DashboardFrame;
 import edu.wpi.first.smartdashboard.gui.DashboardPrefs;
 import edu.wpi.first.smartdashboard.gui.StaticWidget;
@@ -27,11 +29,15 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.JOptionPane;
 
+import robotics.helena.widget.WidgetComm;
+
 public class CameraWidget extends StaticWidget {
     // Keep the compiler happy
     private static final long serialVersionUID = 1L;
 
     public static final String NAME = "Camera w/ Overlay (EK)";
+
+    private static final double linePos = (double)5/(double)8;
 
     // The camera should have an address related to the team number with
     // a final IP of '11'.
@@ -97,11 +103,9 @@ public class CameraWidget extends StaticWidget {
 
         ih = new Thread(imH, "Image Handler");
         iu = new Thread(imUn, "Image Understanding");
-        gc = new GarbageCollectorThread();
 
         ih.start();
         iu.start();
-        gc.start();
     }
 
     public void propertyChanged(Property property) {
@@ -160,8 +164,9 @@ public class CameraWidget extends StaticWidget {
                 // We consider it a success if we process an image, even
                 // if we don't get to use it in the repaint method.
                 ImageResults res = dq.get();
-                if (res != null)
+                if (res != null){
                     processedImageCounter++;
+                }
 
                 // Safely update the image and results for the paint
                 // method to use.
@@ -171,8 +176,10 @@ public class CameraWidget extends StaticWidget {
                     if (gotLock) {
                         if (image != null)
                             cameraImage = image;
-                        if (res != null)
+                        if (res != null){
                             results = res;
+                            sendResults();
+                        }
                     }
                 } finally {
                     if (gotLock)
@@ -180,6 +187,19 @@ public class CameraWidget extends StaticWidget {
                 }
                 DashboardFrame.getInstance().getPanel().repaint(getBounds());
             }
+        }
+        
+        public void sendResults(){
+        	WidgetComm.table.putDouble("Target RPM 1 BB", distanceToBBRPM(results.getHoop().range));
+        	WidgetComm.table.putDouble("Target RPM 1 Swish", distanceToSwishRPM(results.getHoop().range));
+        }
+        
+        public double distanceToBBRPM(double dist){
+            return 0.00008 * Math.pow(dist,4) - 0.0667*Math.pow(dist, 3) + 19.844 * Math.pow(dist, 2) - 2599.7 * dist + 127490;
+        }
+
+        public double distanceToSwishRPM(double dist){
+            return -0.036* Math.pow(dist, 3) + 23.73*Math.pow(dist,2) - 5194.3 * dist + 378388;
         }
 
         public void stop() {
@@ -304,6 +324,15 @@ public class CameraWidget extends StaticWidget {
             g.setFont(new Font("Dialog", Font.PLAIN, 12));
             g.drawString("No Camera Connection", 5, 10);
         }
+        double width = getSize().getWidth();
+        double basex = 0;
+        if(currAspectRatio > aspectRatio){
+            width = getSize().getHeight() * aspectRatio;
+            basex = (getSize().getWidth()-width)/2;
+        }
+
+        g.setColor(Color.orange);
+        g.drawLine((int)(linePos*width+basex),0,(int)(linePos*width+basex),(int)getSize().getHeight());
     }
 
     private void drawResults(Graphics g) {

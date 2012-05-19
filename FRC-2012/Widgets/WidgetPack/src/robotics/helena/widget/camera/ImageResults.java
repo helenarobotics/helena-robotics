@@ -1,20 +1,21 @@
 package robotics.helena.widget.camera;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.Raster;
 import javax.vecmath.Point3d;
 
+//XXX This code has been modified to only use the single largest region.
 public class ImageResults {
-    // output data
-
+	ArrayList<Region> regions;
+	
     // each Region corresponds to a detected hoop, and contains estimated location, range, etc
-    public List<Region> regions;
+    Region regionRes = null;
 
     // robot {x, y, z} location, when available(depends on view of hoops)
     Point3d robotPosition = null;
@@ -35,6 +36,10 @@ public class ImageResults {
 
         nx = image.getWidth() / downsample;
         ny = image.getHeight() / downsample;
+        
+        {
+        	System.out.println("hi");
+        }
 
         // Create downsampled image (we can check for downsample == 1
         // condition, but checking the code now)
@@ -61,7 +66,7 @@ public class ImageResults {
 //            System.out.println("Found region " + region);
         }
         labelHoops();
-        estimateRanges();
+        estimateRange();
         estimateRobotPosition();
         adjustForDownsample();
     }
@@ -129,12 +134,8 @@ public class ImageResults {
         }
     }
 
-    public void estimateRanges() {
-        for (Region r: regions) {
-            if (r.hoopLocation != Region.HoopLocation.unknown) {
-                FieldGeometry.estimateRange(r);
-            }
-        }
+    public void estimateRange() {
+	FieldGeometry.estimateRange(regionRes);
     }
 
     // Estimates robot {x, z} location based on range estimates made on
@@ -280,7 +281,7 @@ public class ImageResults {
                                 dirIndex = 0;
                                 for (int ir = 0; ir < region.size(); ir++) {
                                     Point p = region.elementAt(ir);
-//                                    System.out.print("(" + p.x + ", " + p.y + ") ");
+//                                  System.out.print("(" + p.x + ", " + p.y + ") ");
                                     Point lit = litNeighbor(img, p.x, p.y);
                                     if (lit != null) {
 //                                        System.out.println("[UNSTUCK AT (" + lit.x + ", " + lit.y + ")] ");
@@ -335,9 +336,9 @@ public class ImageResults {
                 for (int dy = -1; dy <= 1; dy++) {
                     int y = iy + dy;
                     if ((y >= 0) && (y < img.getHeight())) {
-                        // don't count center pixl
+                        // don't count center pixel
                         if (!((x == ix) && (y == iy))) {
-                            if ((img.getRGB(x, y) &0x000000ff) > 0) {
+                            if ((img.getRGB(x, y) &0x000000ff) > 0){
                                 return new Point(x, y);
                             }
                         }
@@ -368,20 +369,19 @@ public class ImageResults {
     }
 
     public void labelHoops() {
-        Region highest = null, lowest = null, rightmost = null, leftmost = null;
 
         // Punt if no regions to process (the area comparison code below will
         // blow up (not an elegant solutions, but hey)
         if (this.regions.size() == 0)
             return;
 
-        // Pick out the top 4 (largest, in this case) regions as
-        // candidate hoops.  Looking for equality of size might be
+        // Pick out the top (largest, in this case) region as
+        // the candidate hoop.  Looking for equality of size might be
         // better; dunno.
         Region [] sorted = new Region [this.regions.size()];
 
         // fill array with regions for analysis.  We need to add logic
-        // to pick "the best 4", rather than the first.
+        // to pick "the best", rather than the first.
         for (int i = 0; i < this.regions.size(); i++) {
             sorted[i] = this.regions.get(i);
         }
@@ -390,112 +390,19 @@ public class ImageResults {
         // rectangle)
         quickSortByArea(sorted, 0, this.regions.size() - 1);
 
-        /*
-         * Now remove regions that are substantially smaller than
-         * largest (probably false alarms), and keep at most 4 (the
-         * number of hoops in FRC 2012 competition)
-         */
-        // largest occupies first slot after sorting(see above)
-        double largestArea = sorted[0].getArea();
         // min allowed region size
         double minAllowedArea = (nx * ny) * 2.0E-03;
 
-        int nregions = 0;
-        for (int i = 0; i < Math.min(4, this.regions.size()) &&
-                     sorted[i].getArea() >= (largestArea * 0.2) &&
-                     sorted[i].getArea() >= minAllowedArea; i++) {
-            double h = sorted[i].getEnclosingRectangle().height;
-            double w = sorted[i].getEnclosingRectangle().width;
-            double aspect = w / h;
-            if ((aspect < 4.0) && (aspect > 0.25))
-                nregions++;
-            else
-                break;
-        }
+		this.regions.clear();
 
-        // Remove regions to reflect the above filtering (remove false
-        // alarms from results we provided)
-        this.regions.clear();
-        for (int i = 0; i < nregions; i++)
-            this.regions.add(sorted[i]);
+		double h = sorted[0].getEnclosingRectangle().height;
+		double w = sorted[0].getEnclosingRectangle().width;
+		double aspect = w / h;
 
-        // note that y dimension is flipped; {0, 0} pixel index sits in
-        // upper left corner of the image
-        for (int i = 0; i < nregions; i++) {
-            Region region = sorted[i];
-            if ((highest == null) || (region.enclosingRectangle.y < highest.enclosingRectangle.y))
-                highest = region;
-            if ((lowest == null) || (region.enclosingRectangle.y + region.enclosingRectangle.height > lowest.enclosingRectangle.y + lowest.enclosingRectangle.height))
-                lowest = region;
-            if ((rightmost == null) || (region.enclosingRectangle.x + region.enclosingRectangle.width > rightmost.enclosingRectangle.x + rightmost.enclosingRectangle.width))
-                rightmost = region;
-            if ((leftmost == null) || (region.enclosingRectangle.x < leftmost.enclosingRectangle.x))
-                leftmost = region;
-        }
-
-//        System.out.println("labelRegiones: rightmost = " + rightmost + "leftmost = " + leftmost + " highest = " + highest + " lowest " + lowest);
-
-        // This could use some add'l logic to sort out bad regions, and
-        // insure that we're looking at no more than 4 hoops (in case of
-        // false detection)
-        switch (nregions) {
-        case 1:
-            // if we see only one region, we have no way to know which it is
-            sorted[0].hoopLocation = Region.HoopLocation.top;   // XXX Was 'unknown'
-            break;
-
-        case 2:
-            // if same height, must be side-by-side.  Determine which is
-            // left v right.
-            if (sorted[0].sameElevation(sorted[1])) {
-                leftmost.hoopLocation = Region.HoopLocation.left;
-                rightmost.hoopLocation = Region.HoopLocation.right;
-            } else if (sorted[0].sameAzimuth(sorted[1])) {
-                highest.hoopLocation = Region.HoopLocation.top;
-                lowest.hoopLocation = Region.HoopLocation.bottom;
-            } else {
-                // we can't tell--ambiguous between(left &bottom) and(top and right)
-                sorted[0].hoopLocation = sorted[1].hoopLocation = Region.HoopLocation.unknown;
-            }
-            break;
-
-        case 3:
-            if (highest.isAbove(leftmost) && highest.isAbove(rightmost)) {
-                highest.hoopLocation = Region.HoopLocation.top;
-                if (leftmost.isLeftOf(highest))
-                    leftmost.hoopLocation = Region.HoopLocation.left;
-                else if (leftmost.sameAzimuth(highest))
-                    leftmost.hoopLocation = Region.HoopLocation.bottom;
-                if (rightmost.isRightOf(highest))
-                    rightmost.hoopLocation = Region.HoopLocation.right;
-                else if (rightmost.sameAzimuth(highest))
-                    rightmost.hoopLocation = Region.HoopLocation.bottom;
-            } else if (highest.isLeftOf(lowest)) {
-                highest.hoopLocation = Region.HoopLocation.left;
-                lowest.hoopLocation = Region.HoopLocation.bottom;
-                rightmost.hoopLocation = Region.HoopLocation.right;
-            } else if (highest.isRightOf(lowest)) {
-                highest.hoopLocation = Region.HoopLocation.right;
-                lowest.hoopLocation = Region.HoopLocation.bottom;
-                leftmost.hoopLocation = Region.HoopLocation.left;
-            } else if (highest.sameAzimuth(lowest)) {
-                highest.hoopLocation = Region.HoopLocation.top;
-                lowest.hoopLocation = Region.HoopLocation.bottom;
-                if (rightmost.isRightOf(highest))
-                    rightmost.hoopLocation = Region.HoopLocation.right;
-                else if (leftmost.isLeftOf(highest))
-                    leftmost.hoopLocation = Region.HoopLocation.left;
-            } else
-                System.err.println("Bad labeling logic!");
-            break;
-
-        case 4:
-            highest.hoopLocation = Region.HoopLocation.top;
-            lowest.hoopLocation = Region.HoopLocation.bottom;
-            leftmost.hoopLocation = Region.HoopLocation.left;
-            rightmost.hoopLocation = Region.HoopLocation.right;
-            break;
-        }
+		if(sorted[0].getArea() >= minAllowedArea && aspect < 4.0 && aspect > 0.25){
+			regionRes = sorted[0];
+			regions.add(sorted[0]);
+		}
     }
 
     // Quick Sort code for JAVA, by Yash Gupta
@@ -535,70 +442,11 @@ public class ImageResults {
     }
 
     public void drawRegions(BufferedImage cimage) {
-        for (Region r: regions) {
-            r.drawEnclosingPolygon(cimage);
-            r.drawEnclosingRectangle(cimage);
-        }
+        regionRes.drawEnclosingPolygon(cimage);
+        regionRes.drawEnclosingRectangle(cimage);
     }
 
-    public Region getHoop(Region.HoopLocation hl) {
-        for (Region r: regions) {
-            if (r.hoopLocation == hl)
-                return r;
-        }
-        return null;
-    }
-
-    // find the best hoop for estimating range (highest).  At this point
-    // we rely on hoops that are completely visible -- no occlusions,
-    // and thus with enclosing polygons.  We can relax this to include
-    // the visible tops or bottoms of hoops (FOR LATER)
-    public Region getHighestVisibleHoop() {
-        Region hoop = getTopHoop();
-        if ((hoop != null) && (hoop.topEdge != null))
-            return (hoop);
-        hoop = getRightHoop();
-        if ((hoop != null) && (hoop.topEdge != null))
-            return (hoop);
-        hoop = getLeftHoop();
-        if ((hoop != null) && (hoop.topEdge != null))
-            return (hoop);
-        hoop = getBottomHoop();
-        if ((hoop != null) && (hoop.topEdge != null))
-            return (hoop);
-
-        return null;
-    }
-
-    public Region getTopHoop()    {
-        return (getHoop(Region.HoopLocation.top));
-    }
-
-    public Region getLeftHoop()    {
-        return (getHoop(Region.HoopLocation.left));
-    }
-
-    public Region getRightHoop()    {
-        return (getHoop(Region.HoopLocation.right));
-    }
-
-    public Region getBottomHoop()    {
-        return (getHoop(Region.HoopLocation.bottom));
-    }
-
-    public Region getUnknownHoop()    {
-        return (getHoop(Region.HoopLocation.unknown));
-    }
-
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        int count = 0;
-        for (Region r: regions) {
-            sb.append(" ")
-                .append(count).append(":  ")
-                .append(r).append("\n");
-            count++;
-        }
-        return sb.toString();
+    public Region getHoop() {
+		return regionRes;
     }
 }

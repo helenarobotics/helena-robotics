@@ -16,39 +16,10 @@ public class FieldGeometry {
     // leftTop, rightTop, leftBottom, rightBottom;
     static void estimateRange(Region hoop) {
         double top = 0.0, bot = 0.0, left = 0.0, right = 0.0;
-
-        switch (hoop.hoopLocation) {
-        case unknown:
-            return;
-
-        case left:
-            top = leftHoop.y;
-            bot = top - leftHoop.height;
-            left = leftHoop.x;
-            right = leftHoop.x + leftHoop.width;
-            break;
-
-        case right:
-            top = rightHoop.y;
-            bot = top - rightHoop.height;
-            left = rightHoop.x;
-            right = rightHoop.x + rightHoop.width;
-            break;
-
-        case top:
-            top = topHoop.y;
-            bot = top - topHoop.height;
-            left = topHoop.x;
-            right = topHoop.x + topHoop.width;
-            break;
-
-        case bottom:
-            top = bottomHoop.y;
-            bot = top - bottomHoop.height;
-            left = bottomHoop.x;
-            right = bottomHoop.x + bottomHoop.width;
-            break;
-        }
+	top = topHoop.y;
+	bot = top - topHoop.height;
+	left = topHoop.x;
+	right = topHoop.x + topHoop.width;
 
         // Estimate range to 4 corners, as possible
         if (hoop.leftTop != null) {

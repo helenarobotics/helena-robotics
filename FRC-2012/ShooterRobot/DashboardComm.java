@@ -94,6 +94,10 @@ public class DashboardComm extends Thread {
     // Ball feeder
     public static boolean shooting;
 
+    //Results FROM camera processing
+    public static int rpmBtmSwish;
+    public static int rpmBtmBB;
+
     // Instantiate the sender thread
     static {
         new DashboardComm();
@@ -115,6 +119,7 @@ public class DashboardComm extends Thread {
             } catch (InterruptedException ignored) {
             }
             send();
+            recieve();
         }
     }
 
@@ -147,4 +152,9 @@ public class DashboardComm extends Thread {
         s.putDouble("RPM 1 Target", (int)rpmTopTarget);
         s.putDouble("RPM 2 Target", (int)rpmBottomTarget);
     }
+
+    public void recieve(){
+		rpmBtmSwish = (int)s.getDouble("Target RPM 1 Swish");
+		rpmBtmBB = (int)s.getDouble("Target RPM 1 BB");
+	}
 }

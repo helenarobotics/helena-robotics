@@ -44,6 +44,7 @@ public class TableEditor extends StaticWidget implements ActionListener {
             WidgetComm.table.putBoolean(keyFi.getText(), Boolean.parseBoolean(valueFi.getText()));
         }else{
             WidgetComm.table.putDouble(keyFi.getText(), Double.parseDouble(valueFi.getText()));
+            System.out.println("Setting " + keyFi.getText() + " to " + Double.parseDouble(valueFi.getText()));
         }
     }
 }

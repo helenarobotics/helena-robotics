@@ -6,6 +6,7 @@ import java.util.List;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 
@@ -14,13 +15,12 @@ import java.awt.geom.Point2D;
 
 import java.awt.image.BufferedImage;
 
+//XXX This code is modified to not use the HoopLocation enumeration,
+    //Because only one region is used.
 public class Region {
-    public enum HoopLocation { unknown, left, top, right, bottom };
-
     // temporary space used while building the region.
     List<Point> points;
 
-    public HoopLocation hoopLocation;
     public Rectangle enclosingRectangle;
     // range = dist from camera to a 3D point at center of the backboard
     // (above the rim)
@@ -40,7 +40,6 @@ public class Region {
 
     public Region() {
         points = new ArrayList<Point>(2000);
-        hoopLocation = HoopLocation.unknown;
         enclosingRectangle = null;
         leftEdge = rightEdge = topEdge = bottomEdge = null;
         leftTop = rightTop = leftBottom = rightBottom = null;
@@ -468,27 +467,7 @@ public class Region {
         if (ft > 0.0)
             distance = (int) ft + "." + (int)((ft - (int)ft) * 10.0) + "ft";
 
-        // now put a label on
-        switch (this.hoopLocation) {
-        case unknown:
-            break;
-
-        case left:
-            g2.drawString("Left " + distance, r.x + r.width / 4, r.y + r.height / 2);
-            break;
-
-        case right:
-            g2.drawString("Right " + distance, r.x + r.width / 4, r.y + r.height / 2);
-            break;
-
-        case top:
-            g2.drawString("Top " + distance, r.x + r.width / 4, r.y + r.height / 2);
-            break;
-
-        case bottom:
-            g2.drawString("Bottom " + distance, r.x + r.width / 16, r.y + r.height / 2);
-            break;
-        }
+        g2.drawString("Top " + distance, r.x + r.width / 4, r.y + r.height / 2);
     }
 
     public void drawEnclosingPolygon(BufferedImage cimage) {
@@ -509,7 +488,7 @@ public class Region {
 
         if ((topEdge == null) && (bottomEdge == null)) {
             Rectangle r = getEnclosingRectangle();
-            str = " " + hoopLocation + " top left at {" + r.x + ", " +
+            str = "top left at {" + r.x + ", " +
                   r.y + "} bottom right at {" + (r.x + r.width) + ", " +
                   (r.x + r.height) + "}";
         } else if (estimates.size() > 0) {
@@ -521,7 +500,7 @@ public class Region {
             }
             double ft = sum / (wgtsum * 12.0);
             int ft10 = (int)((ft - (int)ft) * 10.0);
-            str = " " + hoopLocation + " Range = " + (int) ft + "." + ft10 + "ft";
+            str ="Range = " + (int) ft + "." + ft10 + "ft";
         }
         return (str);
     }
