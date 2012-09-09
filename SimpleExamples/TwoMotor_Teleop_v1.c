@@ -48,7 +48,7 @@
 #include "JoystickDriver.c"
 
 // Forward declarations
-void moveSimple();
+void moveTank();
 int expoJoystick(int eJoy);
 float Power(float num, int exp);
 
