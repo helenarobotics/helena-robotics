@@ -321,7 +321,7 @@ int HTIRS2readACDir(tMUXSensor muxsensor) {
  * @param acS5 data from internal sensor nr 5
  * @return true if no error occured, false if it did
  */
-bool HTIRS2readAllACStrength(tSensors link, int &acS1, int &acS2, int &acS3, int &acS4, int &acS5) {
+bool HTIRS2readAllACStrength(tSensors link, int *acS1, int *acS2, int *acS3, int *acS4, int *acS5) {
   memset(HTIRS2_I2CRequest, 0, sizeof(tByteArray));
 
   HTIRS2_I2CRequest[0] = 2;                      // Message size
@@ -334,11 +334,11 @@ bool HTIRS2readAllACStrength(tSensors link, int &acS1, int &acS2, int &acS3, int
   if (!readI2C(link, HTIRS2_I2CReply, 5))
     return false;
 
-  acS1 = HTIRS2_I2CReply[0];
-  acS2 = HTIRS2_I2CReply[1];
-  acS3 = HTIRS2_I2CReply[2];
-  acS4 = HTIRS2_I2CReply[3];
-  acS5 = HTIRS2_I2CReply[4];
+  *acS1 = HTIRS2_I2CReply[0];
+  *acS2 = HTIRS2_I2CReply[1];
+  *acS3 = HTIRS2_I2CReply[2];
+  *acS4 = HTIRS2_I2CReply[3];
+  *acS5 = HTIRS2_I2CReply[4];
 
   return true;
 }
