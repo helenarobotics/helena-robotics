@@ -200,7 +200,8 @@ task readMsgFromPC()
              // the last message.
              while (nSizeOfMessage >= sizeof(tempBuffer)) {
                  // Read the data from the queue
-                 nBTCmdRdErrorStatus = cCmdMessageRead((ubyte)tempBuffer, sizeof(tempBuffer), kJoystickQueueID);
+
+                 nBTCmdRdErrorStatus = cCmdMessageRead(tempBuffer, sizeof(tempBuffer), kJoystickQueueID);
                  nBTCmdRdErrorStatus = nBTCmdRdErrorStatus; //Get rid of info message
 
                  // Check the size of the queue again to see how much more data is in the queue
