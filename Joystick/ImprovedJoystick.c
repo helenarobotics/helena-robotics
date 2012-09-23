@@ -84,12 +84,12 @@ intrinsic void getJoystickSettings(TJoystick &joystick)
 
 #define getJoystickSettings(joystick) 	memcpy(joystick, joystickCopy, sizeof(joystick))
 
-bool joy1Btn(int btn)
+short joy1Btn(int btn)
 {
    return ((joystick.joy1_Buttons & (1 << (btn - 1))) != 0);
 }
 
-bool joy2Btn(int btn)
+short joy2Btn(int btn)
 {
    return ((joystick.joy2_Buttons & (1 << (btn - 1))) != 0);
 }
