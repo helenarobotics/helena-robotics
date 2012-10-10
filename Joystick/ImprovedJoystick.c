@@ -73,7 +73,6 @@ intrinsic void getJoystickSettings(TJoystick &joystick)
       variableRefRAM(joystick));
 #endif
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // "Macro" to get a non-volatile copy of the last joystick settings so
@@ -82,7 +81,7 @@ intrinsic void getJoystickSettings(TJoystick &joystick)
 
 #if (_TARGET == "Robot")
 
-#define getJoystickSettings(joystick) 	memcpy(joystick, joystickCopy, sizeof(joystick))
+#define getJoystickSettings(joystick)     memcpy(&joystick, &joystickCopy, sizeof(joystick))
 
 short joy1Btn(int btn)
 {
@@ -97,7 +96,7 @@ short joy2Btn(int btn)
 #else
 
 #define getJoystickSettings getPCJoystickSettings
-bool joy1Btn(int btn)
+short joy1Btn(int btn)
 {
     return ((joystick.joy1_Buttons & (1 << (btn - 1))) != 0);
 }
@@ -179,7 +178,7 @@ task readMsgFromPC()
 
                     hogCPU();   // grab CPU for duration of critical section
 
-                    memset(joystickCopy, 0, sizeof(joystickCopy));
+                    memset(&joystickCopy, 0, sizeof(joystickCopy));
 
                     joystickCopy.UserMode = bTempUserMode;
                     joystickCopy.StopPgm = bTempStopPgm;
@@ -201,7 +200,7 @@ task readMsgFromPC()
              while (nSizeOfMessage >= sizeof(tempBuffer)) {
                  // Read the data from the queue
 
-                 nBTCmdRdErrorStatus = cCmdMessageRead(tempBuffer, sizeof(tempBuffer), kJoystickQueueID);
+                 nBTCmdRdErrorStatus = cCmdMessageRead(&tempBuffer[0], sizeof(tempBuffer), kJoystickQueueID);
                  nBTCmdRdErrorStatus = nBTCmdRdErrorStatus; //Get rid of info message
 
                  // Check the size of the queue again to see how much more data is in the queue
@@ -332,15 +331,13 @@ void getUserControlProgram(string &sFileName)
         for (int index = 0; index < nFileSize; ++index)
         {
             ReadByte(hFileHandle, nIoResult,  nParmToReadByte[0]);
-            strcat(sFileName, nParmToReadByte);
+            strcat(sFileName, &nParmToReadByte[0]);
         }
 
         //
         // Delete the ".rxe" file extension
         //
-        int nFileExtPosition;
-
-        nFileExtPosition = strlen(sFileName) - 4;
+        int nFileExtPosition = strlen(sFileName) - 4;
         if (nFileExtPosition > 0)
             StringDelete(sFileName, nFileExtPosition, 4);
     }
