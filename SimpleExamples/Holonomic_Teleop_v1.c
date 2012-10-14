@@ -12,7 +12,6 @@
 // Forward declarations
 void moveOmni();
 int expoJoystick(int eJoy);
-float Power(float num, int exp);
 
 void initializeRobot()
 {
@@ -71,17 +70,11 @@ void moveOmni()
         max = abs(rrPow);
 
     if (max > 100) {
-        // RobotC violates so many C-compiler rules
-        // regarding conversions it's not funny.
-        //
-        // We have to cast the result to a float which is then changed
-        // to a int due to the data type, otherwise the result stays an
-        // int even with the explicit casts.
-        float reduction = (float)100.0 / (float)max;
-        flPow = (float)((float)flPow * reduction);
-        frPow = (float)((float)frPow * reduction);
-        rlPow = (float)((float)rlPow * reduction);
-        rrPow = (float)((float)rrPow * reduction);
+        float reduction = 100.0 / (float)max;
+        flPow *= reduction;
+        frPow *= reduction;
+        rlPow *= reduction;
+        rrPow *= reduction;
     }
 
     // Check the low-speed power setting.  If set, reduce power by half.
@@ -108,24 +101,10 @@ int expoJoystick(int eJoy)
 {
     // convert the joystick inputs to a floating point number
     // between -1 and +1
-    float floatJoy = (float)eJoy / 127.0;
-    float result = SENSITIVITY * Power(floatJoy, 3) +
+    float floatJoy = (float)eJoy / 128.0;
+    float result = SENSITIVITY * pow(floatJoy, 3) +
                    (1 - SENSITIVITY) * floatJoy;
 
-    // Convert the number back to a motor power, which is between -100
-    // and 100.
-    return (int)(100.0 * result);
-}
-
-// RobotC's built-in doesn't work with negative numbers very well.
-float Power(float num, int exp)
-{
-    // require positive integer for the exponent
-    if (exp <= 0)
-        return 0;
-
-    float result = num;
-    for (int i = 1; i < exp; i++)
-        result *= num;
-    return result;
+    // Convert the number back to a joystick value
+    return (int)(128.0 * result);
 }
