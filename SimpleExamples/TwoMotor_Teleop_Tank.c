@@ -30,12 +30,12 @@
  * ----------------------
  * A single HiTechnic Motor Controller with two motors should be
  * connected to Port 1 of the NXT
- * 
+ *
  * Motors
  * ------
  * leftMotor  - Connected to Motor 1 of Motor Controller: Controls left motor
  * rightMotor - Connected to Motor 2 of Motor Controller: Controls right motor
- * 
+ *
  * Joystick
  * --------
  * A single Logitech USB joystick must be connected to the computer and
@@ -50,7 +50,6 @@
 // Forward declarations
 void moveTank();
 int expoJoystick(int eJoy);
-float Power(float num, int exp);
 
 void initializeRobot() {
     motor[leftMotor] = 0;
@@ -105,23 +104,10 @@ int expoJoystick(int eJoy)
     // convert the joystick inputs to a floating point number
     // between -1 and +1
     float floatJoy = (float)eJoy / 127.0;
-    float result = SENSITIVITY * Power(floatJoy, 3) +
+    float result = SENSITIVITY * pow(floatJoy, 3) +
                    (1 - SENSITIVITY) * floatJoy;
 
     // Convert the number back to a motor power, which is between -100
     // and 100.
     return (int)(100.0 * result);
-}
-
-// RobotC's built-in doesn't work with negative numbers very well.
-float Power(float num, int exp)
-{
-    // require positive integer for the exponent
-    if (exp <= 0)
-        return 0;
-
-    float result = num;
-    for (int i = 1; i < exp; i++)
-        result *= num;
-    return result;
 }
