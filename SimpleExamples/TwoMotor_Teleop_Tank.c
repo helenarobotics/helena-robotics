@@ -21,7 +21,7 @@
  *   Right Analog - Y-Axis
  *      Controls the power and direction of right motor (rightMotor)
  *
- *   Left Analog - Y-Axis
+ *   Button 11
  *      Toggles slow-speed drive mode. When enabled, the robot moves at
  *      half-speed.
  *
