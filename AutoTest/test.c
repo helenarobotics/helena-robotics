@@ -18,16 +18,17 @@ void rotateRobot(float angle);
 float getAngleToBeacon();
 float getAngleToBeaconB();
 
-const float distance = 1;
-const float desiredX = distance * cosDegrees(45);
-const float desiredY = distance * sinDegrees(45);
+const float moveDistance = 1;
+const float distanceFromPeg = 1; 
+const float desiredX = distanceFromPeg * cosDegrees(45);
+const float desiredY = distanceFromPeg * sinDegrees(45);
 
 task main()
 {
-    moveRobot(distance);
+    moveRobot(moveDistance);
 
     float firstAngle = -getAngleToBeaconB() + 90;
-    moveRobot(distance);
+    moveRobot(moveDistance);
 
     float secondAngle = -getAngleToBeaconB() + 90;
 
