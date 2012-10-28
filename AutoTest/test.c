@@ -21,20 +21,21 @@ const float desiredY = distanceFromPeg * sinDegrees(45);
 
 task main()
 {
-	//Move out so the robot has room to look for the IR Beacon
+    //Move out so the robot has room to look for the IR Beacon
     moveRobot(moveDistance);
 
     //Get the first reference to the IR Beacon
     float firstAngle = getAngleToBeacon();
-	nxtDisplayString(0, "%f", firstAngle);
+    nxtDisplayString(0, "%f", firstAngle);
+
     //Move again, to make the angle change
     moveRobot(moveDistance);
 
     //Get the second reference to the IR Beacon
     float secondAngle = getAngleToBeacon();
-	//Beacon is initially on the right
-	if (firstAngle < 180 && firstAngle > 90) { //Beacon is initialliy on the left
-    	//The second angle should always be larger than the first, if the two angles converge
+    //Beacon is initially on the right
+    if (firstAngle < 180 && firstAngle > 90) { //Beacon is initialliy on the left
+        //The second angle should always be larger than the first, if the two angles converge
         float thirdAngle = secondAngle - firstAngle;
 
         float r = (moveDistance * sinDegrees(180 - firstAngle)) / (sinDegrees(thirdAngle));
@@ -46,6 +47,7 @@ task main()
         movDist = pow(movDist, 0.5);
         nxtDisplayString(2, "%f", movDist);
         nxtDisplayString(1, "(%f, %f)", right, down);
+        // XXX - This seems wrong to convert radians to radians?
         float movAngle = degreesToRadians(atan2(upMov, -leftMov));
         nxtDisplayString(0, "%f", movAngle);
         rotateRobotTo(movAngle);
@@ -82,7 +84,7 @@ const int TURN_POWER = 30;
 const int COMPLETE_REVOLUTION_TIME = 10000;
 int curAngle = 90;
 void rotateRobotTo(float angle) {
-	float relativeAngle = curAngle-angle;
+    float relativeAngle = curAngle-angle;
     if (angle == 0)
         return;
 
@@ -99,7 +101,7 @@ void rotateRobotTo(float angle) {
     }
     while (nPgmTime < endTime)
         EndTimeSlice();
-	curAngle = angle;
+    curAngle = angle;
     motor[motorD] = 0;
     motor[motorE] = 0;
 }
@@ -128,6 +130,7 @@ float getAngleToBeacon()
     }
     int lTime = nPgmTime - startTime;
     float lRot = (float)lTime / COMPLETE_REVOLUTION_TIME * 360.0;
+
     // Sweep the other way
     startTime = nPgmTime;
     motor[motorD] = -TURN_POWER;
@@ -146,6 +149,7 @@ float getAngleToBeacon()
         EndTimeSlice();
     }
     int rTime = nPgmTime - startTime;
+
     // Return back to starting position
     startTime = nPgmTime;
     if (rTime > lTime) {
