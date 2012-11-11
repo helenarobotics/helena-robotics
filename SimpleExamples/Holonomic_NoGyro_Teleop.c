@@ -10,26 +10,45 @@
 #include "JoystickDriver.c"
 
 // Forward declarations
+void disableMotors();
+
+// Operator control
+void showDisplay();
 void moveOmni();
 int expoJoystick(int eJoy);
 
-void initializeRobot()
-{
+// Holonomic drive control
+void driveHolo(int angle, int magnitude, int rotation, int powerReduction);
+
+// Are we running in reduced speed mode?
+bool slowSpeedEnabled = false;
+
+void disableMotors() {
     motor[frontLeft] = 0;
     motor[frontRight] = 0;
     motor[rearLeft] = 0;
     motor[rearRight] = 0;
 }
 
+void initializeRobot()
+{
+    // Make sure the motors are turned off
+    disableMotors();
+}
 
 task main()
 {
     initializeRobot();
 
     // wait for start of tele-op phase
+//    nxtDisplayString(2, "Waiting");
 //    waitForStart();
+//    nxtDisplayString(2, "       ");
 
     while (true) {
+        // Display all the information on the screen
+        showDisplay();
+
         // Get current joystick buttons and analog movements
         getJoystickSettings(joystick);
 
@@ -38,22 +57,61 @@ task main()
     }
 }
 
-// Move the motor on the field
+void showDisplay()
+{
+    nxtDisplayString(7, "SSE=%d", slowSpeedEnabled);
+}
+
+// Move the robot on the field using the joystick
 bool slowSpeedButtonWasPressed = false;
-bool slowSpeedEnabled = false;
 void moveOmni()
 {
+    // Check the low-speed power setting.  If set, we'll reduce the motor
+    // power's by half.
+    bool btnPress = joy1Btn(11);
+    if (!btnPress && slowSpeedButtonWasPressed)
+    {
+        // Beep to indicate a speed switch
+        PlaySound(soundBlip);
+        slowSpeedEnabled = !slowSpeedEnabled;
+    }
+    slowSpeedButtonWasPressed = btnPress;
+
     // Make things less sensitive around the center (a slight
     // dead-band), and more aggressive at the extremes.
     int xJoy1 = expoJoystick(joystick.joy1_x1);
     int yJoy1 = expoJoystick(joystick.joy1_y1);
-    int xJoy2 = expoJoystick(joystick.joy1_x2);
+    int xJoy2 = expoJoystick(joystick.joy1_x2) / 2; // Reduce spin-speed
 
-    // Calculte the power for each motor based on joystick settings
-    int forward = yJoy1;
-    int right = xJoy1;
-    int rotCw = xJoy2;
+    // Determine the magnitude and direction of the joystick from
+    // the operator's perspective, where 0 degrees is going straight away.
+    float magnitude = sqrt(pow(xJoy1, 2) + pow(yJoy1, 2));
+    int operatorHeading = 0;
+    if (abs(yJoy1) > 0 || abs(xJoy1) > 0)
+        operatorHeading = radiansToDegrees(atan2(yJoy1, xJoy2));
 
+    // Drive holonomic
+    int powerReduction = 1;
+    if (slowSpeedEnabled)
+        powerReduction = 2;
+    driveHolo(operatorHeading, magnitude, xJoy2, powerReduction);
+}
+
+void driveHolo(int angle, int magnitude, int rotation, int powerReduction)
+{
+    // Normalize the angle to -180 <-> +180
+    while (angle > 180)
+        angle -= 360;
+    while (angle < -180)
+        angle += 360;
+
+    // Convert the power and angle into motor forward and right
+    // powers.
+    int forward = magnitude * cosDegrees(angle);
+    int right = magnitude * sinDegrees(angle);
+    int rotCw = rotation;
+
+    // Holonomic drive wheel math
     int flPow = forward + rotCw + right;
     int frPow = forward - rotCw - right;
     int rlPow = forward + rotCw - right;
@@ -69,7 +127,9 @@ void moveOmni()
     if (abs(rrPow) > max)
         max = abs(rrPow);
 
-    if (max > 100) {
+    if (max > 100)
+    {
+        // Reduce each motor power by the same amount;
         float reduction = 100.0 / (float)max;
         flPow *= reduction;
         frPow *= reduction;
@@ -77,18 +137,15 @@ void moveOmni()
         rrPow *= reduction;
     }
 
-    // Check the low-speed power setting.  If set, reduce power by half.
-    bool btnPress = joy1Btn(11);
-    nxtDisplayString(2, "Btn=%d", btnPress);
-    if (!btnPress && slowSpeedButtonWasPressed)
-        slowSpeedEnabled = !slowSpeedEnabled;
-    slowSpeedButtonWasPressed = btnPress;
-    if (slowSpeedEnabled) {
-        flPow /= 2;
-        frPow /= 2;
-        rlPow /= 2;
-        rrPow /= 2;
+    // Reduction
+    if (powerReduction > 1)
+    {
+        flPow /= powerReduction;
+        frPow /= powerReduction;
+        rlPow /= powerReduction;
+        rrPow /= powerReduction;
     }
+
     motor[frontLeft] = flPow;
     motor[frontRight] = frPow;
     motor[rearLeft] = rlPow;
