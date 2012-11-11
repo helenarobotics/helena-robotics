@@ -48,44 +48,101 @@
 #include "JoystickDriver.c"
 
 // Forward declarations
-void moveArcade();
-int expoJoystick(int eJoy);
-#define MAX(n1, n2)		(((n1) <= (n2)) ? (n1) : (n2))
+void disableMotors();
 
-void initializeRobot() {
+// Operator control
+void showDisplay();
+void moveRobot();
+int expoJoystick(int eJoy);
+
+// Two motor drive
+void driveTwoMotor(int angle, int magnitude, int powerReduction);
+
+// Are we running in reduced speed mode?
+bool slowSpeedEnabled = false;
+
+void disableMotors() {
     motor[leftMotor] = 0;
     motor[rightMotor] = 0;
 }
 
+void initializeRobot()
+{
+    // Make sure the motors are turned off
+    disableMotors();
+}
 
 task main() {
     initializeRobot();
 
     // wait for start of tele-op phase
+//    nxtDisplayString(2, "Waiting");
 //    waitForStart();
+//    nxtDisplayString(2, "       ");
 
     while (true) {
+        // Display all the information on the screen
+        showDisplay();
+
         // Get current joystick buttons and analog movements
         getJoystickSettings(joystick);
 
         // Move robot
-        moveArcade();
+        moveRobot();
     }
 }
 
-// Move the motor on the field
-bool slowSpeedButtonWasPressed = false;
-bool slowSpeedEnabled = false;
-void moveArcade()
+void showDisplay()
 {
-    // Expo makes things less sensitive around the center (a slight
+    nxtDisplayString(7, "SSE=%d", slowSpeedEnabled);
+}
+
+// Move the robot on the field using the joystick
+bool slowSpeedButtonWasPressed = false;
+void moveRobot()
+{
+    // Check the low-speed power setting.  If set, we'll reduce the motor
+    // power's by half.
+    bool btnPress = joy1Btn(11);
+    if (!btnPress && slowSpeedButtonWasPressed)
+    {
+        // Beep to indicate a speed switch
+        PlaySound(soundBlip);
+        slowSpeedEnabled = !slowSpeedEnabled;
+    }
+    slowSpeedButtonWasPressed = btnPress;
+
+    // Make things less sensitive around the center (a slight
     // dead-band), and more aggressive at the extremes.
-    int straightPower = expoJoystick(joystick.joy1_y1);
-    int turnPower = expoJoystick(joystick.joy1_x2);
+    int xJoy2 = expoJoystick(joystick.joy1_x2);
+    int yJoy1 = expoJoystick(joystick.joy1_y1);
+
+    // Determine the magnitude and direction of the joystick from
+    // the operator's perspective, where 0 degrees is going straight away.
+    float magnitude = sqrt(pow(xJoy2, 2) + pow(yJoy1, 2));
+    int operatorHeading = 0;
+    if (abs(yJoy1) > 0 || abs(xJoy2) > 0)
+        operatorHeading = radiansToDegrees(atan2(yJoy1, xJoy2));
+
+    // Drive
+    int powerReduction = 1;
+    if (slowSpeedEnabled)
+        powerReduction = 2;
+    driveTwoMotor(operatorHeading, magnitude, powerReduction);
+}
+
+#define MAX(n1, n2)		(((n1) >= (n2)) ? (n1) : (n2))
+
+void driveTwoMotor(int angle, int magnitude, int powerReduction)
+{
+    // Convert the power and angle into motor forward and right
+    // powers.
+    int forward = magnitude * cosDegrees(angle);
+    int right = magnitude * sinDegrees(angle);
 
     // Combine the two for each motor
-    int leftPow = straightPower + turnPower;
-    int rightPow = straightPower - turnPower;
+    int leftPow = forward + right;
+    int rightPow = forward - right;
 
     // Ensure that we don't try to give too much power to the motor.
     float maxPow = MAX(leftPow, rightPow);
@@ -95,15 +152,11 @@ void moveArcade()
         rightPow *= reduction;
     }
 
-    // Check the low-speed power setting.  If set, reduce power by half.
-    bool btnPress = joy1Btn(11);
-    nxtDisplayString(2, "Btn=%d", btnPress);
-    if (!btnPress && slowSpeedButtonWasPressed)
-        slowSpeedEnabled = !slowSpeedEnabled;
-    slowSpeedButtonWasPressed = btnPress;
-    if (slowSpeedEnabled) {
-        leftPow /= 2;
-        rightPow /= 2;
+    // Reduction
+    if (powerReduction > 1)
+    {
+        leftPow /= powerReduction;
+        rightPow /= powerReduction;
     }
 
     motor[leftMotor] = leftPow;
