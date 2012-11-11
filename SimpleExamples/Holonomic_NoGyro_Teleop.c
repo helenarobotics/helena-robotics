@@ -88,7 +88,7 @@ void moveRobot()
     float magnitude = sqrt(pow(xJoy1, 2) + pow(yJoy1, 2));
     int operatorHeading = 0;
     if (abs(yJoy1) > 0 || abs(xJoy1) > 0)
-        operatorHeading = radiansToDegrees(atan2(yJoy1, xJoy2));
+        operatorHeading = radiansToDegrees(atan2(yJoy1, xJoy1));
 
     // Drive holonomic
     int powerReduction = 1;
