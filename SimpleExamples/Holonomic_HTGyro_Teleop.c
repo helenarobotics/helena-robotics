@@ -87,7 +87,7 @@ void moveOmni()
 {
     // Check the low-speed power setting.  If set, we'll reduce the motor
     // power's by half.
-    bool btnPress = joy1Btn(9);
+    bool btnPress = joy1Btn(11);
     if (!btnPress && slowSpeedButtonWasPressed)
     {
         // Beep to indicate a speed switch
