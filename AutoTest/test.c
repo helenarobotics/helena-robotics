@@ -47,8 +47,7 @@ task main()
         movDist = pow(movDist, 0.5);
         nxtDisplayString(2, "%f", movDist);
         nxtDisplayString(1, "(%f, %f)", right, down);
-        // XXX - This seems wrong to convert radians to radians?
-        float movAngle = degreesToRadians(atan2(upMov, -leftMov));
+        float movAngle = radiansToDegrees(atan2(upMov, -leftMov));
         nxtDisplayString(0, "%f", movAngle);
         rotateRobotTo(movAngle);
         moveRobot(movDist);
