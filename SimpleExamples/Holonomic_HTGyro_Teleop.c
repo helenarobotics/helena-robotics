@@ -61,11 +61,15 @@ task main()
         // Get current joystick buttons and analog movements
         getJoystickSettings(joystick);
 
-        // Move robot
-        moveOmni();
+        // Don't move if we're calibrating the gyro
+        if (!calibratingActive())
+        {
+            // Move robot
+            moveOmni();
 
-        // Check to see if we want to calibrate the gyro.
-        checkCalibration();
+            // Check to see if we want to calibrate the gyro.
+            checkCalibration();
+        }
     }
 }
 
@@ -81,10 +85,6 @@ void showDisplay()
 bool slowSpeedButtonWasPressed = false;
 void moveOmni()
 {
-    // Don't move if we're calibrating the gyro
-    if (calibratingActive())
-        return;
-
     // Check the low-speed power setting.  If set, we'll reduce the motor
     // power's by half.
     bool btnPress = joy1Btn(9);
