@@ -23,7 +23,8 @@ tSensors gyroSensor;
 float currHeading;
 float currRate;
 
-void initializeGyro(tSensors gyro) {
+void initializeGyro(tSensors gyro)
+{
     gyroSensor = gyro;
 
     // Configure and calibrate the gyro, and then start the gyro task to
@@ -37,17 +38,20 @@ void initializeGyro(tSensors gyro) {
     StartTask(_gyroTask);
 }
 
-float getGyroHeading() {
+float getGyroHeading()
+{
     return currHeading;
 }
 
-float getGyroRate() {
+float getGyroRate()
+{
     return currRate;
 }
 
 // Allow the operator to re-synchronize the robot to 'north'.
 bool calibrating = false;
-void calibrateGyro() {
+void calibrateGyro()
+{
     // If we're already calibrating (or will be shortly), don't bother
     // checking again.
     if (calibrating)
@@ -56,28 +60,34 @@ void calibrateGyro() {
     calibrating = true;
 }
 
-bool calibratingActive() {
+bool calibratingActive()
+{
     return calibrating;
 }
 
 // The value the gyro returns at zero.  We'll subtract this from the
 // readings to give us a 'real' zero reading, which should avoid some of
 // the drift we're seeing.
-void _calibrateGyroDrift() {
+void _calibrateGyroDrift()
+{
     // Re-calibrate and reset the heading to 0
     HTGYROstartCal(gyroSensor);
 }
 
-int _readGyro() {
+int _readGyro()
+{
     return HTGYROreadRot(gyroSensor);
 }
 
 // Task to keep track of the current heading using the HT Gyro
-task _gyroTask() {
+task _gyroTask()
+{
     long prevTime = nPgmTime;
-    while (true) {
+    while (true)
+    {
         // Check to see if we need to calibrate the gyro
-        if (calibrating) {
+        if (calibrating)
+        {
             PlaySound(soundBeepBeep);
 
             // Turn off the motors so the gyro can synchronize
@@ -107,14 +117,16 @@ task _gyroTask() {
         // caused from the sensor bouncing around.  Something better
         // would be nice, but this seems to work well enough in
         // practice.
-        if (abs(rateNow) > 3) {
+        if (abs(rateNow) > 3)
+        {
             // deltaSecs will only go negative if we've if nPgmTime
             // wrapped around.  If so, re-calculate the difference as by
             // incrementing both now and prevTime by a large number so
             // both will be wrapped, and then re-calculate the
             // difference.
             float deltaSecs = (now - prevTime) / 1000.0;
-            if (deltaSecs < 0) {
+            if (deltaSecs < 0)
+            {
                 now += 1024;
                 prevTime += 1024;
                 deltaSecs = (now - prevTime) / 1000.0;

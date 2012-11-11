@@ -27,7 +27,8 @@ void driveHolo(int angle, int magnitude, int rotation, int powerReduction);
 // Are we running in reduced speed mode?
 bool slowSpeedEnabled = false;
 
-void disableMotors() {
+void disableMotors()
+{
     motor[frontLeft] = 0;
     motor[frontRight] = 0;
     motor[rearLeft] = 0;
@@ -52,7 +53,8 @@ task main()
 //    waitForStart();
 //    nxtDisplayString(2, "       ");
 
-    while (true) {
+    while (true)
+    {
         // Display all the information on the screen
         showDisplay();
 
@@ -67,7 +69,8 @@ task main()
     }
 }
 
-void showDisplay() {
+void showDisplay()
+{
     // Display the robot and IR heading
     nxtDisplayString(0, "Heading=%3.1f", getGyroHeading());
 
@@ -85,7 +88,8 @@ void moveOmni()
     // Check the low-speed power setting.  If set, we'll reduce the motor
     // power's by half.
     bool btnPress = joy1Btn(9);
-    if (!btnPress && slowSpeedButtonWasPressed) {
+    if (!btnPress && slowSpeedButtonWasPressed)
+    {
         // Beep to indicate a speed switch
         PlaySound(soundBlip);
         slowSpeedEnabled = !slowSpeedEnabled;
@@ -121,7 +125,8 @@ void moveOmni()
 // for a bit.
 bool calibrateGyroButtonWasPressed = false;
 
-void checkCalibration() {
+void checkCalibration()
+{
     // If we're already calibrating (or will be shortly), don't bother
     // checking again.
     if (calibratingActive())
@@ -133,7 +138,8 @@ void checkCalibration() {
     calibrateGyroButtonWasPressed = btnPress;
 }
 
-void driveHolo(int angle, int magnitude, int rotation, int powerReduction) {
+void driveHolo(int angle, int magnitude, int rotation, int powerReduction)
+{
     // Normalize the angle to -180 <-> +180
     while (angle > 180)
         angle -= 360;
@@ -162,7 +168,8 @@ void driveHolo(int angle, int magnitude, int rotation, int powerReduction) {
     if (abs(rrPow) > max)
         max = abs(rrPow);
 
-    if (max > 100) {
+    if (max > 100)
+    {
         // Reduce each motor power by the same amount;
         float reduction = 100.0 / (float)max;
         flPow *= reduction;
@@ -172,7 +179,8 @@ void driveHolo(int angle, int magnitude, int rotation, int powerReduction) {
     }
 
     // Reduction
-    if (powerReduction > 1) {
+    if (powerReduction > 1)
+    {
         flPow /= powerReduction;
         frPow /= powerReduction;
         rlPow /= powerReduction;
