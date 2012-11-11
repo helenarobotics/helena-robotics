@@ -17,7 +17,7 @@ void disableMotors();
 
 // Operator control
 void showDisplay();
-void moveOmni();
+void moveRobot();
 int expoJoystick(int eJoy);
 void checkCalibration();
 
@@ -65,7 +65,7 @@ task main()
         if (!calibratingActive())
         {
             // Move robot
-            moveOmni();
+            moveRobot();
 
             // Check to see if we want to calibrate the gyro.
             checkCalibration();
@@ -83,7 +83,7 @@ void showDisplay()
 
 // Move the robot on the field using the joystick
 bool slowSpeedButtonWasPressed = false;
-void moveOmni()
+void moveRobot()
 {
     // Check the low-speed power setting.  If set, we'll reduce the motor
     // power's by half.

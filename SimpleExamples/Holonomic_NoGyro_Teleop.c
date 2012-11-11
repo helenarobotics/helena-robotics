@@ -14,7 +14,7 @@ void disableMotors();
 
 // Operator control
 void showDisplay();
-void moveOmni();
+void moveRobot();
 int expoJoystick(int eJoy);
 
 // Holonomic drive control
@@ -53,7 +53,7 @@ task main()
         getJoystickSettings(joystick);
 
         // Move robot
-        moveOmni();
+        moveRobot();
     }
 }
 
@@ -64,7 +64,7 @@ void showDisplay()
 
 // Move the robot on the field using the joystick
 bool slowSpeedButtonWasPressed = false;
-void moveOmni()
+void moveRobot()
 {
     // Check the low-speed power setting.  If set, we'll reduce the motor
     // power's by half.
