@@ -37,6 +37,11 @@ void initializeRobot() {
 task main() {
     initializeRobot();
 
+// Not used here, but if so would be setup here
+//    waitForStart();
+
+    startIRServo(irServoIndex);
+
     while (true) {
         // Display all the information on the screen
         showDisplay();

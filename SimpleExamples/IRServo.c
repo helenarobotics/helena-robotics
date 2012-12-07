@@ -19,6 +19,7 @@ typedef struct {
     int irServoCenterPos;
     int irSensorOffsetPos;
     SweepDirection initialSweepDirection;
+    long servoCenterTime;
 
     // Outgoing information
     bool acquired;
@@ -31,6 +32,7 @@ IRServoStruct irServoData[IRSERVO_LEN];
 // Public forward declarations
 IRServoEnum initializeIRServo(TServoIndex servo, int servoCenterPos,
                               tSensors sensor, int sensorOffsetPos);
+void startIRServo(IRServoEnum selector);
 bool irAcquired(IRServoEnum selector);
 void forceReacquire(IRServoEnum selector);
 float irHeading(IRServoEnum selector);
@@ -48,26 +50,50 @@ IRServoEnum initializeIRServo(TServoIndex servo, int servoCenterPos,
         return IRSERVO_LEN + 1;
     }
 
-    irServoData[servoNum].irServo = servo;
-    irServoData[servoNum].irServoCenterPos = servoCenterPos;
-    irServoData[servoNum].irSensor = sensor;
-    irServoData[servoNum].irSensorOffsetPos = sensorOffsetPos;
+    // How many positions for every update (~20ms)
+    servoChangeRate[servo] = 10;
 
-    // You can't start the same task name more than once, so we have to
-    // define two separate tasks, even if we can differentiate between
-    // them with global variables.
+    // Center the servo!
+    servo[servo] = servoCenterPos;
+
+    // Save away the information for the task to use
+    irServoData[servoNum].irServo = servo;
+    irServoData[servoNum].irSensor = sensor;
+    irServoData[servoNum].irServoCenterPos = servoCenterPos;
+    irServoData[servoNum].irSensorOffsetPos = sensorOffsetPos;
     switch(servoNum) {
     case IR_LEFT:
         irServoData[servoNum].initialSweepDirection = SWEEP_LEFT;
-        StartTask(_leftIrTask);
         break;
 
     case IR_RIGHT:
         irServoData[servoNum].initialSweepDirection = SWEEP_RIGHT;
-        StartTask(_rightIrTask);
         break;
     }
+
+    // Give the servo time to get to the center position.  Assuming
+    // the center is approximately 128, the furthest it can be away
+    // is ~130 positions, and we can move ~10 positions every 20ms
+    // (see above), moving 130 positions is 260ms, so go with 300ms
+    // to be safe.
+    irServoData[servoNum].servoCenterTime = nPgmTime + 300;
+
     return servoNum++;
+}
+
+void startIRServo(IRServoEnum selector) {
+    if (selector >= IR_LEFT && selector < IRSERVO_LEN) {
+        // RobotC doesn't allow the developer to start the same task name more than once, so we have to
+        // define two separate tasks, even if we can differentiate between them with passed-in variables.
+        switch(selector) {
+        case IR_LEFT:
+            StartTask(_leftIrTask);
+            break;
+        case IR_RIGHT:
+            StartTask(_rightIrTask);
+            break;
+        }
+    }
 }
 
 bool irAcquired(IRServoEnum selector) {
@@ -110,16 +136,14 @@ const int IR_CENTER_SECTION = 5;
 const int IR_LEFT_SECTION = 6;
 
 void _irTaskDetails(IRServoStruct irss) {
-    // How many positions for every update (~20ms)
-    servoChangeRate[irss.irServo] = 10;
+    // Wait to make sure the servo has had adequate time to center itself
+    long now = nPgmTime;
+    if (irss.servoCenterTime > now)
+        wait1Msec(irss.servoCenterTime - now);
 
     // Initialize things
     irss.acquired = false;
-    servo[irss.irServo] = irss.irServoCenterPos;
     SweepDirection sweepDirection = irss.initialSweepDirection;
-
-    // Wait a bit to ensure the servos have time to get to their location
-    wait1Msec(1000);
 
     // Choose the initial center transition section.  Due to servo
     // limitations, we may have to switch to the LEFT/RIGHT section to
