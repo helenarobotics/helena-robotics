@@ -30,8 +30,8 @@ typedef struct {
 IRServoStruct irServoData[IRSERVO_LEN];
 
 // Public forward declarations
-IRServoEnum initializeIRServo(TServoIndex servo, int servoCenterPos,
-                              tSensors sensor, int sensorOffsetPos);
+IRServoEnum initializeIRServo(TServoIndex irServo, int servoCenterPos,
+                              tSensors irSensor, int sensorOffsetPos);
 void startIRServo(IRServoEnum selector);
 bool irAcquired(IRServoEnum selector);
 void forceReacquire(IRServoEnum selector);
@@ -42,8 +42,8 @@ task _leftIrTask();
 task _rightIrTask();
 void _irTaskDetails(IRServoStruct irss);
 
-IRServoEnum initializeIRServo(TServoIndex servo, int servoCenterPos,
-                              tSensors sensor, int sensorOffsetPos) {
+IRServoEnum initializeIRServo(TServoIndex irServo, int servoCenterPos,
+                              tSensors irSensor, int sensorOffsetPos) {
     // Ensure we only allow the number allocated
     if (servoNum >= IRSERVO_LEN) {
         PlaySound(soundException);
@@ -51,14 +51,14 @@ IRServoEnum initializeIRServo(TServoIndex servo, int servoCenterPos,
     }
 
     // How many positions for every update (~20ms)
-    servoChangeRate[servo] = 10;
+    servoChangeRate[irServo] = 10;
 
     // Center the servo!
-    servo[servo] = servoCenterPos;
+    servo[irServo] = servoCenterPos;
 
     // Save away the information for the task to use
-    irServoData[servoNum].irServo = servo;
-    irServoData[servoNum].irSensor = sensor;
+    irServoData[servoNum].irServo = irServo;
+    irServoData[servoNum].irSensor = irSensor;
     irServoData[servoNum].irServoCenterPos = servoCenterPos;
     irServoData[servoNum].irSensorOffsetPos = sensorOffsetPos;
     switch(servoNum) {
