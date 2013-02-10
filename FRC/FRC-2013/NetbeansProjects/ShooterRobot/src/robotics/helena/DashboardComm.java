@@ -153,8 +153,8 @@ public class DashboardComm extends Thread {
         s.putNumber("RPM 2 Target", (int)rpmBottomTarget);
     }
 
-    public void recieve(){
-		rpmBtmSwish = (int)s.getNumber("Target RPM 1 Swish");
-		rpmBtmBB = (int)s.getNumber("Target RPM 1 BB");
-	}
+    public void recieve() {
+        rpmBtmSwish = (int)s.getNumber("Target RPM 1 Swish");
+        rpmBtmBB = (int)s.getNumber("Target RPM 1 BB");
+    }
 }

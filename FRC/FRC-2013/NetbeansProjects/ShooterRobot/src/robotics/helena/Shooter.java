@@ -156,7 +156,7 @@ public class Shooter {
     private class StartupTask extends TimerTask {
         private Timer t;
         private double lowerRPM, upperRPM;
-        public StartupTask(Timer _t,double _lowerRPM, double _upperRPM) {
+        public StartupTask(Timer _t, double _lowerRPM, double _upperRPM) {
             startupActive = true;
 
             // Keep track of the timer that initiated us.
@@ -282,7 +282,7 @@ public class Shooter {
         // Update the dashboard
         DashboardComm.rpmBottomTarget = lowerRPM;
         DashboardComm.rpmTopTarget = upperRPM;
-        
+
         // If the motors aren't running, then start them up and let
         // them run for a bit before we use the PID controller on
         // them to avoid PID windup.
