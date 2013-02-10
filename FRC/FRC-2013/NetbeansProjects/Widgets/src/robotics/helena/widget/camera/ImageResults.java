@@ -12,8 +12,8 @@ import javax.vecmath.Point3d;
 
 //XXX This code has been modified to only use the single largest region.
 public class ImageResults {
-	ArrayList<Region> regions;
-	
+    ArrayList<Region> regions;
+
     // each Region corresponds to a detected hoop, and contains estimated location, range, etc
     Region regionRes = null;
 
@@ -36,9 +36,9 @@ public class ImageResults {
 
         nx = image.getWidth() / downsample;
         ny = image.getHeight() / downsample;
-        
+
         {
-        	System.out.println("hi");
+            System.out.println("hi");
         }
 
         // Create downsampled image (we can check for downsample == 1
@@ -135,7 +135,7 @@ public class ImageResults {
     }
 
     public void estimateRange() {
-	FieldGeometry.estimateRange(regionRes);
+    FieldGeometry.estimateRange(regionRes);
     }
 
     // Estimates robot {x, z} location based on range estimates made on
@@ -234,8 +234,8 @@ public class ImageResults {
     // works only on thresholded grayscale
     public Region grow(BufferedImage img) {
         int [][] dirs = {
-            { -1, 1}, { 0, 1 }, { 1, 1 }, { 1, 0 },
-            { 1, -1 }, { 0, -1 }, { -1, -1 }, { -1, 0 }
+            { - 1, 1}, { 0, 1 }, { 1, 1 }, { 1, 0 },
+            { 1, -1 }, { 0, -1 }, { - 1, -1 }, { - 1, 0 }
         };
         WritableRaster raster = img.getRaster();
 
@@ -338,7 +338,7 @@ public class ImageResults {
                     if ((y >= 0) && (y < img.getHeight())) {
                         // don't count center pixel
                         if (!((x == ix) && (y == iy))) {
-                            if ((img.getRGB(x, y) &0x000000ff) > 0){
+                            if ((img.getRGB(x, y) &0x000000ff) > 0) {
                                 return new Point(x, y);
                             }
                         }
@@ -393,16 +393,16 @@ public class ImageResults {
         // min allowed region size
         double minAllowedArea = (nx * ny) * 2.0E-03;
 
-		this.regions.clear();
+        this.regions.clear();
 
-		double h = sorted[0].getEnclosingRectangle().height;
-		double w = sorted[0].getEnclosingRectangle().width;
-		double aspect = w / h;
+        double h = sorted[0].getEnclosingRectangle().height;
+        double w = sorted[0].getEnclosingRectangle().width;
+        double aspect = w / h;
 
-		if(sorted[0].getArea() >= minAllowedArea && aspect < 4.0 && aspect > 0.25){
-			regionRes = sorted[0];
-			regions.add(sorted[0]);
-		}
+        if (sorted[0].getArea() >= minAllowedArea && aspect < 4.0 && aspect > 0.25) {
+            regionRes = sorted[0];
+            regions.add(sorted[0]);
+        }
     }
 
     // Quick Sort code for JAVA, by Yash Gupta
@@ -447,6 +447,6 @@ public class ImageResults {
     }
 
     public Region getHoop() {
-		return regionRes;
+        return regionRes;
     }
 }

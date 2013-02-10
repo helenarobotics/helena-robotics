@@ -465,7 +465,7 @@ public class Region {
         String distance = "";
         double ft = this.range / 12.0;
         if (ft > 0.0)
-            distance = (int) ft + "." + (int)((ft - (int)ft) * 10.0) + "ft";
+            distance = (int)ft + "." + (int)((ft - (int)ft) * 10.0) + "ft";
 
         g2.drawString("Top " + distance, r.x + r.width / 4, r.y + r.height / 2);
     }
@@ -500,7 +500,7 @@ public class Region {
             }
             double ft = sum / (wgtsum * 12.0);
             int ft10 = (int)((ft - (int)ft) * 10.0);
-            str ="Range = " + (int) ft + "." + ft10 + "ft";
+            str = "Range = " + (int)ft + "." + ft10 + "ft";
         }
         return (str);
     }

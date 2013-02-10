@@ -35,7 +35,7 @@ public class CameraWidget extends StaticWidget {
 
     public static final String NAME = "Camera w/ Overlay (EK)";
 
-    private static final double linePos = (double)5/(double)8;
+    private static final double linePos = 5.0 / 8.0;
 
     // The camera should have an address related to the team number with
     // a final IP of '11'.
@@ -162,7 +162,7 @@ public class CameraWidget extends StaticWidget {
                 // We consider it a success if we process an image, even
                 // if we don't get to use it in the repaint method.
                 ImageResults res = dq.get();
-                if (res != null){
+                if (res != null) {
                     processedImageCounter++;
                 }
 
@@ -174,7 +174,7 @@ public class CameraWidget extends StaticWidget {
                     if (gotLock) {
                         if (image != null)
                             cameraImage = image;
-                        if (res != null){
+                        if (res != null) {
                             results = res;
                             sendResults();
                         }
@@ -186,18 +186,18 @@ public class CameraWidget extends StaticWidget {
                 repaint();
             }
         }
-        
-        public void sendResults(){
-        	TableVars.table.putNumber("Target RPM 1 BB", distanceToBBRPM(results.getHoop().range));
-        	TableVars.table.putNumber("Target RPM 1 Swish", distanceToSwishRPM(results.getHoop().range));
-        }
-        
-        public double distanceToBBRPM(double dist){
-            return 0.00008 * Math.pow(dist,4) - 0.0667*Math.pow(dist, 3) + 19.844 * Math.pow(dist, 2) - 2599.7 * dist + 127490;
+
+        public void sendResults() {
+            TableVars.table.putNumber("Target RPM 1 BB", distanceToBBRPM(results.getHoop().range));
+            TableVars.table.putNumber("Target RPM 1 Swish", distanceToSwishRPM(results.getHoop().range));
         }
 
-        public double distanceToSwishRPM(double dist){
-            return -0.036* Math.pow(dist, 3) + 23.73*Math.pow(dist,2) - 5194.3 * dist + 378388;
+        public double distanceToBBRPM(double dist) {
+            return 0.00008 * Math.pow(dist, 4) - 0.0667 * Math.pow(dist, 3) + 19.844 * Math.pow(dist, 2) - 2599.7 * dist + 127490;
+        }
+
+        public double distanceToSwishRPM(double dist) {
+            return - 0.036 * Math.pow(dist, 3) + 23.73 * Math.pow(dist, 2) - 5194.3 * dist + 378388;
         }
 
         public void stop() {
@@ -245,9 +245,9 @@ public class CameraWidget extends StaticWidget {
             if (gotLock)
                 paintLock.unlock();
         }
-	}
+    }
 
-	private void paintStuff(Graphics g) {
+    private void paintStuff(Graphics g) {
         double currAspectRatio = getSize().getWidth() / getSize().getHeight();
 
         if (cameraImage != null) {
@@ -324,13 +324,13 @@ public class CameraWidget extends StaticWidget {
         }
         double width = getSize().getWidth();
         double basex = 0;
-        if(currAspectRatio > aspectRatio){
+        if (currAspectRatio > aspectRatio) {
             width = getSize().getHeight() * aspectRatio;
-            basex = (getSize().getWidth()-width)/2;
+            basex = (getSize().getWidth() - width) / 2;
         }
 
         g.setColor(Color.orange);
-        g.drawLine((int)(linePos*width+basex),0,(int)(linePos*width+basex),(int)getSize().getHeight());
+        g.drawLine((int)(linePos * width + basex), 0, (int)(linePos * width + basex), (int)getSize().getHeight());
     }
 
     private void drawResults(Graphics g) {
