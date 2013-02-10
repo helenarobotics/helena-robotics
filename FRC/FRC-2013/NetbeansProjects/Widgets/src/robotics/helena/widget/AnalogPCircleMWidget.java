@@ -11,7 +11,7 @@ import java.awt.*;
 
 public class AnalogPCircleMWidget extends StaticWidget implements ITableListener {
     public static final String NAME = "AnalogCircle MPWidget (EK)";
-    
+
     private Double direction = 0.0;
     private Double magnitude = 0.0;
     private Double twist = 0.0;
@@ -27,10 +27,10 @@ public class AnalogPCircleMWidget extends StaticWidget implements ITableListener
     public final ColorProperty twistFillColorProp = new ColorProperty(this, "Twist Fill Color", Color.gray);
     public final ColorProperty directionColorProp = new ColorProperty(this, "Direction Color", Color.green);
     public final BooleanProperty showFillTwistProp = new BooleanProperty(this, "Show Fill Twist", true);
-    
+
 
     public void init() {
-        setPreferredSize(new Dimension(200,150));
+        setPreferredSize(new Dimension(200, 150));
         TableVars.table.addTableListener(this);
     }
 
@@ -38,48 +38,48 @@ public class AnalogPCircleMWidget extends StaticWidget implements ITableListener
         //Nothing needs to happen
     }
 
-    protected void paintComponent(Graphics g){
-        if(activeTwist && activeDir && activeMagn){
+    protected void paintComponent(Graphics g) {
+        if (activeTwist && activeDir && activeMagn) {
             g.setColor(fillColorProp.getValue());
-            g.fillOval(0,0,(int)getSize().getWidth(),(int)getSize().getHeight());
+            g.fillOval(0, 0, (int)getSize().getWidth(), (int)getSize().getHeight());
 
-            if(showFillTwistProp.getValue()) {
+            if (showFillTwistProp.getValue()) {
                 g.setColor(twistFillColorProp.getValue());
-                g.fillArc(0,0,(int)getSize().getWidth(),(int)getSize().getHeight(),90,(int)(180*twist));
+                g.fillArc(0, 0, (int)getSize().getWidth(), (int)getSize().getHeight(), 90, (int)(180 * twist));
             }
 
             g.setColor(Color.black);
-            g.drawOval(0,0,(int)getSize().getWidth(),(int)getSize().getHeight());
+            g.drawOval(0, 0, (int)getSize().getWidth(), (int)getSize().getHeight());
 
             g.setColor(directionColorProp.getValue());
-            g.drawLine((int)getSize().getWidth()/2,(int)getSize().getHeight()/2,(int)(Math.cos(direction)*getSize().getWidth()/2 * magnitude + getSize().getWidth()/2),(int)(getSize().getHeight()/2 - Math.sin(direction)*getSize().getHeight()/2 * magnitude));
+            g.drawLine((int)getSize().getWidth() / 2, (int)getSize().getHeight() / 2, (int)(Math.cos(direction) * getSize().getWidth() / 2 * magnitude + getSize().getWidth() / 2), (int)(getSize().getHeight() / 2 - Math.sin(direction) * getSize().getHeight() / 2 * magnitude));
 
             g.setColor(twistColorProp.getValue());
-            g.drawArc(0,0,(int)getSize().getWidth(),(int)getSize().getHeight(),90,(int)(180*twist));
-        }else if(activeTwist){
+            g.drawArc(0, 0, (int)getSize().getWidth(), (int)getSize().getHeight(), 90, (int)(180 * twist));
+        } else if (activeTwist) {
             g.setColor(fillColorProp.getValue());
-            g.fillOval(0,0,(int)getSize().getWidth(),(int)getSize().getHeight());
+            g.fillOval(0, 0, (int)getSize().getWidth(), (int)getSize().getHeight());
 
-            if(showFillTwistProp.getValue()) {
+            if (showFillTwistProp.getValue()) {
                 g.setColor(twistFillColorProp.getValue());
-                g.fillArc(0,0,(int)getSize().getWidth(),(int)getSize().getHeight(),90,(int)(180*twist));
+                g.fillArc(0, 0, (int)getSize().getWidth(), (int)getSize().getHeight(), 90, (int)(180 * twist));
             }
 
             g.setColor(Color.black);
-            g.drawOval(0,0,(int)getSize().getWidth(),(int)getSize().getHeight());
+            g.drawOval(0, 0, (int)getSize().getWidth(), (int)getSize().getHeight());
 
             g.setColor(twistColorProp.getValue());
-            g.drawArc(0,0,(int)getSize().getWidth(),(int)getSize().getHeight(),90,(int)(180*twist));
-        }else if(activeDir && activeMagn){
+            g.drawArc(0, 0, (int)getSize().getWidth(), (int)getSize().getHeight(), 90, (int)(180 * twist));
+        } else if (activeDir && activeMagn) {
             g.setColor(fillColorProp.getValue());
-            g.fillOval(0,0,(int)getSize().getWidth(),(int)getSize().getHeight());
+            g.fillOval(0, 0, (int)getSize().getWidth(), (int)getSize().getHeight());
 
             g.setColor(Color.black);
-            g.drawOval(0,0,(int)getSize().getWidth(),(int)getSize().getHeight());
+            g.drawOval(0, 0, (int)getSize().getWidth(), (int)getSize().getHeight());
 
             g.setColor(directionColorProp.getValue());
-            g.drawLine((int)getSize().getWidth()/2,(int)getSize().getHeight()/2,(int)(Math.cos(direction)*getSize().getWidth()/2 * magnitude + getSize().getWidth()/2),(int)(getSize().getHeight()/2 - Math.sin(direction)*getSize().getHeight()/2 * magnitude));
-        }else{
+            g.drawLine((int)getSize().getWidth() / 2, (int)getSize().getHeight() / 2, (int)(Math.cos(direction) * getSize().getWidth() / 2 * magnitude + getSize().getWidth() / 2), (int)(getSize().getHeight() / 2 - Math.sin(direction) * getSize().getHeight() / 2 * magnitude));
+        } else {
             g.setFont(new Font("Dialog", Font.BOLD, 20));
             g.setColor(Color.red);
             g.drawString("Inactive", 5, 25);
@@ -88,11 +88,11 @@ public class AnalogPCircleMWidget extends StaticWidget implements ITableListener
 
     @Override
     public void valueChanged(ITable itable, String key, Object o, boolean bln) {
-        if(key.equals(dirVarProp.getValue())){
-           direction = (double)o; 
-        }else if(key.equals(magnVarProp.getValue())){
-           magnitude = (double)o; 
-        }else if(key.equals(twistVarProp.getValue())){
+        if (key.equals(dirVarProp.getValue())) {
+           direction = (double)o;
+        } else if (key.equals(magnVarProp.getValue())) {
+           magnitude = (double)o;
+        } else if (key.equals(twistVarProp.getValue())) {
            twist = (double)o;
         }
     }

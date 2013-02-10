@@ -42,15 +42,15 @@ public class ModePWidget extends StaticWidget implements ITableListener {
 
     @Override
     public void valueChanged(ITable itable, String key, Object o, boolean bln) {
-        if(key.equals(TableVars.mode)){
+        if (key.equals(TableVars.mode)) {
             mode = (int)o;
             drawForeground();
         }
     }
 
-    public void drawForeground(){
+    public void drawForeground() {
         stateLa.setFont(new Font("Dialog", Font.PLAIN, textSize.getValue()));
-        switch(mode) {
+        switch (mode) {
             case NONE:
                 stateLa.setForeground(noColor.getValue());
                 stateLa.setText("NO MODE");

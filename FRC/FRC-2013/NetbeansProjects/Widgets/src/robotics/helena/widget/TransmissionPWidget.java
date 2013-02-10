@@ -22,24 +22,24 @@ public class TransmissionPWidget extends StaticWidget implements ITableListener 
 
     public void init() {
         transLa = new JLabel();
-        transLa.setFont(new Font("Dialog",Font.BOLD, textSize.getValue()));
+        transLa.setFont(new Font("Dialog", Font.BOLD, textSize.getValue()));
         add(transLa);
         TableVars.table.addTableListener(this);
         changeTransmission();
     }
 
     public void propertyChanged(Property property) {
-        if(property == textSize)
-            transLa.setFont(new Font("Dialog",Font.BOLD, textSize.getValue()));
+        if (property == textSize)
+            transLa.setFont(new Font("Dialog", Font.BOLD, textSize.getValue()));
         else
             changeTransmission();
     }
 
-    public void changeTransmission(){
-        if(hiTransmission){
+    public void changeTransmission() {
+        if (hiTransmission) {
             transLa.setText("HI");
             transLa.setForeground(hiColor.getValue());
-        }else{
+        } else {
             transLa.setText("LO");
             transLa.setForeground(loColor.getValue());
         }
@@ -47,7 +47,7 @@ public class TransmissionPWidget extends StaticWidget implements ITableListener 
 
     @Override
     public void valueChanged(ITable itable, String key, Object o, boolean bln) {
-        if(key.equals(TableVars.transmission)){
+        if (key.equals(TableVars.transmission)) {
             hiTransmission = (boolean)o;
             changeTransmission();
         }

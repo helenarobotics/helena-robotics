@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.tables.ITableListener;
 import javax.swing.*;
 import java.awt.*;
 
-public class RPMBarPWidget extends StaticWidget implements ITableListener{
+public class RPMBarPWidget extends StaticWidget implements ITableListener {
     public static final String NAME = "RPMBar PWidget (EK)";
 
     public final IntegerProperty minProp = new IntegerProperty(this, "Minimum", 0);
@@ -24,7 +24,7 @@ public class RPMBarPWidget extends StaticWidget implements ITableListener{
     private JProgressBar btmTargetBar;
 
     public void init() {
-        if(horizProp.getValue()){
+        if (horizProp.getValue()) {
             topRPMBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue(), maxProp.getValue());
             btmRPMBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue(), maxProp.getValue());
             topTargetBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue(), maxProp.getValue());
@@ -33,13 +33,13 @@ public class RPMBarPWidget extends StaticWidget implements ITableListener{
             btmRPMBar.setStringPainted(textProp.getValue());
             topTargetBar.setStringPainted(textProp.getValue());
             btmTargetBar.setStringPainted(textProp.getValue());
-            setPreferredSize(new Dimension(50,10));
-            setLayout(new GridLayout(2,1,1,1));
+            setPreferredSize(new Dimension(50, 10));
+            setLayout(new GridLayout(2, 1, 1, 1));
             add(topRPMBar);
             add(topTargetBar);
             add(btmRPMBar);
             add(btmTargetBar);
-        }else{
+        } else {
             topRPMBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue(), maxProp.getValue());
             btmRPMBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue(), maxProp.getValue());
             topTargetBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue(), maxProp.getValue());
@@ -48,8 +48,8 @@ public class RPMBarPWidget extends StaticWidget implements ITableListener{
             btmRPMBar.setStringPainted(textProp.getValue());
             topTargetBar.setStringPainted(textProp.getValue());
             btmTargetBar.setStringPainted(textProp.getValue());
-            setPreferredSize(new Dimension(50,10));
-            setLayout(new GridLayout(2,1,1,1));
+            setPreferredSize(new Dimension(50, 10));
+            setLayout(new GridLayout(2, 1, 1, 1));
             add(topRPMBar);
             add(topTargetBar);
             add(btmRPMBar);
@@ -60,8 +60,8 @@ public class RPMBarPWidget extends StaticWidget implements ITableListener{
 
     public void propertyChanged(Property property) {
         removeAll();
-        if(property != textProp){
-            if(horizProp.getValue()){
+        if (property != textProp) {
+            if (horizProp.getValue()) {
                 topRPMBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue(), maxProp.getValue());
                 btmRPMBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue(), maxProp.getValue());
                 topTargetBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue(), maxProp.getValue());
@@ -70,11 +70,11 @@ public class RPMBarPWidget extends StaticWidget implements ITableListener{
                 btmRPMBar.setStringPainted(textProp.getValue());
                 topTargetBar.setStringPainted(textProp.getValue());
                 btmTargetBar.setStringPainted(textProp.getValue());
-                setPreferredSize(new Dimension(50,10));
-                setLayout(new GridLayout(2,1,1,1));
+                setPreferredSize(new Dimension(50, 10));
+                setLayout(new GridLayout(2, 1, 1, 1));
                 add(topRPMBar);
                 add(btmRPMBar);
-            }else{
+            } else {
                 topRPMBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue(), maxProp.getValue());
                 btmRPMBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue(), maxProp.getValue());
                 topTargetBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue(), maxProp.getValue());
@@ -83,8 +83,8 @@ public class RPMBarPWidget extends StaticWidget implements ITableListener{
                 btmRPMBar.setStringPainted(textProp.getValue());
                 topTargetBar.setStringPainted(textProp.getValue());
                 btmTargetBar.setStringPainted(textProp.getValue());
-                setPreferredSize(new Dimension(50,10));
-                setLayout(new GridLayout(2,1,1,1));
+                setPreferredSize(new Dimension(50, 10));
+                setLayout(new GridLayout(2, 1, 1, 1));
                 add(topRPMBar);
                 add(btmRPMBar);
             }
@@ -93,23 +93,23 @@ public class RPMBarPWidget extends StaticWidget implements ITableListener{
 
     @Override
     public void valueChanged(ITable itable, String key, Object o, boolean bln) {
-        if(key.equals(TableVars.rpm1)){
-            if(textProp.getValue())
+        if (key.equals(TableVars.rpm1)) {
+            if (textProp.getValue())
                 topRPMBar.setString("Top " + (String)o);
             else
                 topRPMBar.setValue((int)o);
-        }else if(key.equals(TableVars.rpm1Target)){
-            if(textProp.getValue())
+        } else if (key.equals(TableVars.rpm1Target)) {
+            if (textProp.getValue())
                 topTargetBar.setString("TopTar " + (String)o);
             else
                 topTargetBar.setValue((int)o);
-        }else if(key.equals(TableVars.rpm2)){
-            if(textProp.getValue())
+        } else if (key.equals(TableVars.rpm2)) {
+            if (textProp.getValue())
                 btmRPMBar.setString("Btm " + (String)o);
             else
                 btmRPMBar.setValue((int)o);
-        }else if(key.equals(TableVars.rpm2Target)){
-            if(textProp.getValue())
+        } else if (key.equals(TableVars.rpm2Target)) {
+            if (textProp.getValue())
                 btmTargetBar.setString("BtmTar " + (String)o);
             else
                 btmTargetBar.setValue((int)o);

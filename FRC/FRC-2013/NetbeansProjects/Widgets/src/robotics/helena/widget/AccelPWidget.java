@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.tables.ITable;
 import javax.swing.*;
 import java.awt.*;
 
-public class AccelPWidget extends StaticWidget implements ITableListener{
+public class AccelPWidget extends StaticWidget implements ITableListener {
     public static final String NAME = "AccelBar PWidget (EK)";
 
     public final IntegerProperty minProp = new IntegerProperty(this, "Minimum Value", 0);
@@ -23,19 +23,19 @@ public class AccelPWidget extends StaticWidget implements ITableListener{
 
     public void init() {
         JPanel barPa = new JPanel();
-        if(horizProp.getValue()){
+        if (horizProp.getValue()) {
             barPa.setLayout(new GridLayout(3, 1, 2, 2));
-            xBar = new JProgressBar(SwingConstants.HORIZONTAL,minProp.getValue()*10,maxProp.getValue()*10);
-            yBar = new JProgressBar(SwingConstants.HORIZONTAL,minProp.getValue()*10,maxProp.getValue()*10);
-            zBar = new JProgressBar(SwingConstants.HORIZONTAL,minProp.getValue()*10,maxProp.getValue()*10);
-        }else{
+            xBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue() * 10, maxProp.getValue() * 10);
+            yBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue() * 10, maxProp.getValue() * 10);
+            zBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue() * 10, maxProp.getValue() * 10);
+        } else {
             barPa.setLayout(new GridLayout(1, 3, 2, 2));
-            xBar = new JProgressBar(SwingConstants.VERTICAL,minProp.getValue()*10,maxProp.getValue()*10);
-            yBar = new JProgressBar(SwingConstants.VERTICAL,minProp.getValue()*10,maxProp.getValue()*10);
-            zBar = new JProgressBar(SwingConstants.VERTICAL,minProp.getValue()*10,maxProp.getValue()*10);
+            xBar = new JProgressBar(SwingConstants.VERTICAL, minProp.getValue() * 10, maxProp.getValue() * 10);
+            yBar = new JProgressBar(SwingConstants.VERTICAL, minProp.getValue() * 10, maxProp.getValue() * 10);
+            zBar = new JProgressBar(SwingConstants.VERTICAL, minProp.getValue() * 10, maxProp.getValue() * 10);
         }
 
-        if(textProp.getValue()){
+        if (textProp.getValue()) {
             xBar.setStringPainted(true);
             yBar.setStringPainted(true);
             zBar.setStringPainted(true);
@@ -53,19 +53,19 @@ public class AccelPWidget extends StaticWidget implements ITableListener{
 
     public void propertyChanged(Property property) {
         JPanel barPa = new JPanel();
-        if(horizProp.getValue()){
+        if (horizProp.getValue()) {
             barPa.setLayout(new GridLayout(3, 1, 2, 2));
-            xBar = new JProgressBar(SwingConstants.HORIZONTAL,minProp.getValue()*10,maxProp.getValue()*10);
-            yBar = new JProgressBar(SwingConstants.HORIZONTAL,minProp.getValue()*10,maxProp.getValue()*10);
-            zBar = new JProgressBar(SwingConstants.HORIZONTAL,minProp.getValue()*10,maxProp.getValue()*10);
-        }else{
+            xBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue() * 10, maxProp.getValue() * 10);
+            yBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue() * 10, maxProp.getValue() * 10);
+            zBar = new JProgressBar(SwingConstants.HORIZONTAL, minProp.getValue() * 10, maxProp.getValue() * 10);
+        } else {
             barPa.setLayout(new GridLayout(1, 3, 2, 2));
-            xBar = new JProgressBar(SwingConstants.VERTICAL,minProp.getValue()*10,maxProp.getValue()*10);
-            yBar = new JProgressBar(SwingConstants.VERTICAL,minProp.getValue()*10,maxProp.getValue()*10);
-            zBar = new JProgressBar(SwingConstants.VERTICAL,minProp.getValue()*10,maxProp.getValue()*10);
+            xBar = new JProgressBar(SwingConstants.VERTICAL, minProp.getValue() * 10, maxProp.getValue() * 10);
+            yBar = new JProgressBar(SwingConstants.VERTICAL, minProp.getValue() * 10, maxProp.getValue() * 10);
+            zBar = new JProgressBar(SwingConstants.VERTICAL, minProp.getValue() * 10, maxProp.getValue() * 10);
         }
 
-        if(textProp.getValue()){
+        if (textProp.getValue()) {
             xBar.setStringPainted(true);
             yBar.setStringPainted(true);
             zBar.setStringPainted(true);
@@ -82,26 +82,26 @@ public class AccelPWidget extends StaticWidget implements ITableListener{
 
     @Override
     public void valueChanged(ITable itable, String key, Object o, boolean bln) {
-        if(key.equals(TableVars.accelX)){
-            if(textProp.getValue()){
-               xBar.setString("X: " + o); 
-            }else{
+        if (key.equals(TableVars.accelX)) {
+            if (textProp.getValue()) {
+               xBar.setString("X: " + o);
+            } else {
                xBar.setString((String)o);
             }
             updateUI();
-        }else if(key.equals(TableVars.accelY)){
-             if(textProp.getValue()){
-               yBar.setString("Y: " + o); 
-            }else{
+        } else if (key.equals(TableVars.accelY)) {
+             if (textProp.getValue()) {
+               yBar.setString("Y: " + o);
+            } else {
                yBar.setString((String)o);
-            }           
+            }
             updateUI();
-        }else if(key.equals(TableVars.accelZ)){
-             if(textProp.getValue()){
-               zBar.setString("Z: " + o); 
-            }else{
+        } else if (key.equals(TableVars.accelZ)) {
+             if (textProp.getValue()) {
+               zBar.setString("Z: " + o);
+            } else {
                zBar.setString((String)o);
-            }        
+            }
             updateUI();
         }
     }

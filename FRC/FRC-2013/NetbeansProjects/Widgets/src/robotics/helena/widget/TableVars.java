@@ -3,9 +3,9 @@ package robotics.helena.widget;
 import edu.wpi.first.smartdashboard.robot.Robot;
 import edu.wpi.first.wpilibj.tables.ITable;
 
-public class TableVars{
+public class TableVars {
     public static ITable table = Robot.getTable();
-        
+
     public static String mode = "Mode";
     public static String transmission = "Transmission";
     public static String timer = "Timer";
@@ -25,7 +25,7 @@ public class TableVars{
     public static String accelY = "Accel Y";
     public static String accelZ = "Accel Z";
     public static String gyro = "Gyro";
-    
+
     //Constants to detirmine types of names
     public static int INTEGER = 0;
     public static int BOOLEAN = 1;
@@ -34,59 +34,59 @@ public class TableVars{
 
 
     //Only useful function below line is directly below
-    public static int typeFromName(String name){
+    public static int typeFromName(String name) {
         int ret = UNDEF;
-        if(table.containsKey(name)){
-            if(name.equals("Mode"))
+        if (table.containsKey(name)) {
+            if (name.equals("Mode"))
                 ret = INTEGER;
 
-            if(name.equals("Transmission"))
+            if (name.equals("Transmission"))
                 ret = BOOLEAN;
 
-            if(name.equals("Timer"))
+            if (name.equals("Timer"))
                 ret = INTEGER;
 
-            if(name.equals("Field X"))
+            if (name.equals("Field X"))
                 ret = DOUBLE;
 
-            if(name.equals("Field Y"))
+            if (name.equals("Field Y"))
                 ret = DOUBLE;
 
-            if(name.equals("RPM 1"))
+            if (name.equals("RPM 1"))
                 ret = DOUBLE;
 
-            if(name.equals("RPM 2"))
+            if (name.equals("RPM 2"))
                 ret = DOUBLE;
 
-            if(name.equals("Joystick 1 Direction"))
+            if (name.equals("Joystick 1 Direction"))
                 ret = DOUBLE;
 
-            if(name.equals("Joystick 1 Magnitude"))
+            if (name.equals("Joystick 1 Magnitude"))
                 ret = DOUBLE;
 
-            if(name.equals("Joystick 2 X"))
+            if (name.equals("Joystick 2 X"))
                 ret = DOUBLE;
 
-            if(name.equals("Joystick 2 Y"))
+            if (name.equals("Joystick 2 Y"))
                 ret = DOUBLE;
 
-            if(name.equals("Joystick 2 Throttle")){
+            if (name.equals("Joystick 2 Throttle")) {
                 ret = DOUBLE;
             }
 
-            if(name.equals("BallFeeder"))
+            if (name.equals("BallFeeder"))
                 ret = BOOLEAN;
 
-            if(name.equals("Accel X"))
+            if (name.equals("Accel X"))
                 ret = DOUBLE;
 
-            if(name.equals("Accel Y"))
+            if (name.equals("Accel Y"))
                 ret = DOUBLE;
 
-            if(name.equals("Accel Z"))
+            if (name.equals("Accel Z"))
                 ret = DOUBLE;
 
-            if(name.equals("Gyro"))
+            if (name.equals("Gyro"))
                 ret = DOUBLE;
         }
 
@@ -149,7 +149,7 @@ public class TableVars{
 
         return ret;
     }
-    
+
     public static Double getDoubleFromName(String name){
         Double ret = null;
 
@@ -219,6 +219,6 @@ public class TableVars{
         return ret;
     }*/
 
-	//Make Class run as soon as possible
+    //Make Class run as soon as possible
 
 }

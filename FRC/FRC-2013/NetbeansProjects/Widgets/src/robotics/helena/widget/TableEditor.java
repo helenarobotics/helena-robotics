@@ -36,12 +36,12 @@ public class TableEditor extends StaticWidget implements ActionListener {
         //Not relevant
     }
 
-    public void actionPerformed(ActionEvent e){
-        if(types.getSelectedIndex() == 0){
+    public void actionPerformed(ActionEvent e) {
+        if (types.getSelectedIndex() == 0) {
             TableVars.table.putInt(keyFi.getText(), Integer.parseInt(valueFi.getText()));
-        }else if(types.getSelectedIndex() == 1){
+        } else if (types.getSelectedIndex() == 1) {
             TableVars.table.putBoolean(keyFi.getText(), Boolean.parseBoolean(valueFi.getText()));
-        }else{
+        } else {
             TableVars.table.putDouble(keyFi.getText(), Double.parseDouble(valueFi.getText()));
             System.out.println("Setting " + keyFi.getText() + " to " + Double.parseDouble(valueFi.getText()));
         }

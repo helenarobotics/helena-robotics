@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj.tables.ITable;
 import java.awt.*;
 import javax.swing.JComponent;
 
-public class CrossAnalog extends StaticWidget implements ITableListener{
+public class CrossAnalog extends StaticWidget implements ITableListener {
     public static final String NAME = "CrossAnalog MPWidget (EK)";
 
     private Double x = null;
@@ -22,27 +22,27 @@ public class CrossAnalog extends StaticWidget implements ITableListener{
     public final StringProperty xVar = new StringProperty(this, "X Variable:", "Joystick 2 X");
     public final StringProperty yVar = new StringProperty(this, "Y Variable:", "Joystick 2 Y");
 
-    protected void paintComponent(Graphics g){
-        if(x != null && y != null){
+    protected void paintComponent(Graphics g) {
+        if (x != null && y != null) {
             //X line
             g.setColor(xColor.getValue());
-            g.fillRect((int)((x+1)/2 * (getSize().getWidth()-1)),0,1,(int)(getSize().getHeight()));
+            g.fillRect((int)((x + 1) / 2 * (getSize().getWidth() - 1)), 0, 1, (int)(getSize().getHeight()));
 
             //Y line
             g.setColor(yColor.getValue());
-            g.fillRect(0,(int)((1-((y+1)/2)) * (getSize().getHeight()-1)),(int)(getSize().getWidth()),1);
+            g.fillRect(0, (int)((1 - ((y + 1) / 2)) * (getSize().getHeight() - 1)), (int)(getSize().getWidth()), 1);
 
-            if(drawText.getValue()){
+            if (drawText.getValue()) {
                 //Percents
                 g.setColor(textColor.getValue());
                 g.setFont(new Font("Dialog", Font.PLAIN, textSize.getValue()));
-                g.drawString("("+x*100+", "+y*100+")",(int)((getSize().getWidth()-1)/2),(int)((getSize().getHeight()-1)/2));
+                g.drawString("(" + x * 100 + ", " + y * 100 + ")", (int)((getSize().getWidth() - 1) / 2), (int)((getSize().getHeight() - 1) / 2));
             }
         }
     }
 
     public void init() {
-        setPreferredSize(new Dimension(100,100));
+        setPreferredSize(new Dimension(100, 100));
         TableVars.table.addTableListener(this);
     }
 
@@ -52,10 +52,10 @@ public class CrossAnalog extends StaticWidget implements ITableListener{
 
     @Override
     public void valueChanged(ITable itable, String key, Object o, boolean bln) {
-        if(key.equals(xVar.getValue())){
+        if (key.equals(xVar.getValue())) {
             x = (double)o;
             repaint();
-        }else if(key.equals(yVar.getValue())){
+        } else if (key.equals(yVar.getValue())) {
             y = (double)o;
             repaint();
         }

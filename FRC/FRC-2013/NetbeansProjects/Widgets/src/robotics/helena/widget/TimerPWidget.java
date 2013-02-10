@@ -32,23 +32,23 @@ public class TimerPWidget extends StaticWidget implements ITableListener, Action
     private JButton resetBu = new JButton("Reset");
 
     public void init() {
-        setLayout(new BorderLayout(2,2));
-        timeLa.setFont(new Font("Dialog",Font.BOLD, textSize.getValue()));
-        if(controlButtons.getValue()){
+        setLayout(new BorderLayout(2, 2));
+        timeLa.setFont(new Font("Dialog", Font.BOLD, textSize.getValue()));
+        if (controlButtons.getValue()) {
             add(timeLa, BorderLayout.CENTER);
             add(stopBu, BorderLayout.SOUTH);
             add(resetBu, BorderLayout.NORTH);
-        }else{
+        } else {
             add(timeLa, BorderLayout.CENTER);
         }
         stopBu.addActionListener(this);
         resetBu.addActionListener(this);
         clock = new Timer(1000, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(running){
+                if (running) {
                     timeRemaining--;
                     timeLa.setText(Integer.toString(timeRemaining));
-                    if(timeRemaining == 0){
+                    if (timeRemaining == 0) {
                         clock.stop();
                         running = false;
                         changeColor();
@@ -59,26 +59,26 @@ public class TimerPWidget extends StaticWidget implements ITableListener, Action
         TableVars.table.addTableListener(this);
     }
 
-    public boolean validatePropertyChange(Property property, Object value){
-        if(property == startTimeAmt || property == textSize){
+    public boolean validatePropertyChange(Property property, Object value) {
+        if (property == startTimeAmt || property == textSize) {
             int set = ((Integer)value).intValue();
-            if(set <= 0)
+            if (set <= 0)
                 return false;
         }
         return true;
     }
 
-    public void actionPerformed(ActionEvent e){
-        if(e.getSource() == stopBu){
-            if(running){
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == stopBu) {
+            if (running) {
                 running = false;
                 clock.stop();
-            }else if(!running && timeRemaining > 0){
+            } else if (!running && timeRemaining > 0) {
                 running = true;
                 clock.start();
             }
-        }else{
-            running = false; //Reset to false, in case it is reset while running
+        } else {
+            running = false; // Reset to false, in case it is reset while running
             clock.stop();
             timeRemaining = startTimeAmt.getValue();
             timeLa.setText(Integer.toString(startTimeAmt.getValue()));
@@ -87,16 +87,16 @@ public class TimerPWidget extends StaticWidget implements ITableListener, Action
     }
 
     public void propertyChanged(Property property) {
-        if(property == textSize){
-            timeLa.setFont(new Font("Dialog",Font.BOLD, textSize.getValue()));
-        }else if(property instanceof ColorProperty){
+        if (property == textSize) {
+            timeLa.setFont(new Font("Dialog", Font.BOLD, textSize.getValue()));
+        } else if (property instanceof ColorProperty) {
             changeColor();
-        }else if(property == controlButtons){
-            if(controlButtons.getValue()){
+        } else if (property == controlButtons) {
+            if (controlButtons.getValue()) {
                 add(timeLa, BorderLayout.CENTER);
                 add(stopBu, BorderLayout.SOUTH);
                 add(resetBu, BorderLayout.NORTH);
-            }else{
+            } else {
                 add(timeLa, BorderLayout.CENTER);
             }
         }
@@ -104,15 +104,15 @@ public class TimerPWidget extends StaticWidget implements ITableListener, Action
 
     @Override
     public void valueChanged(ITable itable, String key, Object o, boolean bln) {
-        if(key.equals(TableVars.timer)){
-            if(o == 0 && timeRemaining > 0 && !clock.isRunning()){ //Start Timer
+        if (key.equals(TableVars.timer)) {
+            if (o == 0 && timeRemaining > 0 && !clock.isRunning()) { // Start Timer
                 running = true;
                 clock.start();
-            }if(o == 1 && clock.isRunning()){ //Stop Timer
+            } if (o == 1 && clock.isRunning()) { // Stop Timer
                 running = false;
                 clock.stop();
-            }if(o == 2 && timeRemaining != startTimeAmt.getValue()) {  //Reset Timer
-                running = false; //Reset to false, in case it is reset while running
+            } if (o == 2 && timeRemaining != startTimeAmt.getValue()) {  // Reset Timer
+                running = false; // Reset to false, in case it is reset while running
                 clock.stop();
                 timeRemaining = startTimeAmt.getValue();
                 timeLa.setText(Integer.toString(startTimeAmt.getValue()));
@@ -121,10 +121,10 @@ public class TimerPWidget extends StaticWidget implements ITableListener, Action
         }
     }
 
-    public void changeColor(){
-        if(running)
+    public void changeColor() {
+        if (running)
             timeLa.setForeground(runColor.getValue());
-        else if(timeRemaining == 0)
+        else if (timeRemaining == 0)
             timeLa.setForeground(finColor.getValue());
         else
             timeLa.setForeground(stopColor.getValue());
