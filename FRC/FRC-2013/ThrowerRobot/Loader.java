@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package robotics.helena;
 
 import edu.wpi.first.wpilibj.Solenoid;
@@ -46,15 +42,19 @@ public class Loader implements Runnable {
                 }
             }
 
-            /*int targetPower = rpmSpeed/Shooter.MAX_RPM;
-             if(targetPower < 0){
-             long endTime = shooter.getChangeTime()+SPIN_UP_TIME;
-             if(System.currentTimeMillis() < endTime){
-             long waitTime = endTime-System.currentTimeMillis();
-             try{
-             Thread.sleep(waitTime);
-             }catch(InterruptedException ignored){}
-             }*/
+            /*
+            int targetPower = rpmSpeed / Shooter.MAX_RPM;
+            if (targetPower < 0) {
+                long endTime = shooter.getChangeTime() + SPIN_UP_TIME;
+                if (System.currentTimeMillis() < endTime) {
+                    long waitTime = endTime - System.currentTimeMillis();
+                    try {
+                        Thread.sleep(waitTime);
+                    }catch(InterruptedException ignored){
+                    }
+                }
+            }
+            */
             load();
 
             synchronized (this) {

@@ -10,6 +10,7 @@ public class Thrower extends SimpleRobot {
     private final Shooter shooter;
     //private final Grabber grabber;
     //private final Lift lift;
+
     public Thrower() {
         shooter = new Shooter();
         loader = new Loader(shooter);
@@ -43,7 +44,7 @@ public class Thrower extends SimpleRobot {
             }
         }
     }
-    
+
     private boolean wasPressed = false;
     private boolean joystickTrigger(Joystick joy) {
         boolean btnPressed = false;

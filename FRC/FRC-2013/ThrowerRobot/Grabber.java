@@ -12,23 +12,23 @@ public class Grabber {
     private final double OPEN_POS = 0;
     private final double CLOSED_POS = 1;
     private boolean open = false;
-    
-    public Grabber(){
+
+    public Grabber() {
         grabber = new Servo(Configuration.GRABBER_SERVO);
     }
-    
-    public void move(Joystick joy){
-        if(btnPressed(joy)){
-            if(open)
+
+    public void move(Joystick joy) {
+        if (btnPressed(joy)) {
+            if (open)
                 grabber.set(CLOSED_POS);
             else
                 grabber.set(OPEN_POS);
             open = !open;
         }
     }
-    
+
     private boolean wasPressed = false;
-    private boolean btnPressed(Joystick joy){
+    private boolean btnPressed(Joystick joy) {
         boolean btnPressed = false;
 
         // Toggle the shifter when the shifter button is pressed
