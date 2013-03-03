@@ -141,7 +141,6 @@ Set White Balance and Exposure Control to 'Hold Current'
 Click 'Save'.
 Go back to the main page of 10.16.95.11 and you should have a very dark
 image, but can still see lights.
-image
 
 Step 6: - Install software onto Robot (cRIO)
 -------
