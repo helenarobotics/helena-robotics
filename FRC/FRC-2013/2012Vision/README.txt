@@ -103,7 +103,45 @@ At this point, the custom behavior for accessing the camera is now in-place.
 
 Step 5: - Configure camera
 ------
-XXX - Need instructions here
+Reset Camera by holding small button on the back while you turn it on.
+Plug the camera into computer's ethernet slot with a crossover cable.
+Set the IP Adress of the ethernet NIC to 192.168.0.1 and subnet mask as 
+255.255.255.0.
+	-Control Panel -> Network Connections
+	-Right click Local Area Connection
+	-Click 'Properties' in the drop down list
+	-Select Internet Protocol(TCP/IP)
+	-Click 'Properties'
+	-Set the IP Adress to 192.168.0.1
+	-Set the Subnet Mask to 255.255.255.0
+	-click the 'OK' button
+	-Hit the 'Close' button
+
+Wait until the camera has a green ring around the lens.
+Run the program 'Axis Camera Setup'.
+Select the 'Robot Radio' radio button.
+Enter '1695' as the team number.
+Click 'Configure'
+
+Using the above steps, change the IP address of the ethernet NIC to
+10.16.96.9 and subnet mask to 255.0.0.0.
+
+In a browser type 10.16.95.11 to connect to the camera.
+To login use the username 'FRC' and password 'FRC'.
+Click 'Setup'.
+Go to Basic Congiguration -> 1.Users, and make sure that anonymous viewer
+login is enabled, and click 'Save'.
+Select video+Image in the side (not under Basic Configuration)
+Set the resolution to 640x480(?).
+Set the Brightness to 0 and Color to 50.
+Click 'Save'.
+Go to Video+Image -> Advanced
+Make sure that the camera is in a dark place.
+Set White Balance and Exposure Control to 'Hold Current'
+Click 'Save'.
+Go back to the main page of 10.16.95.11 and you should have a very dark
+image, but can still see lights.
+image
 
 Step 6: - Install software onto Robot (cRIO)
 -------
