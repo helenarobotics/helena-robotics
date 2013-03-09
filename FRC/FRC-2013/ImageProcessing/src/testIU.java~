@@ -49,7 +49,7 @@ public class testIU {
 	    DataQueue dq = new DataQueue();
 
 	    // Create image understanding object, and begin its async processing thread; last param, 2, = desampling factor
-	    ImageUnderstanding iu = new ImageUnderstanding(iq, dq, 2);
+	    ImageUnderstanding iu = new ImageUnderstanding(iq, dq, 1);
 
 	    Thread t = new Thread(iu);
 	    t.start();

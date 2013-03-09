@@ -1,0 +1,71 @@
+<project name="frcImage" default="compile" basedir=".">
+  <property name="build.dir" location="build"/>
+  <property name="image.dir" location="images"/>
+  <property name="lib.dir" location="lib"/>
+  <property name="project.jar" value="${ant.project.name}.jar"/>
+  <property name="src.dir" location="src"/>
+
+  <!-- Environment variables that must be set -->
+  <property environment="env"/>
+  <property name="javahome.dir" location="${env.JAVA_HOME}"/>
+
+  <!-- Set the base classpath -->
+  <path id="lib.classpath">
+<!--
+    <fileset file="${javahome.dir}/jre/lib/rt.jar"/>
+-->
+  </path>
+
+  <!-- Classpath entry only needed if compiling -->
+  <path id="compile.classpath">
+    <path refid="lib.classpath"/>
+    <fileset dir="${lib.dir}" includes="*.jar">
+      <exclude name="${project.jar}"/>
+    </fileset>
+  </path>
+
+  <!-- Classpath entry only needed if running -->
+  <path id="proj.classpath">
+    <path refid="lib.classpath"/>
+    <pathelement path="${build.dir}"/>
+  </path>
+
+  <target name="init">
+    <mkdir dir="${build.dir}"/>
+  </target>
+
+  <target name="compile" depends="init">
+    <javac includeantruntime="false" srcdir="${src.dir}" destdir="${build.dir}" debug="true">
+      <compilerarg value="-Xlint:all,-path"/>
+      <classpath refid="compile.classpath"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile">
+    <jar jarfile="${lib.dir}/${project.jar}" basedir="${build.dir}"/>
+  </target>
+
+  <target name="image" depends="compile">
+    <java classname="testIU" fork="true"
+      failonerror="true" inputstring="">
+      <classpath>
+        <path refid="proj.classpath"/>
+      </classpath>
+      <arg line="testimages imageout"/>
+    </java>
+  </target>
+
+  <target name="hough" depends="compile">
+    <java classname="HoughTransform" fork="true"
+      failonerror="true" inputstring="">
+      <classpath>
+        <path refid="proj.classpath"/>
+      </classpath>
+      <arg line="testimages/testfile.jpg"/>
+    </java>
+  </target>
+
+  <target name="clean">
+    <delete dir="${build.dir}"/>
+  </target>
+</project>

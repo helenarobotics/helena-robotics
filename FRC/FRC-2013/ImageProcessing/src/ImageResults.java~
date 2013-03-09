@@ -363,7 +363,7 @@ public class ImageResults {
 	 return out;
     }
 
-    //    public enum HoopLocation { unknown, left, top, right };
+    //    public enum HoopLocation { unknown, left, top, right, bottom };
 
     public void labelHoops() {
 
@@ -398,7 +398,7 @@ public class ImageResults {
 	double minAllowedArea = (nx * ny) * 2.0E-03;
 
 	int nregions = 0;
-	for (int i = 0; i < Math.min(3, this.regions.size()) &&       // Only 3 hoops in view in 2013
+	for (int i = 0; i < Math.min(4, this.regions.size()) &&
 		 sorted[i].getArea() >= (largestArea * 0.2) &&
 		 sorted[i].getArea() >= minAllowedArea; i++) {
 	    double h = sorted[i].getEnclosingRectangle().height;
@@ -437,19 +437,17 @@ public class ImageResults {
 
 	case 1:             
 	    // if we see only one region, we have no way to know which it is
-	    sorted[0].hoopLocation = Region.HoopLocation.unknown;   
+	    sorted[0].hoopLocation = Region.HoopLocation.top;   // XXX Was 'unknown'
 	    break;
 
 	case 2:
-	    if (sorted[0].isAbove(sorted[1])) {
+	    // if same height, must be side-by-side.  Determine which is left v right.
+	    if (sorted[0].sameElevation(sorted[1])) {
 		leftmost.hoopLocation = Region.HoopLocation.left;
-		rightmost.hoopLocation = Region.HoopLocation.top;
-		highest.hoopLocation =  Region.HoopLocation.top;
-	    }
-	    else if (sorted[1].isAbove(sorted[0])) {
-		leftmost.hoopLocation = Region.HoopLocation.top;
 		rightmost.hoopLocation = Region.HoopLocation.right;
+	    } else if (sorted[0].sameAzimuth(sorted[1])) {
 		highest.hoopLocation =  Region.HoopLocation.top;
+		lowest.hoopLocation =  Region.HoopLocation.bottom;
 	    }
 	    else { // we can't tell -- ambiguous between (left & bottom) and (top and right)
 		sorted[0].hoopLocation = sorted[1].hoopLocation = Region.HoopLocation.unknown;
@@ -457,9 +455,43 @@ public class ImageResults {
 	    break;
 
 	case 3:
+	    if (highest.isAbove(leftmost) && highest.isAbove(rightmost)) {
+		highest.hoopLocation = Region.HoopLocation.top;
+		if (leftmost.isLeftOf(highest))
+		    leftmost.hoopLocation = Region.HoopLocation.left;
+		else if (leftmost.sameAzimuth(highest))
+		    leftmost.hoopLocation = Region.HoopLocation.bottom;
+		if (rightmost.isRightOf(highest))
+		    rightmost.hoopLocation = Region.HoopLocation.right;
+		else if (rightmost.sameAzimuth(highest))
+		    rightmost.hoopLocation = Region.HoopLocation.bottom;
+	    }
+	    else if (highest.isLeftOf(lowest)) {
+		highest.hoopLocation = Region.HoopLocation.left;
+		lowest.hoopLocation = Region.HoopLocation.bottom;
+		rightmost.hoopLocation = Region.HoopLocation.right;
+	    }
+	    else if (highest.isRightOf(lowest)) {
+		highest.hoopLocation = Region.HoopLocation.right;
+		lowest.hoopLocation = Region.HoopLocation.bottom;
+		leftmost.hoopLocation = Region.HoopLocation.left;
+	    }
+	    else if (highest.sameAzimuth(lowest)) {
+		highest.hoopLocation = Region.HoopLocation.top;
+		lowest.hoopLocation = Region.HoopLocation.bottom;
+		if (rightmost.isRightOf(highest)) 
+		    rightmost.hoopLocation = Region.HoopLocation.right;
+		else if (leftmost.isLeftOf(highest))
+		    leftmost.hoopLocation = Region.HoopLocation.left;
+	    }
+	    else System.err.println("Bad labeling logic!");
+	    break;
+
+	case 4:
+	    highest.hoopLocation = Region.HoopLocation.top;
+	    lowest.hoopLocation = Region.HoopLocation.bottom;
 	    leftmost.hoopLocation = Region.HoopLocation.left;
 	    rightmost.hoopLocation = Region.HoopLocation.right;
-	    highest.hoopLocation = Region.HoopLocation.top;
 	    break;
 	}
     }
@@ -537,6 +569,9 @@ private int partition(Region arr[], int left, int right){
 	hoop = getLeftHoop();
 	if ((hoop != null) && (hoop.topEdge != null))
 	    return (hoop);
+	hoop = getBottomHoop();
+	if ((hoop != null) && (hoop.topEdge != null))
+	    return (hoop);
 
 	return null;
     }
@@ -552,6 +587,10 @@ private int partition(Region arr[], int left, int right){
 
     public Region getRightHoop()	{
 	return (getHoop(Region.HoopLocation.right));
+    }
+
+    public Region getBottomHoop()	{
+	return (getHoop(Region.HoopLocation.bottom));
     }
 
     public Region getUnknownHoop()	{

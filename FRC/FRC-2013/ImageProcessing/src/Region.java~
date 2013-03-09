@@ -17,7 +17,7 @@ import java.awt.*;
 
 public class Region {
 
-    public enum HoopLocation { unknown, left, top, right };       // top is also middle hoop (located slighly higher than left or right)
+    public enum HoopLocation { unknown, left, top, right, bottom };
 
     Vector<Point> points;      // temporary space used while building the region.
     public HoopLocation hoopLocation;
@@ -384,7 +384,7 @@ private int partition(dataPoint arr[], int left, int right){
     }
 
     private void quickSort(dataPoint arr[], int left, int right)  {
-	if (right <= left)        //  watch out for  case of zero-length vector.  If this happens, partition blows up
+	if (right <= left)        //  watch out for  case of zero-length vector.  If this happes, partition blows up
 	    return;
 	int index = partition(arr, left, right);
 	if (left < index - 1)
@@ -473,6 +473,9 @@ private int partition(dataPoint arr[], int left, int right){
 	    break;
 	case top:
 	    g2.drawString("Top " + distance, r.x + r.width/4, r.y + r.height/2);
+	    break;
+	case bottom:
+	    g2.drawString("Bottom " + distance, r.x + r.width/16, r.y + r.height/2);
 	    break;
 	}
     
