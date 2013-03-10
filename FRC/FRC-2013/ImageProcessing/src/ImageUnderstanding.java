@@ -32,7 +32,7 @@ public class ImageUnderstanding implements Runnable {
 	    // wait until the next image is available
 	    while (((image = iq.get()) == null) && !stop){  
 		try {
-		    Thread.currentThread().sleep(10);  // sleep 10msec
+		    Thread.sleep(10);  // sleep 10msec
 		} catch (InterruptedException e) {
 		    e.printStackTrace();
 		}
