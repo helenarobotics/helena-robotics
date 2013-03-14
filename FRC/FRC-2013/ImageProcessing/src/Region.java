@@ -394,6 +394,7 @@ private int partition(dataPoint arr[], int left, int right){
     }
 
 
+
     /*
      * Logic to support organizing of detected regions ("hoops") into hoop locations.
      */
@@ -495,12 +496,11 @@ private int partition(dataPoint arr[], int left, int right){
 
 	String str = "";
 	
-	if ((topEdge == null) && (bottomEdge == null)) {
-	    Rectangle r = getEnclosingRectangle();
-	    str = " " + hoopLocation + " top left at {" + r.x + ", " + r.y + "} bottom right at {" + 
+	Rectangle r = getEnclosingRectangle();
+	str = " " + hoopLocation + ", top left corner at {" + r.x + ", " + r.y + "} bottom right at {" + 
 		+ (r.x + r.width) + ", " + (r.x + r.height) + "}";
-	}
-	else {
+	
+	/*	else {
 	    if (estimates.size() > 0) {
 		double sum = 0.0, wgtsum = 0.0;
 		for (int i = 0; i < estimates.size(); i++) {
@@ -514,6 +514,7 @@ private int partition(dataPoint arr[], int left, int right){
 		str = " " + hoopLocation + " Range = " + (int) ft + "." + ft10 + "ft";
 	    }
 	}
+	*/
 	return (str);
     }
 }

@@ -85,14 +85,22 @@ public class testIU {
 
 		    // draw crosshairs -- location we expect ball to hit at current thrower wheel speed and distance
 		    // (just for demonstration purposes now -- we need to calculate actual distance and thrower speed)
-		    drawCrosshairs(image, image.getWidth()/2.0, image.getHeight() * 0.30);
+		    drawCrosshairs(image, image.getWidth()/2.0, image.getHeight()/2.0);
 
 		    // Write image with box overlays
 		    ImageIO.write(image, "jpg", new File(outdir + slash + filename.substring(0, filename.length()-4) + "-overlay.jpg"));
 
 		    // just for debugging, also look at thresholded image
 		    ImageIO.write(results.thresholdedImage, "jpg", new File(outdir + slash + filename.substring(0, filename.length()-4) + "-thresholded.jpg"));
-
+		    Region closest = results.getClosestHoop();
+		    if (closest != null) {
+			System.out.println("Closest hoop located at " + closest);
+			System.out.print("    with azimuth error of " + Math.floor(results.azimuthError(closest)) + " pixels");
+			if (results.azimuthError(closest) > 0)
+			    System.out.println(" [your need to pivot robot right] \n");
+			else System.out.println(" [you need to pivot robot left] \n");
+		    }
+		    
 		} catch (IOException e) {
 		    e.printStackTrace();
 		}

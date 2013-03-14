@@ -184,9 +184,9 @@ public class ImageResults {
 	    }
 	    zloc = e2.rangePoint.z + e2.floorRange * Math.sin(lambda);   // distance from hoop wall
 	    yloc = CameraModel.cameraHeight;                             // vertical height
-	    System.out.println("Robot located at {" + (int)xloc + ", " + (int)zloc + "}; phi=" + (int) Math.toDegrees(phi) 
-			       + ", lambda=" + (int)Math.toDegrees(lambda) + ", azi to center of baseline: " + 
-			       (int)Math.toDegrees((e1.azimuth + e2.azimuth)/2.0));
+	    //	    System.out.println("Robot located at {" + (int)xloc + ", " + (int)zloc + "}; phi=" + (int) Math.toDegrees(phi) 
+	    //	       + ", lambda=" + (int)Math.toDegrees(lambda) + ", azi to center of baseline: " + 
+	    //	       (int)Math.toDegrees((e1.azimuth + e2.azimuth)/2.0));
 	    robotPosition = new Point3d(xloc, yloc, zloc);
 	}
 	else robotPosition = null;
@@ -441,55 +441,132 @@ public class ImageResults {
 	    break;
 
 	case 2:
-	    if (sorted[0].isAbove(sorted[1])) {
-		leftmost.hoopLocation = Region.HoopLocation.left;
-		rightmost.hoopLocation = Region.HoopLocation.top;
-		highest.hoopLocation =  Region.HoopLocation.top;
-	    }
-	    else if (sorted[1].isAbove(sorted[0])) {
-		leftmost.hoopLocation = Region.HoopLocation.top;
-		rightmost.hoopLocation = Region.HoopLocation.right;
-		highest.hoopLocation =  Region.HoopLocation.top;
-	    }
-	    else { // we can't tell -- ambiguous between (left & bottom) and (top and right)
-		sorted[0].hoopLocation = sorted[1].hoopLocation = Region.HoopLocation.unknown;
-	    }
+	    leftmost.hoopLocation = Region.HoopLocation.left;
+	    rightmost.hoopLocation = Region.HoopLocation.right;
 	    break;
 
 	case 3:
 	    leftmost.hoopLocation = Region.HoopLocation.left;
 	    rightmost.hoopLocation = Region.HoopLocation.right;
-	    highest.hoopLocation = Region.HoopLocation.top;
+	    // find the remaining region, and label it as center ("top")
+	    for (int i = 0; i < nregions; i++) {
+		Region r = sorted[i];
+		if ((r != leftmost) && (r != rightmost)) {
+		    r.hoopLocation = Region.HoopLocation.top;
+		    break;
+		}
+	    }
 	    break;
 	}
     }
 
 
-    //Quick Sort code for JAVA, by Yash Gupta
-    // (Rebuilt by Arnold to sort class type dataPoint
+    // Locates hoop closest to image center
 
-private int partition(Region arr[], int left, int right){
-	int i = left, j = right;
+    public Region getClosestHoop() {
 
-	Region tmp;
-	double pivot = arr[(left + right) / 2].getArea();
-	while (i <= j)
-	    {
-		while (arr[i].getArea() > pivot)
-		    i++;
-		while (arr[j].getArea() < pivot)
-		    j--;
-		if (i <= j)
-		    {
-			tmp = arr[i];
-			arr[i] = arr[j];
-			arr[j] = tmp;
-			i++;
-			j--;
-		    }
-	    };
-	return i;
+	Region closest = null;
+	double err = 1.0e33;
+
+	for (int i = 0; i < regions.size(); i++) {
+	    Region r = regions.elementAt(i);
+	    if (closest == null) {
+		closest = r;
+	    }
+	    if (r != null) {
+		double thisErr = Math.abs(azimuthError(r));
+		if (thisErr < err) {
+		    err = thisErr;
+		    closest = r;
+		}
+	    }
+	}
+
+	return closest;
     }
+
+    // Calculates distance from hoop center (as specified by input parameter, r) and camera image center (center pixel)
+    public double azimuthError(Region r) {
+	double sum = 0.0;
+	int n = 0;
+
+	if (r.leftTop != null) {
+	    n += 1;
+	    sum += r.leftTop.x;
+	}
+	if (r.leftBottom != null) {
+	    n += 1;
+	    sum += r.leftBottom.x;
+	}
+	if (r.rightTop != null) {
+	    n += 1;
+	    sum += r.rightTop.x;
+	}
+	if (r.rightBottom != null) {
+	    n += 1;
+	    sum += r.rightBottom.x;
+	}
+	 
+	if (n > 0)
+	    return ((sum / n) - (nx*downsample)/2);
+	else
+	    return 1E33;   // shouldn't happen.
+    }
+
+
+    public double elevationError(Region r) {
+	double sum = 0.0;
+	int n = 0;
+
+	if (r.leftTop != null) {
+	    n += 1;
+	    sum += r.leftTop.y;
+	}
+	if (r.leftBottom != null) {
+	    n += 1;
+	    sum += r.leftBottom.y;
+	}
+	if (r.rightTop != null) {
+	    n += 1;
+	    sum += r.rightTop.y;
+	}
+	if (r.rightBottom != null) {
+	    n += 1;
+	    sum += r.rightBottom.y;
+	}
+	 
+	if (n > 0)
+	    return ((sum / n) - (ny*downsample)/2);
+	else
+	    return 1E33;   // shouldn't happen.
+    }
+
+
+    //Quick Sort code for JAVA, by Yash Gupta
+    // (Rebuilt by Arnold to sort class type 
+
+	private int partition(Region arr[], int left, int right) {
+	    int i = left, j = right;
+
+	    Region tmp;
+	    double pivot = arr[(left + right) / 2].getArea();
+	    while (i <= j)
+		{
+		    while (arr[i].getArea() > pivot)
+			i++;
+		    while (arr[j].getArea() < pivot)
+			j--;
+		    if (i <= j)
+			{
+			    tmp = arr[i];
+			    arr[i] = arr[j];
+			    arr[j] = tmp;
+			    i++;
+			    j--;
+			}
+		};
+	    return i;
+	}
 
 
     // Sorts Regions by area by area, descending.
@@ -550,11 +627,11 @@ private int partition(Region arr[], int left, int right){
 	return (getHoop(Region.HoopLocation.left));
     }
 
-    public Region getRightHoop()	{
+    public Region getRightHoop() {
 	return (getHoop(Region.HoopLocation.right));
     }
 
-    public Region getUnknownHoop()	{
+    public Region getUnknownHoop() {
 	return (getHoop(Region.HoopLocation.unknown));
     }
 
