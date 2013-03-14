@@ -5,36 +5,34 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Victor;
 
 public class Shooter {
-    static final int MAX_RPM = 500;
-    private final Victor shooter1;
-    private final Victor shooter2;
-    private final Counter encoder;
-    private double curPower;
-    private long powerChangeTime = 0;
+    public static final int MAX_RPM = 225;
+    private static final int RPM_TOLERANCE = 5;
+    private final RPMEncoder encoder;
+    private final PIDVictor shooter1;
+    private final PIDVictor shooter2;
 
     public Shooter() {
-        shooter1 = new Victor(Configuration.SHOOTER1_VICTOR);
-        shooter2 = new Victor(Configuration.SHOOTER2_VICTOR);
-        encoder = new Counter(new DigitalInput(2));
-        encoder.start();
-        shooter1.set(0);
-        shooter2.set(0);
+        encoder = new RPMEncoder();
+        shooter1 = new PIDVictor(
+            "Shooter1", new Victor(Configuration.SHOOTER1_VICTOR), encoder,
+            1.0, 0.0, 0.0,
+            RPM_TOLERANCE, MAX_RPM);
+        shooter2 = new PIDVictor(
+            "Shooter2", new Victor(Configuration.SHOOTER2_VICTOR), encoder,
+            1.0, 0.0, 0.0,
+            RPM_TOLERANCE, MAX_RPM);
+        shooter1.setPower(0);
+        shooter2.setPower(0);
     }
 
     public void setPower(double power) {
-        if (curPower != power) {
-            curPower = power;
-            shooter1.set(curPower);
-            shooter2.set(curPower);
-            powerChangeTime = System.currentTimeMillis();
+        if (getPower() != power) {
+            shooter1.setPower(power);
+            shooter2.setPower(power);
         }
     }
 
-    public long getChangeTime() {
-        return powerChangeTime;
-    }
-
     public double getPower() {
-        return shooter1.get();
+        return shooter1.getPower();
     }
 }
