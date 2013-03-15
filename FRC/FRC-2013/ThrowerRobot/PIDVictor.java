@@ -4,10 +4,10 @@ import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.Victor;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class PIDVictor {
-    private final Victor motor;
+    private final Victor motor1;
+    private final Victor motor2;
     private final VictorPIDSource rpmSrc;
     private final VictorPIDOutput motorCtl;
     private final PIDController pidCtl;
@@ -16,15 +16,15 @@ public class PIDVictor {
     private boolean enabled;
     private long startTime;
 
-    public PIDVictor(String logPrefix,
-                     Victor _motor,
+    public PIDVictor(Victor _motor1,
+                     Victor _motor2,
                      RPMEncoder encoder,
                      double kP, double kI, double kD,
                      double _rpmTolerance, double maxRpm) {
-        motor = _motor;
-        startTime = System.currentTimeMillis();
-        rpmSrc = new VictorPIDSource(logPrefix, encoder);
-        motorCtl = new VictorPIDOutput(logPrefix, motor);
+        motor1 = _motor1;
+        motor2 = _motor2;
+        rpmSrc = new VictorPIDSource(encoder);
+        motorCtl = new VictorPIDOutput(motor1, motor2);
         pidCtl = new PIDController(kP, kI, kD, rpmSrc, motorCtl);
 
         // RPM tolerance
@@ -45,35 +45,27 @@ public class PIDVictor {
 
     private class VictorPIDSource implements PIDSource {
         final RPMEncoder encoder;
-        final String logHdr;
         double rpm;
 
-        VictorPIDSource(final String logPrefix,
-                       final RPMEncoder _encoder) {
-            logHdr = logPrefix + "RPM";
+        VictorPIDSource(final RPMEncoder _encoder) {
             encoder = _encoder;
         }
 
-        // Limit log output
-        private int runCount = 0;
         public double pidGet() {
             rpm = encoder.getRPM();
-            SmartDashboard.putNumber(logHdr, rpm);
-//            if ((runCount++% 25) == 0)
-            System.out.println(logHdr + "=" + rpm +
-                               " (" + (System.currentTimeMillis() - startTime) + ")");
+            DashboardComm.rpmThrower = rpm;
             return rpm;
         }
     }
 
     private class VictorPIDOutput implements PIDOutput {
-        final String logHdr;
-        final Victor motor;
+        final Victor motor1;
+        final Victor motor2;
         double currValue = 0.0;
 
-        VictorPIDOutput(final String logPrefix, final Victor _motor) {
-            logHdr = logPrefix + "Pwr";
-            motor = _motor;
+        VictorPIDOutput(final Victor _motor1, final Victor _motor2) {
+            motor1 = _motor1;
+            motor2 = _motor2;
         }
 
         public void feedForward(double _currValue) {
@@ -94,22 +86,19 @@ public class PIDVictor {
             // Limit power from 0 -> -1.0 to keep the motor from
             // reversing itself if the controls oscillate too
             // far one way or the other.
-            if (newVal < -1.0)
-                newVal = -1.0;
-            else if (newVal > 0.0)
-                newVal = 0.0;
-            System.out.println(logHdr + "=" + newVal + ", Change=" + output +
-                               " (" + (System.currentTimeMillis() - startTime) + ")");
-            motor.set(newVal);
-            currValue = newVal;
-            SmartDashboard.putNumber(logHdr, currValue);
+            currValue = Math.min(-1.0, Math.max(0.0, newVal));
+
+            DashboardComm.powerThrower = currValue;
+            motor1.set(currValue);
+            motor2.set(currValue);
         }
     }
 
     public void disable() {
         enabled = false;
         pidCtl.reset();
-        motor.set(0);
+        motor1.set(0);
+        motor2.set(0);
     }
 
     public double getPower() {
@@ -119,17 +108,18 @@ public class PIDVictor {
     public void setPower(double power) {
         // If PID is disabled, pass the power directly
         // to the motor raw.
-        if (!enabled)
-            setTargetPower(power);
+        if (!enabled) {
+            motor1.set(power);
+            motor2.set(power);
+        }
         else
-            motor.set(power);
+            setTargetPower(power);
     }
 
     public void setTargetPower(double power) {
         enabled = true;
         motorCtl.feedForward(power);
-        System.out.println("Target Power=" + (int)(power * 100) +
-                           " (" + (System.currentTimeMillis() - startTime) + ")");
+        DashboardComm.throwerThrottle = power;
     }
 
     public double getRpm() {
@@ -145,7 +135,8 @@ public class PIDVictor {
                 setTargetPower(0);
                 rpmSrc.rpm = 0;
             }
-            motor.set(0);
+            motor1.set(0);
+            motor2.set(0);
         } else {
             if (!pidCtl.isEnable())
                 pidCtl.enable();
