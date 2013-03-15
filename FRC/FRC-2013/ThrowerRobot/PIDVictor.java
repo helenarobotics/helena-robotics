@@ -61,7 +61,7 @@ public class PIDVictor {
             SmartDashboard.putNumber(logHdr, rpm);
 //            if ((runCount++% 25) == 0)
             System.out.println(logHdr + "=" + rpm +
-                               " (" + System.currentTimeMillis() - startTime + ")");
+                               " (" + (System.currentTimeMillis() - startTime) + ")");
             return rpm;
         }
     }
@@ -99,7 +99,7 @@ public class PIDVictor {
             else if (newVal > 0.0)
                 newVal = 0.0;
             System.out.println(logHdr + "=" + newVal + ", Change=" + output +
-                               " (" + System.currentTimeMillis() - startTime + ")");
+                               " (" + (System.currentTimeMillis() - startTime) + ")");
             motor.set(newVal);
             currValue = newVal;
             SmartDashboard.putNumber(logHdr, currValue);
@@ -129,7 +129,7 @@ public class PIDVictor {
         enabled = true;
         motorCtl.feedForward(power);
         System.out.println("Target Power=" + (int)(power * 100) +
-                               " (" + System.currentTimeMillis() - startTime + ")");
+                           " (" + (System.currentTimeMillis() - startTime) + ")");
     }
 
     public double getRpm() {
