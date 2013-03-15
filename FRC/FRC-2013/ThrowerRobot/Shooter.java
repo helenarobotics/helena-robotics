@@ -3,6 +3,7 @@ package robotics.helena;
 import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Victor;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Shooter {
     public static final int MAX_RPM = 225;
@@ -23,12 +24,14 @@ public class Shooter {
             RPM_TOLERANCE, MAX_RPM);
         shooter1.setPower(0);
         shooter2.setPower(0);
+        SmartDashboard.putNumber("Power", 0);
     }
 
     public void setPower(double power) {
         if (getPower() != power) {
             shooter1.setPower(power);
             shooter2.setPower(power);
+            SmartDashboard.putNumber("Throttle Power", power);
         }
     }
 

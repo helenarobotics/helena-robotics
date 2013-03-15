@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.Victor;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class PIDVictor {
     private final Victor motor;
@@ -13,6 +14,7 @@ public class PIDVictor {
     private final double rpmTolerance;
 
     private boolean enabled;
+    private long startTime;
 
     public PIDVictor(String logPrefix,
                      Victor _motor,
@@ -20,6 +22,7 @@ public class PIDVictor {
                      double kP, double kI, double kD,
                      double _rpmTolerance, double maxRpm) {
         motor = _motor;
+        startTime = System.currentTimeMillis();
         rpmSrc = new VictorPIDSource(logPrefix, encoder);
         motorCtl = new VictorPIDOutput(logPrefix, motor);
         pidCtl = new PIDController(kP, kI, kD, rpmSrc, motorCtl);
@@ -55,8 +58,10 @@ public class PIDVictor {
         private int runCount = 0;
         public double pidGet() {
             rpm = encoder.getRPM();
-            if ((runCount++% 25) == 0)
-                System.out.println(logHdr + "=" + rpm);
+            SmartDashboard.putNumber(logHdr, rpm);
+//            if ((runCount++% 25) == 0)
+            System.out.println(logHdr + "=" + rpm +
+                               " (" + System.currentTimeMillis() - startTime + ")");
             return rpm;
         }
     }
@@ -93,9 +98,11 @@ public class PIDVictor {
                 newVal = -1.0;
             else if (newVal > 0.0)
                 newVal = 0.0;
-            System.out.println(logHdr + "=" + newVal + ", Change=" + output);
+            System.out.println(logHdr + "=" + newVal + ", Change=" + output +
+                               " (" + System.currentTimeMillis() - startTime + ")");
             motor.set(newVal);
             currValue = newVal;
+            SmartDashboard.putNumber(logHdr, currValue);
         }
     }
 
@@ -121,6 +128,8 @@ public class PIDVictor {
     public void setTargetPower(double power) {
         enabled = true;
         motorCtl.feedForward(power);
+        System.out.println("Target Power=" + (int)(power * 100) +
+                               " (" + System.currentTimeMillis() - startTime + ")");
     }
 
     public double getRpm() {

@@ -14,7 +14,7 @@ public class Grabber {
     private boolean open = false;
 
     public Grabber() {
-        grabber = new Servo(Configuration.GRABBER_SERVO);
+//        grabber = new Servo(Configuration.GRABBER_SERVO);
     }
 
     public void move(Joystick joy) {
