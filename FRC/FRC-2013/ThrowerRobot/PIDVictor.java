@@ -16,7 +16,7 @@ public class PIDVictor {
 
     public PIDVictor(String logPrefix,
                      Victor _motor,
-                     RPMEncoder encoder, 
+                     RPMEncoder encoder,
                      double kP, double kI, double kD,
                      double _rpmTolerance, double maxRpm) {
         motor = _motor;
@@ -55,7 +55,7 @@ public class PIDVictor {
         private int runCount = 0;
         public double pidGet() {
             rpm = encoder.getRPM();
-            if ((runCount++ % 25) == 0)
+            if ((runCount++% 25) == 0)
                 System.out.println(logHdr + "=" + rpm);
             return rpm;
         }

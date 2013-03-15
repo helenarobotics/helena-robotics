@@ -29,7 +29,7 @@ public class RPMEncoder implements Runnable {
             long dt = now - lastReadTime;
             if (dt > 0) {
                 long ticks = counter.get();
-                curRpm = (int)(RPM_PER_TICKSMS * (ticks / dt));
+                curRpm = (int)(RPM_PER_TICKSMS * ((float)(ticks) / (float)(dt)));
             }
             lastReadTime = now;
             counter.reset();

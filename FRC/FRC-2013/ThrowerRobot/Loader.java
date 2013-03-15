@@ -1,19 +1,20 @@
 package robotics.helena;
 
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Victor;
 
 public class Loader implements Runnable {
-    private static final int PUSH_TIME = 500;
+    private static final int PUSH_TIME = 300;
     private static final int SPIN_UP_TIME = 1000;
     private final Shooter shooter;
-    private final Solenoid pusher;
+    private final Victor pusher;
     private boolean loading = false;
     private int rpmSpeed;
 
     public Loader(Shooter shooter) {
         rpmSpeed = 0;
         this.shooter = shooter;
-        pusher = new Solenoid(Configuration.PUSHER_SOLENOID);
+        pusher = new Victor(Configuration.PUSHER_VICTOR);
         new Thread(this, "Loader Thread").start();
     }
 
@@ -42,19 +43,6 @@ public class Loader implements Runnable {
                 }
             }
 
-            /*
-            int targetPower = rpmSpeed / Shooter.MAX_RPM;
-            if (targetPower < 0) {
-                long endTime = shooter.getChangeTime() + SPIN_UP_TIME;
-                if (System.currentTimeMillis() < endTime) {
-                    long waitTime = endTime - System.currentTimeMillis();
-                    try {
-                        Thread.sleep(waitTime);
-                    }catch(InterruptedException ignored){
-                    }
-                }
-            }
-            */
             load();
 
             synchronized (this) {
@@ -64,11 +52,16 @@ public class Loader implements Runnable {
     }
 
     private void load() {
-        pusher.set(true);
+        pusher.set(-1);
         try {
             Thread.sleep(PUSH_TIME);
         } catch (InterruptedException ignored) {
         }
-        pusher.set(false);
+        pusher.set(1);
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ignored) {
+        }
+        pusher.set(0);
     }
 }
