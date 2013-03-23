@@ -42,7 +42,7 @@ public class DashboardComm extends Thread {
     }
 
     // Automation mode for Thrower (unused)
-/*    
+/*
     public static final int MO_NONE = 0;
     public static final int MO_AUTOSHOOT = 1;
     public static final int MO_SEMIAUTO = 2;
@@ -96,7 +96,6 @@ public class DashboardComm extends Thread {
     public void run() {
         startTime = System.currentTimeMillis();
 
-        @SuppressWarnings("unused")
         DriverStationLCD driverStation = DriverStationLCD.getInstance();
         while (true) {
             try {

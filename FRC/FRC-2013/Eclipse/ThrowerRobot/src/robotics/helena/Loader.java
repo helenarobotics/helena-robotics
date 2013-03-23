@@ -4,32 +4,21 @@ import edu.wpi.first.wpilibj.Victor;
 
 public class Loader implements Runnable {
     private static final int PUSH_TIME = 300;
-    private static final int SPIN_UP_TIME = 1000;
-    private final Shooter shooter;
     private final Victor pusher;
     private boolean loading = false;
-    private int rpmSpeed;
 
-    public Loader(Shooter shooter) {
-        rpmSpeed = 0;
-        this.shooter = shooter;
+    public Loader() {
         pusher = new Victor(Configuration.PUSHER_VICTOR);
         new Thread(this, "Loader Thread").start();
     }
 
     public void loadNext() {
-        // XXX - We should make sure the RPM is realistic
         synchronized (this) {
             if (!loading) {
                 loading = true;
                 this.notifyAll();
             }
         }
-    }
-
-    public void setRPM(int rpm) {
-        rpmSpeed = rpm;
-        shooter.setPower(rpm / Shooter.MAX_RPM);
     }
 
     public void run() {

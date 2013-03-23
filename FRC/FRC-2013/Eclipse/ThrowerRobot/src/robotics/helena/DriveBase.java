@@ -30,7 +30,7 @@ public class DriveBase {
     public void move(Joystick driveJoy) {
         double direction = driveJoy.getDirectionDegrees();
         double magnitude = driveJoy.getMagnitude();
-        DashboardComm.driveJoyDirection = direction; 
+        DashboardComm.driveJoyDirection = direction;
         DashboardComm.driveJoyMagnitude = magnitude;
 
         drive.arcadeDrive(direction, modifyMagnitude(driveJoy));
@@ -38,14 +38,14 @@ public class DriveBase {
 
     // Joystick power button states
     private boolean halfPowerWasPressed = false;
-    private boolean restorePowerWasPressed = false;    
-    private boolean incrementPowerWasPressed = false;    
+    private boolean restorePowerWasPressed = false;
+    private boolean incrementPowerWasPressed = false;
     private boolean decrementPowerWasPressed = false;
 
     private double modifyMagnitude(Joystick driveJoy) {
         //
         // Check all the joystick buttons that affect power
-        //        
+        //
 
         // Half-power
         boolean nowPressed = driveJoy.getRawButton(Configuration.HALF_POWER_BUTTON);
@@ -60,14 +60,14 @@ public class DriveBase {
         }
         halfPowerWasPressed = nowPressed;
 
-        // Increment power 
+        // Increment power
         nowPressed = driveJoy.getRawButton(Configuration.INCREMENT_POWER_BUTTON);
         if (nowPressed && !incrementPowerWasPressed) {
             powerRatio += POWER_CHANGE_AMOUNT_PERCENT;
         }
         incrementPowerWasPressed = nowPressed;
 
-        // Decrement power 
+        // Decrement power
         nowPressed = driveJoy.getRawButton(Configuration.INCREMENT_POWER_BUTTON);
         if (nowPressed && !decrementPowerWasPressed) {
             powerRatio -= POWER_CHANGE_AMOUNT_PERCENT;

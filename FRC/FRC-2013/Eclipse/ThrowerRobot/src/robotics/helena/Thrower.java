@@ -14,7 +14,7 @@ public class Thrower extends SimpleRobot {
 
     public Thrower() {
         shooter = new Shooter();
-        loader = new Loader(shooter);
+        loader = new Loader();
 //        grabber = new Grabber();
 //        lift = new Lift();
     }
@@ -39,7 +39,7 @@ public class Thrower extends SimpleRobot {
             //
             // Check the joystick buttons
             //
-            
+
             // Is the shooter turned on?
             checkShooterState(driveJoy);
 
@@ -48,6 +48,7 @@ public class Thrower extends SimpleRobot {
                 // finer settings (+- 20%) are done via the y-axis of the joystick.
                 double motorPower = (frizJoy.getThrottle() - 1.0) / 2.0;
                 motorPower += (frizJoy.getY() * FRIZ_JOY_Y_SHOOTER_ADJUSTMENT_PERCENT);
+                DashboardComm.powerThrower = motorPower;
                 shooter.setPower(motorPower);
 
                 // Shoots frisbee if trigger pressed - Note, this is only allowed
