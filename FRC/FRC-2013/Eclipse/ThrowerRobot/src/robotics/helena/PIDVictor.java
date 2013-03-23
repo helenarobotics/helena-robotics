@@ -27,7 +27,7 @@ public class PIDVictor {
 
         // RPM tolerance
         rpmTolerance = _rpmTolerance;
-        pidCtl.setTolerance(rpmTolerance);
+        pidCtl.setPercentTolerance(100.0 * rpmTolerance / maxRpm);
 
         // Set the minimum and maximum RPM range
         pidCtl.setInputRange(0, maxRpm);
