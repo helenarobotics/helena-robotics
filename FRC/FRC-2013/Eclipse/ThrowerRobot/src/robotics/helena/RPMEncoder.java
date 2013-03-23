@@ -16,7 +16,7 @@ public class RPMEncoder implements Runnable {
 
     public RPMEncoder(int _encoderChannel) {
         encoderChannel = _encoderChannel;
-        new Thread(this,"RPM Encoder").start();
+        new Thread(this, "RPM Encoder").start();
     }
 
     public void run() {
@@ -38,7 +38,8 @@ public class RPMEncoder implements Runnable {
             // Wait a bit for the encoder to move
             try {
                 Thread.sleep(INTERVAL_TIME);
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+            }
         }
     }
 

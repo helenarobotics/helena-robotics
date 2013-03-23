@@ -51,16 +51,24 @@ public class Loader implements Runnable {
     }
 
     private void load() {
+        // Move the arm in
         pusher.set(-1);
         try {
             Thread.sleep(PUSH_TIME);
         } catch (InterruptedException ignored) {
         }
+
+        // Move the arm back out.  Note, we expect the
+        // arm to hit something on the way back in, so moving
+        // out we use a smaller number to (hopefully) move us
+        // to the same starting position.
         pusher.set(1);
         try {
             Thread.sleep(50);
         } catch (InterruptedException ignored) {
         }
+
+        // Quit moving!
         pusher.set(0);
     }
 }

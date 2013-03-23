@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package robotics.helena;
 
 import edu.wpi.first.wpilibj.Joystick;
@@ -28,6 +24,7 @@ public class Grabber {
     }
 
     private boolean wasPressed = false;
+
     private boolean btnPressed(Joystick joy) {
         boolean btnPressed = false;
 

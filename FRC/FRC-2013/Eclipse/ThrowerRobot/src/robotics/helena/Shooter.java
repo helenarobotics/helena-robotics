@@ -10,11 +10,11 @@ public class Shooter {
 
     public Shooter() {
         shooter = new PIDVictor(
-            new Victor(Configuration.SHOOTER1_VICTOR),
-            new Victor(Configuration.SHOOTER2_VICTOR),
-            new RPMEncoder(Configuration.SHOOTER_ENCODER),
-            1.0, 0.0, 0.0,
-            RPM_TOLERANCE, MAX_RPM);
+                new Victor(Configuration.SHOOTER1_VICTOR),
+                new Victor(Configuration.SHOOTER2_VICTOR),
+                new RPMEncoder(Configuration.SHOOTER_ENCODER),
+                1.0, 0.0, 0.0,
+                RPM_TOLERANCE, MAX_RPM);
         shooter.setPower(0);
     }
 

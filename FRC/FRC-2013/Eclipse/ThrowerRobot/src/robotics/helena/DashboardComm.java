@@ -67,8 +67,8 @@ public class DashboardComm extends Thread {
 
     // Motor status
     // The RobotDrive class doesn't provide access to these
-//    public static double leftMotorPower;
-//    public static double rightMotorPower;
+    public static double leftMotorPower;
+    public static double rightMotorPower;
 */
 
     //
@@ -85,7 +85,7 @@ public class DashboardComm extends Thread {
     public static boolean throwing;
 
 /*
-    //Results FROM camera processing
+    // Results FROM camera processing
     public static int rpmBtmSwish;
     public static int rpmBtmBB;
 */
@@ -95,7 +95,7 @@ public class DashboardComm extends Thread {
         new DashboardComm();
         startTime = System.currentTimeMillis();
     }
-    
+
     // This class should never be instantiated externally.
     private DashboardComm() {
         // Startup the thread that sends the data to the DriverStation
@@ -104,7 +104,7 @@ public class DashboardComm extends Thread {
     }
 
     public void run() {
-    	@SuppressWarnings("unused")
+        @SuppressWarnings("unused")
         DriverStationLCD driverStation = DriverStationLCD.getInstance();
         while (true) {
             try {
@@ -150,8 +150,8 @@ public class DashboardComm extends Thread {
 
     public void receive() {
 /*
-        rpmBtmSwish = (int)SmartDashboard.getDouble("Target RPM 1 Swish");
-        rpmBtmBB = (int)SmartDashboard.getDouble("Target RPM 1 BB");
+        rpmBtmSwish = (int)SmartDashboard.getNumber("Target RPM 1 Swish");
+        rpmBtmBB = (int)SmartDashboard.getNumber("Target RPM 1 BB");
 */
     }
 }

@@ -15,11 +15,10 @@ public class PIDVictor {
 
     private boolean enabled;
 
-    public PIDVictor(Victor _motor1,
-                     Victor _motor2,
-                     RPMEncoder encoder,
-                     double kP, double kI, double kD,
-                     double _rpmTolerance, double maxRpm) {
+    public PIDVictor(Victor _motor1, Victor _motor2,
+            RPMEncoder encoder,
+            double kP, double kI, double kD,
+            double _rpmTolerance, double maxRpm) {
         motor1 = _motor1;
         motor2 = _motor2;
         rpmSrc = new VictorPIDSource(encoder);
@@ -110,8 +109,7 @@ public class PIDVictor {
         if (enabled) {
             motor1.set(power);
             motor2.set(power);
-        }
-        else
+        } else
             setTargetPower(power);
     }
 

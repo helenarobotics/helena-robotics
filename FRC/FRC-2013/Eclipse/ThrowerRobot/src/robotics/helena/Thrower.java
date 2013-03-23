@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.SimpleRobot;
 public class Thrower extends SimpleRobot {
     private final Loader loader;
     private final Shooter shooter;
+
 //    private final Grabber grabber;
 //    private final Lift lift;
 
@@ -28,14 +29,14 @@ public class Thrower extends SimpleRobot {
         while (isOperatorControl()) {
             // Drive motors
             drive.move(driveJoy);
-            //grabber.move(frizJoy);
-            //lift.control(frizJoy);
+//            grabber.move(frizJoy);
+//            lift.control(frizJoy);
+
             // Frisbee motor
             double motorPower = (frizJoy.getThrottle() - 1.0) / 2.0;
-            //System.out.println("Mot=" + motorPower);
             shooter.setPower(motorPower);
 
-            //Loads frisbee if trigger pressed
+            // Loads frisbee if trigger pressed
             if (joystickTrigger(frizJoy)) {
                 System.out.println("Load Me");
                 loader.loadNext();
@@ -44,6 +45,7 @@ public class Thrower extends SimpleRobot {
     }
 
     private boolean wasPressed = false;
+
     private boolean joystickTrigger(Joystick joy) {
         boolean btnPressed = false;
 
