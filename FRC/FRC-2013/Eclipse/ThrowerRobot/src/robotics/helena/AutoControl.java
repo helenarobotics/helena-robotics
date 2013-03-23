@@ -1,6 +1,5 @@
 package robotics.helena;
 
-import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.tables.ITable;
 import edu.wpi.first.wpilibj.tables.ITableListener;
@@ -8,9 +7,9 @@ import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 public class AutoControl {
     static class AngleAdjust implements Runnable, ITableListener {
-        private int mode = START_MODE;
-        private static final int START_MODE = 0;
-        private static final int ON_MODE = 1;
+//        private static final int START_MODE = 0;
+//        private static final int ON_MODE = 1;
+//        private int mode = START_MODE;
 
         private double angle;
         private double inputEnergy;

@@ -1,21 +1,19 @@
 package robotics.helena;
 
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SimpleRobot;
-import edu.wpi.first.wpilibj.Victor;
 
 public class Thrower extends SimpleRobot {
     private final Loader loader;
     private final Shooter shooter;
-    //private final Grabber grabber;
-    //private final Lift lift;
+//    private final Grabber grabber;
+//    private final Lift lift;
 
     public Thrower() {
         shooter = new Shooter();
         loader = new Loader(shooter);
-        //grabber = new Grabber();
-        //lift = new Lift();
+//        grabber = new Grabber();
+//        lift = new Lift();
     }
 
     public void autonomous() {

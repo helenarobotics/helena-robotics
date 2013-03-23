@@ -14,7 +14,6 @@ public class PIDVictor {
     private final double rpmTolerance;
 
     private boolean enabled;
-    private long startTime;
 
     public PIDVictor(Victor _motor1,
                      Victor _motor2,

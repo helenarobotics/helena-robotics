@@ -15,9 +15,6 @@ public class DashboardComm extends Thread {
     public static final String THROWER_RPM = "Thrower RPM";
     public static final String THROWER_TARGET_RPM = "Thrower Target RPM";
 
-    // The communication protocol
-    private static SmartDashboard s = new SmartDashboard();
-
     public static final int TIME_RUNNING = 0;
     public static final int TIME_STOPPED = 1;
     public static final int TIME_RESET = 2;
@@ -25,26 +22,27 @@ public class DashboardComm extends Thread {
 
     public static void startTimer() {
         if (timeState != TIME_RUNNING) {
-            s.putNumber("Timer", TIME_RUNNING);
+            SmartDashboard.putNumber("Timer", TIME_RUNNING);
             timeState = TIME_RUNNING;
         }
     }
 
     public static void stopTimer() {
         if (timeState == TIME_RUNNING) {
-            s.putNumber("Timer", TIME_STOPPED);
+            SmartDashboard.putNumber("Timer", TIME_STOPPED);
             timeState = TIME_STOPPED;
         }
     }
 
     public static void resetTimer() {
         if (timeState != TIME_RESET) {
-            s.putNumber("Timer", TIME_RESET);
+            SmartDashboard.putNumber("Timer", TIME_RESET);
             timeState = TIME_RESET;
         }
     }
 
     // Automation mode for Thrower (unused)
+/*    
     public static final int MO_NONE = 0;
     public static final int MO_AUTOSHOOT = 1;
     public static final int MO_SEMIAUTO = 2;
@@ -54,7 +52,7 @@ public class DashboardComm extends Thread {
     public void setMode(int set) {
         mode = set;
     }
-
+*/
     //
     // Drive frame information
     //
@@ -106,6 +104,7 @@ public class DashboardComm extends Thread {
     }
 
     public void run() {
+    	@SuppressWarnings("unused")
         DriverStationLCD driverStation = DriverStationLCD.getInstance();
         while (true) {
             try {
@@ -122,22 +121,22 @@ public class DashboardComm extends Thread {
 /*
         // Only need to send Joystick and Sensor info
         // Joystick 1
-        s.putDouble("Joystick 1 Direction", joy1Direction);
-        s.putDouble("Joystick 1 Magnitude", joy1Magnitude);
+        SmartDashboard.putDouble("Joystick 1 Direction", joy1Direction);
+        SmartDashboard.putDouble("Joystick 1 Magnitude", joy1Magnitude);
 
-        s.putInt("Mode", mode);
+        SmartDashboard.putInt("Mode", mode);
 
         //Joystick 2
-        s.putDouble("Joystick 2 X", joy2X);
-        s.putDouble("Joystick 2 Y", joy2Y);
+        SmartDashboard.putDouble("Joystick 2 X", joy2X);
+        SmartDashboard.putDouble("Joystick 2 Y", joy2Y);
 */
-        s.putNumber(JOY2_THROTTLE, throwerThrottle);
-        s.putBoolean(IS_THROWING, throwing);
+        SmartDashboard.putNumber(JOY2_THROTTLE, throwerThrottle);
+        SmartDashboard.putBoolean(IS_THROWING, throwing);
 
         // RPM Sensor/PID control
-        s.putNumber(THROWER_POWER, (int)(powerThrower * 100));
-        s.putNumber(THROWER_RPM, (int)rpmThrower);
-        s.putNumber(THROWER_TARGET_RPM, (int)rpmTarget);
+        SmartDashboard.putNumber(THROWER_POWER, (int)(powerThrower * 100));
+        SmartDashboard.putNumber(THROWER_RPM, (int)rpmThrower);
+        SmartDashboard.putNumber(THROWER_TARGET_RPM, (int)rpmTarget);
 
         // Logging for later analysis
         System.out.println("Time:" + (System.currentTimeMillis() - startTime));
@@ -151,8 +150,8 @@ public class DashboardComm extends Thread {
 
     public void receive() {
 /*
-        rpmBtmSwish = (int)s.getDouble("Target RPM 1 Swish");
-        rpmBtmBB = (int)s.getDouble("Target RPM 1 BB");
+        rpmBtmSwish = (int)SmartDashboard.getDouble("Target RPM 1 Swish");
+        rpmBtmBB = (int)SmartDashboard.getDouble("Target RPM 1 BB");
 */
     }
 }

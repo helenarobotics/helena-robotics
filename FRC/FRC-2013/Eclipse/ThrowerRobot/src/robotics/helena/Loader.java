@@ -1,6 +1,5 @@
 package robotics.helena;
 
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Victor;
 
 public class Loader implements Runnable {
