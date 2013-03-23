@@ -130,7 +130,6 @@ public class PIDVictor {
                 pidCtl.reset();
                 pidCtl.setSetpoint(0);
                 setTargetPower(0);
-                rpmSrc.rpm = 0;
             }
             motor1.set(0);
             motor2.set(0);
