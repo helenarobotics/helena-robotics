@@ -16,5 +16,11 @@ public class Configuration {
     public static final int LIFT_DOWN_BUTTON = 3;
     public static final int LOAD_BUTTON = 1;
     public static final int GRABBER_BUTTON = 2;
+
     public static final int DRIVE_JOY = 2;
+    public static final int HALF_POWER_BUTTON = 1;
+//    public static final int HARVESTER_BUTTON = 2;
+    public static final int RESTORE_POWER_BUTTON = 4;
+    public static final int INCREMENT_POWER_BUTTON = 6;
+    public static final int DECREMENT_POWER_BUTTON = 7;
 }

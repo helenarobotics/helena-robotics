@@ -53,23 +53,14 @@ public class DashboardComm extends Thread {
         mode = set;
     }
 */
-    //
-    // Drive frame information
-    //
-/*
     // Drive joystick
-    public static double joy1Direction;
-    public static double joy1Magnitude;
+    public static double driveJoyDirection;
+    public static double driveJoyMagnitude;
+    public static double drivePowerRatio;
 
     // Shooter joystick
-    public static double joy2X;
-    public static double joy2Y;
-
-    // Motor status
-    // The RobotDrive class doesn't provide access to these
-    public static double leftMotorPower;
-    public static double rightMotorPower;
-*/
+//    public static double shootJoyX;
+//    public static double shootJoyY;
 
     //
     // Thrower information globals
@@ -90,10 +81,8 @@ public class DashboardComm extends Thread {
     public static int rpmBtmBB;
 */
     // Instantiate the sender thread
-    private static long startTime;
     static {
         new DashboardComm();
-        startTime = System.currentTimeMillis();
     }
 
     // This class should never be instantiated externally.
@@ -103,7 +92,10 @@ public class DashboardComm extends Thread {
         start();
     }
 
+    private long startTime;
     public void run() {
+        startTime = System.currentTimeMillis();
+
         @SuppressWarnings("unused")
         DriverStationLCD driverStation = DriverStationLCD.getInstance();
         while (true) {
@@ -118,17 +110,16 @@ public class DashboardComm extends Thread {
     }
 
     public void send() {
+        // Drive information
+        SmartDashboard.putNumber("DriveJoystick Direction", driveJoyDirection);
+        SmartDashboard.putNumber("DriveJoystick Magnitude", driveJoyMagnitude);
+        SmartDashboard.putNumber("DrivePowerRatio", drivePowerRatio);
 /*
-        // Only need to send Joystick and Sensor info
-        // Joystick 1
-        SmartDashboard.putDouble("Joystick 1 Direction", joy1Direction);
-        SmartDashboard.putDouble("Joystick 1 Magnitude", joy1Magnitude);
-
         SmartDashboard.putInt("Mode", mode);
 
-        //Joystick 2
-        SmartDashboard.putDouble("Joystick 2 X", joy2X);
-        SmartDashboard.putDouble("Joystick 2 Y", joy2Y);
+        // Shooter
+        SmartDashboard.putNumber("ShootJoystick X", shootJoyX);
+        SmartDashboard.putNumber("ShootJoystick Y", shootJoyY);
 */
         SmartDashboard.putNumber(JOY2_THROTTLE, throwerThrottle);
         SmartDashboard.putBoolean(IS_THROWING, throwing);
