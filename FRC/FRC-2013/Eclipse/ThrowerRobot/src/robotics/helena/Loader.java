@@ -18,6 +18,7 @@ public class Loader implements Runnable {
     }
 
     public void loadNext() {
+        // XXX - We should make sure the RPM is realistic
         synchronized (this) {
             if (!loading) {
                 loading = true;

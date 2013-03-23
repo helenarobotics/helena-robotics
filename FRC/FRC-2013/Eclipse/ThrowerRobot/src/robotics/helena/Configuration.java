@@ -12,10 +12,11 @@ public class Configuration {
     public static final int PUSHER_VICTOR = 6;
 
     public static final int FRIZ_JOY = 1;
+    public static final int FIRE_BUTTON = 1;
+    public static final int SHOOTER_ENABLE_BUTTON = 2;
     public static final int LIFT_UP_BUTTON = 5;
     public static final int LIFT_DOWN_BUTTON = 3;
-    public static final int LOAD_BUTTON = 1;
-    public static final int GRABBER_BUTTON = 2;
+    public static final int GRABBER_BUTTON = 4;
 
     public static final int DRIVE_JOY = 2;
     public static final int HALF_POWER_BUTTON = 1;
