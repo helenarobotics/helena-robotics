@@ -29,7 +29,7 @@ public class Shooter {
         if (pidShooter.getPower() != power)
             pidShooter.setPower(power);
     }
-    
+
     public void shootFrisbee() {
         loader.loadNext();
     }
