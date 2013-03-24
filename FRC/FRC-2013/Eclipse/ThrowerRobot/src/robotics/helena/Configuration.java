@@ -11,8 +11,8 @@ public class Configuration {
 
     public static final int FRIZ_JOY = 1;
     public static final int FIRE_BUTTON = 1;
-    public static final int SHOOTER_ENABLE_BUTTON = 2;
-    public static final int OVERRIDE_BUTTON = 6;
+    public static final int SHOOTER_ENABLE_BUTTON = 11;
+    public static final int OVERRIDE_BUTTON = 2;
 
     public static final int DRIVE_JOY = 2;
     public static final int HALF_POWER_BUTTON = 1;
