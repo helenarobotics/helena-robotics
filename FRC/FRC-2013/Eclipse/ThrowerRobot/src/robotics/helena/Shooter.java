@@ -11,14 +11,16 @@ public class Shooter {
 
     private final Loader loader;
     private final PIDVictor pidShooter;
+    private final RPMEncoder encoder;
 
     private boolean shooterOn = false;
 
     public Shooter() {
+        encoder = new RPMEncoder(Configuration.SHOOTER_ENCODER);
         pidShooter = new PIDVictor(
                 new Victor(Configuration.SHOOTER1_VICTOR),
                 new Victor(Configuration.SHOOTER2_VICTOR),
-                new RPMEncoder(Configuration.SHOOTER_ENCODER),
+                encoder,
                 1.0, 0.0, 0.0,
                 RPM_TOLERANCE, MAX_RPM);
         pidShooter.setPower(0);
@@ -51,9 +53,11 @@ public class Shooter {
             DashboardComm.powerThrower = motorPower;
             setPower(motorPower);
 
-            // Shoot frisbee if trigger pressed - Note, this is only allowed
-            // if the shooter is on.
-            if (joystickTrigger(joy))
+            // Only allow the user to fire a frisbee if the shooter is spun up
+            // *OR* if the user chooses to over-ride by holding down the OVER-RIDE
+            // button.
+            boolean inRange = inRange() || joy.getRawButton(Configuration.OVERRIDE_BUTTON);
+            if (inRange && joystickTrigger(joy))
                 shootFrisbee();
         } else
             setPower(0);
@@ -83,5 +87,9 @@ public class Shooter {
             shooterOn = !shooterOn;
         }
         shooterEnabledWasPressed = nowPressed;
+    }
+    
+    private boolean inRange() {
+        return (encoder.getRPM() > 100);
     }
 }
