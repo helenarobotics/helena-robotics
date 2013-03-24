@@ -5,13 +5,9 @@ import edu.wpi.first.wpilibj.SimpleRobot;
 
 public class Thrower extends SimpleRobot {
     private final Shooter shooter;
-//    private final Grabber grabber;
-//    private final Lift lift;
 
     public Thrower() {
         shooter = new Shooter();
-//        grabber = new Grabber();
-//        lift = new Lift();
     }
 
     public void autonomous() {
@@ -26,8 +22,6 @@ public class Thrower extends SimpleRobot {
         while (isOperatorControl()) {
             // Drive motors
             drive.move(driveJoy);
-//            grabber.move(frizJoy);
-//            lift.control(frizJoy);
 
             // Run the shooter!
             shooter.control(frizJoy);
