@@ -13,7 +13,7 @@ public class DriveBase {
     private final Victor right;
     private final RobotDrive drive;
 
-    // Power modificatio from joystick settings
+    // Power modification from joystick settings
     private boolean halfPowerEnabled = false;
     private double powerRatio = 1.0;
 
@@ -21,10 +21,8 @@ public class DriveBase {
         right = new Victor(Configuration.RIGHT_VICTOR);
         left = new Victor(Configuration.LEFT_VICTOR);
         drive = new RobotDrive(left, right);
-        /*
-        drive.setInvertedMotor(RobotDrive.MotorType.kFrontLeft, false);
-        drive.setInvertedMotor(RobotDrive.MotorType.kFrontRight, false);
-        */
+        drive.setInvertedMotor(RobotDrive.MotorType.kRearLeft, true);
+//        drive.setInvertedMotor(RobotDrive.MotorType.kRearRight, true);
     }
 
     public void move(Joystick driveJoy) {
@@ -33,7 +31,13 @@ public class DriveBase {
         DashboardComm.driveJoyDirection = direction;
         DashboardComm.driveJoyMagnitude = magnitude;
 
-        drive.arcadeDrive(direction, modifyMagnitude(driveJoy));
+        double ratio = modifyMagnitude(driveJoy);
+        
+        double scaleX = driveJoy.getX() * ratio;
+        double scaleY = driveJoy.getY() * ratio;
+//        drive.arcadeDrive(scaleX, scaleY, true); 
+        drive.arcadeDrive(scaleX, scaleY); 
+//        drive.arcadeDrive(direction, modifyMagnitude(driveJoy));
     }
 
     // Joystick power button states
@@ -68,7 +72,7 @@ public class DriveBase {
         incrementPowerWasPressed = nowPressed;
 
         // Decrement power
-        nowPressed = driveJoy.getRawButton(Configuration.INCREMENT_POWER_BUTTON);
+        nowPressed = driveJoy.getRawButton(Configuration.DECREMENT_POWER_BUTTON);
         if (nowPressed && !decrementPowerWasPressed) {
             powerRatio -= POWER_CHANGE_AMOUNT_PERCENT;
         }
@@ -92,6 +96,6 @@ public class DriveBase {
         DashboardComm.drivePowerRatio = powerRatio;
 
         // Apply the magnitude modifications to the joystick power
-        return driveJoy.getMagnitude()  * powerRatio;
+        return powerRatio;
     }
 }
