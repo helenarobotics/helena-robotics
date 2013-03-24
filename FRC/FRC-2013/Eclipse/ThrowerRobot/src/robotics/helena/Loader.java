@@ -54,7 +54,7 @@ public class Loader implements Runnable {
         // to the same starting position.
         pusher.set(1);
         try {
-            Thread.sleep(50);
+            Thread.sleep(70);
         } catch (InterruptedException ignored) {
         }
 
