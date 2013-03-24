@@ -55,7 +55,8 @@ public class Shooter {
             // if the shooter is on.
             if (joystickTrigger(joy))
                 shootFrisbee();
-        }
+        } else
+            setPower(0);
     }
 
     // Shooter button state
