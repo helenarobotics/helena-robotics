@@ -3,7 +3,8 @@ package robotics.helena;
 import edu.wpi.first.wpilibj.Victor;
 
 public class Loader implements Runnable {
-    private static final int PUSH_TIME = 300;
+    private static final int PUSH_TIME = 150;
+    private static final int PULL_TIME = 70;
     private final Victor pusher;
     private boolean loading = false;
 
@@ -54,7 +55,7 @@ public class Loader implements Runnable {
         // to the same starting position.
         pusher.set(1);
         try {
-            Thread.sleep(70);
+            Thread.sleep(PULL_TIME);
         } catch (InterruptedException ignored) {
         }
 
