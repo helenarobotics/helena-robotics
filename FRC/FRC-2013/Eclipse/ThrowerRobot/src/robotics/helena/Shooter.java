@@ -43,6 +43,11 @@ public class Shooter {
             // and finer settings (+- 20%) are done via the y-axis of the joystick.
             double motorPower = (joy.getThrottle() - 1.0) / 2.0;
             motorPower += (joy.getY() * JOY_Y_SHOOTER_ADJUSTMENT_PERCENT);
+            // Limit the power from -1 <-> 0
+            if (motorPower < -1.0)
+                motorPower = -1.0;
+            if (motorPower > 0)
+                motorPower = 0;
             DashboardComm.powerThrower = motorPower;
             setPower(motorPower);
 
