@@ -106,7 +106,7 @@ public class PIDVictor {
     public void setPower(double power) {
         // If PID is disabled, pass the power directly
         // to the motor raw.
-        if (enabled) {
+        if (!enabled) {
             motor1.set(power);
             motor2.set(power);
         } else

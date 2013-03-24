@@ -28,7 +28,7 @@ public class Shooter {
     }
 
     public void setPower(double power) {
-        if (pidShooter.getPower() != power)
+//        if (pidShooter.getPower() != power)
             pidShooter.setPower(power);
     }
 
