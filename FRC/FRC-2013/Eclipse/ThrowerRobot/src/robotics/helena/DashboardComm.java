@@ -129,6 +129,7 @@ public class DashboardComm extends Thread {
         SmartDashboard.putNumber(THROWER_TARGET_RPM, (int)rpmTarget);
 
         // Logging for later analysis
+/*
         System.out.println("Time:" + (System.currentTimeMillis() - startTime));
         System.out.println("\t" + JOY2_THROTTLE + "=" + throwerThrottle);
         System.out.println("\t" + IS_THROWING + "=" + throwing);
@@ -136,6 +137,7 @@ public class DashboardComm extends Thread {
         System.out.println("\t" + THROWER_TARGET_RPM + "=" + (int)rpmTarget);
         System.out.println("\t" + THROWER_RPM + "=" + (int)rpmThrower);
         System.out.println("");
+*/
     }
 
     public void receive() {
