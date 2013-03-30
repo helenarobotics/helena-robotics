@@ -13,6 +13,7 @@ public class DashboardComm extends Thread {
 
     public static final String THROWER_POWER = "Thrower Power";
     public static final String THROWER_RPM = "Thrower RPM";
+    public static final String THROWER_RPM_ERROR = "Thrower RPM Error";
     public static final String THROWER_TARGET_RPM = "Thrower Target RPM";
 
     public static final int TIME_RUNNING = 0;
@@ -124,9 +125,10 @@ public class DashboardComm extends Thread {
         SmartDashboard.putBoolean(IS_THROWING, throwing);
 
         // RPM Sensor/PID control
-        SmartDashboard.putNumber(THROWER_POWER, (int)(powerThrower * 100));
+        SmartDashboard.putNumber(THROWER_POWER, (int)(-powerThrower * 100));
         SmartDashboard.putNumber(THROWER_RPM, (int)rpmThrower);
         SmartDashboard.putNumber(THROWER_TARGET_RPM, (int)rpmTarget);
+        SmartDashboard.putNumber(THROWER_RPM_ERROR, (int)(rpmTarget - rpmThrower));
 
         // Logging for later analysis
 /*
