@@ -13,8 +13,6 @@ public class PIDVictor {
     private final PIDController pidCtl;
     private final double rpmTolerance;
 
-    private boolean enabled;
-
     public PIDVictor(Victor _motor1, Victor _motor2,
             RPMEncoder encoder,
             double kP, double kI, double kD,
@@ -36,9 +34,6 @@ public class PIDVictor {
         // and limited in the PIDOutput cass), but we need it to be able
         // to go negative in order to reduce power.
         pidCtl.setOutputRange(-1.0, 1.0);
-
-        // By default, we're not enabled until we get a target value
-        enabled = false;
     }
 
     private class VictorPIDSource implements PIDSource {
@@ -66,10 +61,6 @@ public class PIDVictor {
             motor2 = _motor2;
         }
 
-        public void feedForward(double _currValue) {
-            currValue = _currValue;
-        }
-
         public void pidWrite(double output) {
             // RPM or speed control needs to take into account the
             // previous value, since we want to 'slow' the motor down,
@@ -84,7 +75,11 @@ public class PIDVictor {
             // Limit power from 0 -> -1.0 to keep the motor from
             // reversing itself if the controls oscillate too
             // far one way or the other.
-            currValue = Math.min(-1.0, Math.max(0.0, newVal));
+            if (newVal < -1.0)
+                newVal = -1.0;
+            else if (newVal > 0.0)
+                newVal = 0.0;
+            currValue = newVal;
 
             DashboardComm.powerThrower = currValue;
             motor1.set(currValue);
@@ -92,44 +87,16 @@ public class PIDVictor {
         }
     }
 
-    public void disable() {
-        enabled = false;
-        pidCtl.reset();
-        motor1.set(0);
-        motor2.set(0);
-    }
-
-    public double getPower() {
-        return motorCtl.currValue;
-    }
-
-    public void setPower(double power) {
-        // If PID is disabled, pass the power directly
-        // to the motor raw.
-        if (!enabled) {
-            motor1.set(power);
-            motor2.set(power);
-        } else
-            setTargetPower(power);
-    }
-
-    public void setTargetPower(double power) {
-        enabled = true;
-        motorCtl.feedForward(power);
-        DashboardComm.throwerThrottle = power;
-    }
-
     public double getRpm() {
         return rpmSrc.rpm;
     }
 
     public void setTargetRpm(double rpm) {
-        enabled = true;
+        DashboardComm.rpmTarget = rpm;
         if (rpm == 0) {
             if (pidCtl.isEnable()) {
                 pidCtl.reset();
                 pidCtl.setSetpoint(0);
-                setTargetPower(0);
             }
             motor1.set(0);
             motor2.set(0);
