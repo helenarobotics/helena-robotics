@@ -75,6 +75,9 @@ DashboardCmdLine = ""C:\\Program Files\\SmartDashboard\\SmartDashboard.exe""
 Pay attention to the quotes and backslashes to ensure the correct number are
 used.
 
+Note: If the Driver Station is running, it will over-write your changes when
+it stops, so make sure it's not running before you edit the configuration file.
+
 Startup DriverStation, and make sure that the 'Default' button is chosen
 (do not choose Java).
 
