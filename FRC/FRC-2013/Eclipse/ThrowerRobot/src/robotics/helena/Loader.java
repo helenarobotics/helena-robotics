@@ -13,6 +13,11 @@ public class Loader implements Runnable {
         new Thread(this, "Loader Thread").start();
     }
 
+    public void unpack() {
+        // By default, the arm starts in, move it back out.
+        pull();
+    }
+
     public void loadNext() {
         synchronized (this) {
             if (!loading) {
@@ -42,6 +47,11 @@ public class Loader implements Runnable {
     }
 
     private void load() {
+        push();
+        pull();
+    }
+    
+    private void push() {
         // Move the arm in
         pusher.set(-1);
         try {
@@ -49,6 +59,11 @@ public class Loader implements Runnable {
         } catch (InterruptedException ignored) {
         }
 
+        // Quit moving!
+        pusher.set(0);
+    }
+
+    private void pull() {
         // Move the arm back out.  Note, we expect the
         // arm to hit something on the way back in, so moving
         // out we use a smaller number to (hopefully) move us
