@@ -32,12 +32,10 @@ public class DriveBase {
         DashboardComm.driveJoyMagnitude = magnitude;
 
         double ratio = modifyMagnitude(driveJoy);
-        
+
         double scaleX = driveJoy.getX() * ratio;
         double scaleY = driveJoy.getY() * ratio;
-//        drive.arcadeDrive(scaleX, scaleY, true); 
-        drive.arcadeDrive(scaleX, scaleY); 
-//        drive.arcadeDrive(direction, modifyMagnitude(driveJoy));
+        drive.arcadeDrive(scaleX, scaleY);
     }
 
     // Joystick power button states
