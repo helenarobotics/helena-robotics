@@ -44,7 +44,7 @@ public class Shooter {
             double motorCtl = (joy.getThrottle() + 1.0) / 2.0;
             motorCtl += (joy.getY() * JOY_Y_SHOOTER_ADJUSTMENT_PERCENT);
             // Limit the control from 0 <-> 1
-            motorCtl = Math.max(0,  Math.min(1.0, motorCtl));
+            motorCtl = Math.max(0, Math.min(1.0, motorCtl));
             pidShooter.setTargetRpm((int)(motorCtl * MAX_RPM));
 
             // Only allow the user to fire a frisbee if the shooter is spun up

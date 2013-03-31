@@ -50,7 +50,7 @@ public class Loader implements Runnable {
         push();
         pull();
     }
-    
+
     private void push() {
         // Move the arm in
         pusher.set(-1);
