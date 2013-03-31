@@ -8,13 +8,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 // can just set the variables directly.
 public class DashboardComm extends Thread {
     // Thrower constants
-    public static final String JOY2_THROTTLE = "Joystick 2 Throttle";
     public static final String IS_THROWING = "Throwing";
-
     public static final String THROWER_POWER = "Thrower Power";
+    public static final String THROWER_TARGET_RPM = "Thrower Target RPM";
     public static final String THROWER_RPM = "Thrower RPM";
     public static final String THROWER_RPM_ERROR = "Thrower RPM Error";
-    public static final String THROWER_TARGET_RPM = "Thrower Target RPM";
 
     public static final int TIME_RUNNING = 0;
     public static final int TIME_STOPPED = 1;
@@ -42,26 +40,10 @@ public class DashboardComm extends Thread {
         }
     }
 
-    // Automation mode for Thrower (unused)
-/*
-    public static final int MO_NONE = 0;
-    public static final int MO_AUTOSHOOT = 1;
-    public static final int MO_SEMIAUTO = 2;
-    public static final int MO_MANUAL = 3;
-    private int mode = MO_NONE;
-
-    public void setMode(int set) {
-        mode = set;
-    }
-*/
     // Drive joystick
     public static double driveJoyDirection;
     public static double driveJoyMagnitude;
     public static double drivePowerRatio;
-
-    // Shooter joystick
-//    public static double shootJoyX;
-//    public static double shootJoyY;
 
     //
     // Thrower information globals
@@ -76,11 +58,6 @@ public class DashboardComm extends Thread {
     // Frisbee feeder
     public static boolean throwing;
 
-/*
-    // Results FROM camera processing
-    public static int rpmBtmSwish;
-    public static int rpmBtmBB;
-*/
     // Instantiate the sender thread
     static {
         new DashboardComm();
@@ -93,10 +70,7 @@ public class DashboardComm extends Thread {
         start();
     }
 
-    private long startTime;
     public void run() {
-        startTime = System.currentTimeMillis();
-
         DriverStationLCD driverStation = DriverStationLCD.getInstance();
         while (true) {
             try {
@@ -104,48 +78,18 @@ public class DashboardComm extends Thread {
                 Thread.sleep(50);
             } catch (InterruptedException ignored) {
             }
-            send();
-            receive();
+
+            // Drive information
+            SmartDashboard.putNumber("DriveJoystick Direction", driveJoyDirection);
+            SmartDashboard.putNumber("DriveJoystick Magnitude", driveJoyMagnitude);
+            SmartDashboard.putNumber("DrivePowerRatio", drivePowerRatio);
+
+            // Thrower
+            SmartDashboard.putNumber(THROWER_RPM, (int)rpmThrower);
+            SmartDashboard.putNumber(THROWER_TARGET_RPM, (int)rpmTarget);
+            SmartDashboard.putNumber(THROWER_POWER, (int)(-powerThrower * 100));
+            SmartDashboard.putNumber(THROWER_RPM_ERROR, (int)(rpmTarget - rpmThrower));
+            SmartDashboard.putBoolean(IS_THROWING, throwing);
         }
-    }
-
-    public void send() {
-        // Drive information
-        SmartDashboard.putNumber("DriveJoystick Direction", driveJoyDirection);
-        SmartDashboard.putNumber("DriveJoystick Magnitude", driveJoyMagnitude);
-        SmartDashboard.putNumber("DrivePowerRatio", drivePowerRatio);
-/*
-        SmartDashboard.putInt("Mode", mode);
-
-        // Shooter
-        SmartDashboard.putNumber("ShootJoystick X", shootJoyX);
-        SmartDashboard.putNumber("ShootJoystick Y", shootJoyY);
-*/
-        SmartDashboard.putNumber(JOY2_THROTTLE, throwerThrottle);
-        SmartDashboard.putBoolean(IS_THROWING, throwing);
-
-        // RPM Sensor/PID control
-        SmartDashboard.putNumber(THROWER_POWER, (int)(-powerThrower * 100));
-        SmartDashboard.putNumber(THROWER_RPM, (int)rpmThrower);
-        SmartDashboard.putNumber(THROWER_TARGET_RPM, (int)rpmTarget);
-        SmartDashboard.putNumber(THROWER_RPM_ERROR, (int)(rpmTarget - rpmThrower));
-
-        // Logging for later analysis
-/*
-        System.out.println("Time:" + (System.currentTimeMillis() - startTime));
-        System.out.println("\t" + JOY2_THROTTLE + "=" + throwerThrottle);
-        System.out.println("\t" + IS_THROWING + "=" + throwing);
-        System.out.println("\t" + THROWER_POWER + "=" + (int)(powerThrower * 100));
-        System.out.println("\t" + THROWER_TARGET_RPM + "=" + (int)rpmTarget);
-        System.out.println("\t" + THROWER_RPM + "=" + (int)rpmThrower);
-        System.out.println("");
-*/
-    }
-
-    public void receive() {
-/*
-        rpmBtmSwish = (int)SmartDashboard.getNumber("Target RPM 1 Swish");
-        rpmBtmBB = (int)SmartDashboard.getNumber("Target RPM 1 BB");
-*/
     }
 }
