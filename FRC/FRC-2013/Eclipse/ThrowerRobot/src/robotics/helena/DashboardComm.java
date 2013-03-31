@@ -45,11 +45,7 @@ public class DashboardComm extends Thread {
     public static double driveJoyMagnitude;
     public static double drivePowerRatio;
 
-    //
     // Thrower information globals
-    //
-
-    // Thrower motors!
     public static double throwerThrottle;
     public static double rpmThrower;
     public static double rpmTarget;
