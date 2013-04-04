@@ -9,7 +9,7 @@ public class Configuration {
     public static final int RIGHT2_VICTOR = 5;
     public static final int SHOOTER1_VICTOR = 6;
     public static final int SHOOTER2_VICTOR = 7;
-    public static final int PUSHER_VICTOR = 3;
+    public static final int PUSHER_VICTOR = 10;
 
     public static final int FRIZ_JOY = 1;
     public static final int FIRE_BUTTON = 1;
