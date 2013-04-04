@@ -45,12 +45,13 @@ public class Thrower extends SimpleRobot {
     }
 
     public void operatorControl() {
+        DashboardComm.startTimer();
+
         //Setup drive motors
         DriveBase drive = new DriveBase();
         Joystick driveJoy = new Joystick(Configuration.DRIVE_JOY);
         Joystick frizJoy = new Joystick(Configuration.FRIZ_JOY);
 
-        DashboardComm.startTimer();
         while (isOperatorControl()) {
             // Drive motors
             drive.move(driveJoy);
@@ -58,6 +59,7 @@ public class Thrower extends SimpleRobot {
             // Run the shooter!
             shooter.control(frizJoy);
         }
+        DashboardComm.resetTimer();
     }
 
     /**
