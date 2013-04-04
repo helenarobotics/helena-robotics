@@ -41,8 +41,8 @@ public class Shooter {
         if (shooterOn) {
             // Motor control.  Coarse settings are done via the joystick throttle,
             // and finer settings (+- 20%) are done via the y-axis of the joystick.
-            double motorCtl = (joy.getThrottle() + 1.0) / 2.0;
-            motorCtl += (joy.getY() * JOY_Y_SHOOTER_ADJUSTMENT_PERCENT);
+            double motorCtl = Math.abs((joy.getThrottle() - 1.0) / 2.0);
+            motorCtl -= (joy.getY() * JOY_Y_SHOOTER_ADJUSTMENT_PERCENT);
             // Limit the control from 0 <-> 1
             motorCtl = Math.max(0, Math.min(1.0, motorCtl));
             pidShooter.setTargetRpm((int)(motorCtl * MAX_RPM));
