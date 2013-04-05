@@ -17,7 +17,7 @@ public class Shooter {
     private static final double kI = 0.0;
     private static final double kD = kP * 10.0;
 
-    private boolean shooterOn = false;
+    private boolean shooterOn = true;
 
     public Shooter() {
         pidShooter = new PIDVictor(
@@ -46,15 +46,15 @@ public class Shooter {
             // Limit the control from 0 <-> 1
             motorCtl = Math.max(0, Math.min(1.0, motorCtl));
             pidShooter.setTargetRpm((int)(motorCtl * MAX_RPM));
-
-            // Only allow the user to fire a frisbee if the shooter is spun up
-            // *OR* if the user chooses to over-ride by holding down the OVER-RIDE
-            // button.
-            boolean inRange = pidShooter.onTarget() || joy.getRawButton(Configuration.OVERRIDE_BUTTON);
-            if (inRange && joystickTrigger(joy))
-                shootFrisbee();
         } else
             pidShooter.setTargetRpm(0);
+
+        // Only allow the user to fire a frisbee if the shooter is spun up
+        // *OR* if the user chooses to over-ride by holding down the OVER-RIDE
+        // button.
+        boolean inRange = pidShooter.onTarget() || joy.getRawButton(Configuration.OVERRIDE_BUTTON);
+        if (inRange && joystickTrigger(joy))
+            shootFrisbee();
     }
 
     public void setTargetRpm(int rpm) {
