@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.SimpleRobot;
 public class Thrower extends SimpleRobot {
     private final Shooter shooter;
 
-    private static final int AUTO_SHOOTER_TARGET_RPM = 180;
+    private static final int AUTO_SHOOTER_TARGET_RPM = 160;
     private static final int NUM_FRISBEES = 3;
 
     public Thrower() {
