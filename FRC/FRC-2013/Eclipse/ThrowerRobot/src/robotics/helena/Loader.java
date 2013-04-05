@@ -21,6 +21,7 @@ public class Loader implements Runnable {
     public void unpack() {
         // By default, the arm starts in, move it back out.
         pull();
+        pull();
     }
 
     public void loadNext() {
