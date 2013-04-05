@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.Victor;
 
 public class Shooter {
     public static final int MAX_RPM = 225;
+    private static final int FIXED_RPM = 175;
     private static final int RPM_TOLERANCE = 5;
 
     private static final double JOY_Y_SHOOTER_ADJUSTMENT_PERCENT = 20.0 / 100;
@@ -17,6 +18,7 @@ public class Shooter {
     private static final double kI = 0.0;
     private static final double kD = kP * 10.0;
 
+    private boolean fixedRpm = false;
     private boolean shooterOn = true;
 
     public Shooter() {
@@ -38,7 +40,12 @@ public class Shooter {
         // Is the shooter turned on?
         checkShooterState(joy);
 
-        if (shooterOn) {
+        checkFixedRpm(joy);
+
+        if (fixedRpm) {
+            // Startup the shooter
+            setTargetRpm(FIXED_RPM);
+        } else if (shooterOn) {
             // Motor control.  Coarse settings are done via the joystick throttle,
             // and finer settings (+- 20%) are done via the y-axis of the joystick.
             double motorCtl = Math.abs((joy.getThrottle() - 1.0) / 2.0);
@@ -94,6 +101,17 @@ public class Shooter {
         }
         shooterEnabledWasPressed = nowPressed;
     }
+
+    private boolean fixedRpmWasPressed = false;
+    private void checkFixedRpm(Joystick joy) {
+        // Check the button state
+        boolean nowPressed = joy.getRawButton(Configuration.FIXED_RPM_BUTTON);
+        if (nowPressed && !fixedRpmWasPressed) {
+            fixedRpm = !fixedRpm;
+        }
+        fixedRpmWasPressed = nowPressed;
+    }
+
 
     private long startInRangeTime = 0;
     public boolean inRange() {
