@@ -13,6 +13,11 @@ public class Loader implements Runnable {
         new Thread(this, "Loader Thread").start();
     }
 
+    public void pack() {
+        // By default, the arm starts in, move it back out.
+        push();
+    }
+
     public void unpack() {
         // By default, the arm starts in, move it back out.
         pull();

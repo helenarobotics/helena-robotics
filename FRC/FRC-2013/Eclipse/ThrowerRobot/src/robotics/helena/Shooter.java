@@ -55,6 +55,10 @@ public class Shooter {
         boolean inRange = pidShooter.onTarget() || joy.getRawButton(Configuration.OVERRIDE_BUTTON);
         if (inRange && joystickTrigger(joy))
             shootFrisbee();
+        
+        // Check to see if we need to pack the shooter arm.
+        if (doPack(joy))
+            loader.pack();
     }
 
     public void setTargetRpm(int rpm) {
@@ -104,5 +108,18 @@ public class Shooter {
         } else
             startInRangeTime = 0;
         return onTarget;
+    }
+
+    private boolean packWasPressed = false;
+    private boolean doPack(Joystick joy) {
+        boolean pack = false;
+                
+        // Check the button state
+        boolean nowPressed = joy.getRawButton(Configuration.PACK_BUTTON);
+        if (nowPressed && !packWasPressed) {
+            pack = true;
+        }
+        packWasPressed = nowPressed;
+        return pack;
     }
 }
