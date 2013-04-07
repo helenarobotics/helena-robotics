@@ -5,8 +5,7 @@ import edu.wpi.first.wpilibj.Victor;
 
 public class Shooter {
     public static final int MAX_RPM = 225;
-    private static final int HIGH_GOAL_RPM = 175;
-    private static final int MID_GOAL_RPM = 160;
+    private static final int FIXED_RPM = 175;
     private static final int RPM_TOLERANCE = 5;
 
     private static final double JOY_Y_SHOOTER_ADJUSTMENT_PERCENT = 20.0 / 100;
@@ -19,8 +18,7 @@ public class Shooter {
     private static final double kI = 0.0;
     private static final double kD = kP * 10.0;
 
-    private boolean highGoalRpm = false;
-    private boolean midGoalRpm = false;
+    private boolean fixedRpm = false;
     private boolean shooterOn = true;
 
     public Shooter() {
@@ -39,15 +37,14 @@ public class Shooter {
     }
 
     public void control(Joystick joy) {
-        // Check the button states
+        // Is the shooter turned on?
         checkShooterState(joy);
-        checkHighGoalRpm(joy);
-        checkMidGoalRpm(joy);
 
-        if (highGoalRpm) {
-            setTargetRpm(HIGH_GOAL_RPM);
-        } else if (midGoalRpm) {
-            setTargetRpm(MID_GOAL_RPM);
+        checkFixedRpm(joy);
+
+        if (fixedRpm) {
+            // Startup the shooter
+            setTargetRpm(FIXED_RPM);
         } else if (shooterOn) {
             // Motor control.  Coarse settings are done via the joystick throttle,
             // and finer settings (+- 20%) are done via the y-axis of the joystick.
@@ -105,26 +102,16 @@ public class Shooter {
         shooterEnabledWasPressed = nowPressed;
     }
 
-    private boolean highGoalRpmWasPressed = false;
-    private void checkHighGoalRpm(Joystick joy) {
+    private boolean fixedRpmWasPressed = false;
+    private void checkFixedRpm(Joystick joy) {
         // Check the button state
-        boolean nowPressed = joy.getRawButton(Configuration.HIGH_GOAL_BUTTON);
-        if (nowPressed && !highGoalRpmWasPressed) {
-            highGoalRpm = !highGoalRpm;
+        boolean nowPressed = joy.getRawButton(Configuration.FIXED_RPM_BUTTON);
+        if (nowPressed && !fixedRpmWasPressed) {
+            fixedRpm = !fixedRpm;
         }
-        highGoalRpmWasPressed = nowPressed;
+        fixedRpmWasPressed = nowPressed;
     }
 
-
-    private boolean midGoalRpmWasPressed = false;
-    private void checkMidGoalRpm(Joystick joy) {
-        // Check the button state
-        boolean nowPressed = joy.getRawButton(Configuration.MID_GOAL_BUTTON);
-        if (nowPressed && !midGoalRpmWasPressed) {
-            highGoalRpm = !midGoalRpm;
-        }
-        midGoalRpmWasPressed = nowPressed;
-    }
 
     private long startInRangeTime = 0;
     public boolean inRange() {
