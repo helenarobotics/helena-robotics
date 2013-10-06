@@ -18,10 +18,10 @@
 // Define an enumeration list for the driving commands
 typedef enum
 {
-	FORWARD,
-	BACKWARD,
-	LEFT,
-	RIGHT,
+    FORWARD,
+    BACKWARD,
+    LEFT,
+    RIGHT,
 } driveState;
 
 // GLOBAL CONSTANTS
@@ -34,63 +34,63 @@ const int nMoves = 6; //Defines how many Move+Turns to take during autonomous
 const int moveSpeed = 50; //The speed to move at for the move() command
 const int turnSpeed = 40; //The speed to turn at for the GyroTurn() command
 const int waitTime = 200; //The amount of time to wait in-between commands
-const int nPositions = 3;			// Defines the number of places the robot can start at on a side
+const int nPositions = 3;            // Defines the number of places the robot can start at on a side
 const int margin [2*nPositions][4] = {{0,0,0,0},{0,0,0,0}, // Margin to detect an irBeacon based on [side, starting position, irBeacon
-						   {0,0,0,0},{0,0,0,0},
-						   {0,0,0,0},{0,0,0,0},
-						   {0,0,0,0},{0,0,0,0}};
+                                      {0,0,0,0},{0,0,0,0},
+                                      {0,0,0,0},{0,0,0,0},
+                                      {0,0,0,0},{0,0,0,0}};
 const int sInit [2][nPositions] = {{0,0,0},{0,0,0}}; // Where to initialize a servo based on [side, starting position]
 
 //Series of autonomous movements -inches
 const int autoMoves [2*4*nPositions][nMoves] = {{0,0,0,0,0,0},  //L1>1
-												{0,0,0,0,0,0},  //L1>2
-												{0,0,0,0,0,0},  //L1>3
-												{0,0,0,0,0,0},  //L1>4
-												{0,0,0,0,0,0},  //L2>1
-												{0,0,0,0,0,0},  //L2>2
-												{0,0,0,0,0,0},  //L2>3
-												{0,0,0,0,0,0},  //L2>4
-												{0,0,0,0,0,0},  //L3>1
-												{0,0,0,0,0,0},  //L3>2
-												{0,0,0,0,0,0},  //L3>3
-												{0,0,0,0,0,0},  //L3>4
-												{0,0,0,0,0,0},  //R1>1
-												{0,0,0,0,0,0},  //R1>2
-												{0,0,0,0,0,0},  //R1>3
-												{0,0,0,0,0,0},  //R1>4
-												{0,0,0,0,0,0},  //R2>1
-												{0,0,0,0,0,0},  //R2>2
-												{0,0,0,0,0,0},  //R2>3
-												{0,0,0,0,0,0},  //R2>4
-												{0,0,0,0,0,0},  //R3>1
-												{0,0,0,0,0,0},  //R3>2
-												{0,0,0,0,0,0},  //R3>3
-												{0,0,0,0,0,0}};//R3>4
+                                                {0,0,0,0,0,0},  //L1>2
+                                                {0,0,0,0,0,0},  //L1>3
+                                                {0,0,0,0,0,0},  //L1>4
+                                                {0,0,0,0,0,0},  //L2>1
+                                                {0,0,0,0,0,0},  //L2>2
+                                                {0,0,0,0,0,0},  //L2>3
+                                                {0,0,0,0,0,0},  //L2>4
+                                                {0,0,0,0,0,0},  //L3>1
+                                                {0,0,0,0,0,0},  //L3>2
+                                                {0,0,0,0,0,0},  //L3>3
+                                                {0,0,0,0,0,0},  //L3>4
+                                                {0,0,0,0,0,0},  //R1>1
+                                                {0,0,0,0,0,0},  //R1>2
+                                                {0,0,0,0,0,0},  //R1>3
+                                                {0,0,0,0,0,0},  //R1>4
+                                                {0,0,0,0,0,0},  //R2>1
+                                                {0,0,0,0,0,0},  //R2>2
+                                                {0,0,0,0,0,0},  //R2>3
+                                                {0,0,0,0,0,0},  //R2>4
+                                                {0,0,0,0,0,0},  //R3>1
+                                                {0,0,0,0,0,0},  //R3>2
+                                                {0,0,0,0,0,0},  //R3>3
+                                                {0,0,0,0,0,0}};//R3>4
 //Series of autonomous turns -degrees
 const int autoTurns [2*4*nPositions][nMoves] = {{0,0,0,0,0,0}, //L1>1
-												{0,0,0,0,0,0},  //L1>2
-												{0,0,0,0,0,0},  //L1>3
-												{0,0,0,0,0,0},  //L1>4
-												{0,0,0,0,0,0},  //L2>1
-												{0,0,0,0,0,0},  //L2>2
-												{0,0,0,0,0,0},  //L2>3
-												{0,0,0,0,0,0},  //L2>4
-												{0,0,0,0,0,0},  //L3>1
-												{0,0,0,0,0,0},  //L3>2
-												{0,0,0,0,0,0},  //L3>3
-												{0,0,0,0,0,0},  //L3>4
-												{0,0,0,0,0,0},  //R1>1
-												{0,0,0,0,0,0},  //R1>2
-												{0,0,0,0,0,0},  //R1>3
-												{0,0,0,0,0,0},  //R1>4
-												{0,0,0,0,0,0},  //R2>1
-												{0,0,0,0,0,0},  //R2>2
-												{0,0,0,0,0,0},  //R2>3
-												{0,0,0,0,0,0},  //R2>4
-												{0,0,0,0,0,0},  //R3>1
-												{0,0,0,0,0,0},  //R3>2
-												{0,0,0,0,0,0},  //R3>3
-												{0,0,0,0,0,0}};//R3>4
+                                                {0,0,0,0,0,0},  //L1>2
+                                                {0,0,0,0,0,0},  //L1>3
+                                                {0,0,0,0,0,0},  //L1>4
+                                                {0,0,0,0,0,0},  //L2>1
+                                                {0,0,0,0,0,0},  //L2>2
+                                                {0,0,0,0,0,0},  //L2>3
+                                                {0,0,0,0,0,0},  //L2>4
+                                                {0,0,0,0,0,0},  //L3>1
+                                                {0,0,0,0,0,0},  //L3>2
+                                                {0,0,0,0,0,0},  //L3>3
+                                                {0,0,0,0,0,0},  //L3>4
+                                                {0,0,0,0,0,0},  //R1>1
+                                                {0,0,0,0,0,0},  //R1>2
+                                                {0,0,0,0,0,0},  //R1>3
+                                                {0,0,0,0,0,0},  //R1>4
+                                                {0,0,0,0,0,0},  //R2>1
+                                                {0,0,0,0,0,0},  //R2>2
+                                                {0,0,0,0,0,0},  //R2>3
+                                                {0,0,0,0,0,0},  //R2>4
+                                                {0,0,0,0,0,0},  //R3>1
+                                                {0,0,0,0,0,0},  //R3>2
+                                                {0,0,0,0,0,0},  //R3>3
+                                                {0,0,0,0,0,0}};//R3>4
 
 const string gcBeaconBlock    = "BeaconBlock"; //Defines an autonomous option to use the beacon to place a ring
 const string gcPlaceBlock     = "PlaceBlock";  //Defines an autonomous option to place a ring without using the beacon
@@ -122,150 +122,150 @@ bool debugMode = false;
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 task ButtonTask()
 {
-	nSchedulePriority = kHighPriority;
+    nSchedulePriority = kHighPriority;
 
-	switch(nNxtButtonPressed)
-	{
-		case kLeftButton:
-			if (gReady == 0)
-			{
-				gRunIdx--;
+    switch(nNxtButtonPressed)
+    {
+    case kLeftButton:
+        if (gReady == 0)
+        {
+            gRunIdx--;
 
-				if (gRunIdx < 0)
-				{
-					gRunIdx = 3;
-				}
+            if (gRunIdx < 0)
+            {
+                gRunIdx = 3;
+            }
 
-				nxtDisplayTextLine(2, gRun[gRunIdx]);
-			}
-			else if (gReady == 1)
-			{
-				gSideIdx--;
+            nxtDisplayTextLine(2, gRun[gRunIdx]);
+        }
+        else if (gReady == 1)
+        {
+            gSideIdx--;
 
-				if (gSideIdx < 0)
-				{
-					gSideIdx = 1;
-				}
+            if (gSideIdx < 0)
+            {
+                gSideIdx = 1;
+            }
 
-				nxtDisplayTextLine(3, "Side: %s", gSide[gSideIdx]);
-			}
-			else if (gReady == 2)
-			{
-				gPos--;
+            nxtDisplayTextLine(3, "Side: %s", gSide[gSideIdx]);
+        }
+        else if (gReady == 2)
+        {
+            gPos--;
 
-				if (gPos<1)
-				{
-					gPos=nPositions;
-				}
+            if (gPos<1)
+            {
+                gPos=nPositions;
+            }
 
-				nxtDisplayTextLine(4, "Position: %i", gPos);
-			}
-			else if (gReady == 3)
-			{
-				gPath--;
+            nxtDisplayTextLine(4, "Position: %i", gPos);
+        }
+        else if (gReady == 3)
+        {
+            gPath--;
 
-				if (gPath<1)
-				{
-				gPath=3;
-			}
+            if (gPath<1)
+            {
+                gPath=3;
+            }
 
-			nxtDisplayTextLine(5, "Column: %i", gPath);
-			}
+            nxtDisplayTextLine(5, "Column: %i", gPath);
+        }
 
-			break;
-		case kRightButton:
-			if (gReady == 0)
-			{
-				gRunIdx++;
+        break;
+    case kRightButton:
+        if (gReady == 0)
+        {
+            gRunIdx++;
 
-				if (gRunIdx > 3)
-				{
-					gRunIdx = 0;
-				}
+            if (gRunIdx > 3)
+            {
+                gRunIdx = 0;
+            }
 
-				nxtDisplayTextLine(2, gRun[gRunIdx]);
-			}
-			else if (gReady == 1)
-			{
-				gSideIdx++;
+            nxtDisplayTextLine(2, gRun[gRunIdx]);
+        }
+        else if (gReady == 1)
+        {
+            gSideIdx++;
 
-				if (gSideIdx > 1)
-				{
-					gSideIdx = 0;
-				}
+            if (gSideIdx > 1)
+            {
+                gSideIdx = 0;
+            }
 
-				nxtDisplayTextLine(3, "Side: %s", gSide[gSideIdx]);
-			}
-			else if (gReady == 2)
-			{
-				gPos++;
+            nxtDisplayTextLine(3, "Side: %s", gSide[gSideIdx]);
+        }
+        else if (gReady == 2)
+        {
+            gPos++;
 
-				if (gPos>nPositions)
-				{
-					gPos=1;
-				}
+            if (gPos>nPositions)
+            {
+                gPos=1;
+            }
 
-				nxtDisplayTextLine(4, "Position: %i", gPos);
-			}
-			else if (gReady == 3)
-			{
-				gPath++;
+            nxtDisplayTextLine(4, "Position: %i", gPos);
+        }
+        else if (gReady == 3)
+        {
+            gPath++;
 
-				if (gPath>3)
-				{
-					gPath=1;
-				}
+            if (gPath>3)
+            {
+                gPath=1;
+            }
 
-				nxtDisplayTextLine(5, "Column: %i", gPath);
-			}
+            nxtDisplayTextLine(5, "Column: %i", gPath);
+        }
 
-			break;
-		case kEnterButton:
-			gReady++;
+        break;
+    case kEnterButton:
+        gReady++;
 
-			if (gReady == 1)
-			{
-				nxtDisplayTextLine(3, "Side: %s", gSide[gSideIdx]);
-			}
-			else if (gReady == 2)
-			{
-				nxtDisplayTextLine(4, "Position: %i", gPos);
-			}
-			else if (gReady == 3)
-			{
-				nxtDisplayTextLine(5, "Column: %i", gPath);
-			}
+        if (gReady == 1)
+        {
+            nxtDisplayTextLine(3, "Side: %s", gSide[gSideIdx]);
+        }
+        else if (gReady == 2)
+        {
+            nxtDisplayTextLine(4, "Position: %i", gPos);
+        }
+        else if (gReady == 3)
+        {
+            nxtDisplayTextLine(5, "Column: %i", gPath);
+        }
 
-			break;
-		case kExitButton:
-			gReady--;
+        break;
+    case kExitButton:
+        gReady--;
 
-			if (gReady < 0)
-			{
-				gReady = 0;
-			}
+        if (gReady < 0)
+        {
+            gReady = 0;
+        }
 
-			if (gReady == 0)
-			{
-				nxtDisplayClearTextLine(3);
-			}
-			else if (gReady == 1)
-			{
-				nxtDisplayClearTextLine(4);
-			}
-			else if (gReady == 2)
-			{
-				nxtDisplayClearTextLine(5);
-			}
-			else if (gReady == 3)
-			{
-				nxtDisplayClearTextLine(6);
-			}
+        if (gReady == 0)
+        {
+            nxtDisplayClearTextLine(3);
+        }
+        else if (gReady == 1)
+        {
+            nxtDisplayClearTextLine(4);
+        }
+        else if (gReady == 2)
+        {
+            nxtDisplayClearTextLine(5);
+        }
+        else if (gReady == 3)
+        {
+            nxtDisplayClearTextLine(6);
+        }
 
-			break;
-	}
+        break;
+    }
 
-	return;
+    return;
 }
 
 
@@ -285,42 +285,42 @@ task ButtonTask()
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 void initializeRobot()
 {
-	//Initialize the position of servos
+    //Initialize the position of servos
 
-	//By default the NXT display will show diagnostics. This line disables that so we can display what
-	//we want to
-	disableDiagnosticsDisplay();
-	eraseDisplay();
-	nxtDisplayCenteredTextLine(1, "Autonomous");
-	nxtDisplayTextLine(2, gRun);  //Sets line 2 of the display to show what routine is currently selected
+    //By default the NXT display will show diagnostics. This line disables that so we can display what
+    //we want to
+    disableDiagnosticsDisplay();
+    eraseDisplay();
+    nxtDisplayCenteredTextLine(1, "Autonomous");
+    nxtDisplayTextLine(2, gRun);  //Sets line 2 of the display to show what routine is currently selected
 
-	nNxtButtonTask = ButtonTask;  //Starts up the button task defined above for selecting the auto routine
-	nNxtExitClicks = 2; //Normally the gray NXT button exits the program, but since we use the exit button
-	//to "back up", we reset the exit clicks to 2 so that a double click will exit the
-	//program
+    nNxtButtonTask = ButtonTask;  //Starts up the button task defined above for selecting the auto routine
+    nNxtExitClicks = 2; //Normally the gray NXT button exits the program, but since we use the exit button
+    //to "back up", we reset the exit clicks to 2 so that a double click will exit the
+    //program
 
-	while (gReady < 4)
-	{
-		//Do nothing. This loop puts us in a wait mode while a team member selects the program,
-		//alliance color, and position of the robot, etc using the button task above
-	}
+    while (gReady < 4)
+    {
+        //Do nothing. This loop puts us in a wait mode while a team member selects the program,
+        //alliance color, and position of the robot, etc using the button task above
+    }
 
-	nxtDisplayCenteredTextLine(7, "READY"); //Selection is done so display ready on the screen
+    nxtDisplayCenteredTextLine(7, "READY"); //Selection is done so display ready on the screen
 
-	//Calibrate the gyro sensor while the robot is still
-	HTGYROstartCal(gyro);
-	wait1Msec(1000);
+    //Calibrate the gyro sensor while the robot is still
+    HTGYROstartCal(gyro);
+    wait1Msec(1000);
 
-	//In order to speed up the sensing of the IR beacon, we initialize the servo for the IR seeker based
-	//on which side the robot was placed on
-	if (strcmp(gSide, "left")== 0)
-	{
-		servo[IR] = sInit[0][gPos];
-	}
-	else
-	{
-		servo[IR] = sInit[1][gPos];
-	}
+    //In order to speed up the sensing of the IR beacon, we initialize the servo for the IR seeker based
+    //on which side the robot was placed on
+    if (strcmp(gSide, "left")== 0)
+    {
+        servo[IR] = sInit[0][gPos];
+    }
+    else
+    {
+        servo[IR] = sInit[1][gPos];
+    }
 }
 
 
@@ -336,145 +336,145 @@ void initializeRobot()
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 void move(int iSpeed, int iDistance, driveState iCmd)
 {
-	//Set up variables
-	//For the encoder tic we multiply the incoming distance by the calculated number of tics when
-	//traveling one inch. To get the calculated value you must figure out the circumference of the
-	//wheel, tread, etc. There are 1440 tics in a single revolution of the motor
-	int  vEncoderTic   = 115 * iDistance;
-	int  vPrevLeftPos  = 0;
-	int  vPrevRightPos = 0;
-	int  vCurrLeftPos  = 0;
-	int  vCurrRightPos = 0;
-	int  vLeftPower    = iSpeed;
-	int  vRightPower   = iSpeed;
-	int  vRightOffset  = 1;
-	int  vLeftOffset   = 1;
-	int  vSpeed        = iSpeed;
+    //Set up variables
+    //For the encoder tic we multiply the incoming distance by the calculated number of tics when
+    //traveling one inch. To get the calculated value you must figure out the circumference of the
+    //wheel, tread, etc. There are 1440 tics in a single revolution of the motor
+    int  vEncoderTic   = 115 * iDistance;
+    int  vPrevLeftPos  = 0;
+    int  vPrevRightPos = 0;
+    int  vCurrLeftPos  = 0;
+    int  vCurrRightPos = 0;
+    int  vLeftPower    = iSpeed;
+    int  vRightPower   = iSpeed;
+    int  vRightOffset  = 1;
+    int  vLeftOffset   = 1;
+    int  vSpeed        = iSpeed;
 
-	unsigned long vNxtSyncTime  = nPgmTime + gcSyncInterval;
+    unsigned long vNxtSyncTime  = nPgmTime + gcSyncInterval;
 
-	//Set our motor offsets based on the supplied command
-	switch (iCmd)
-	{
-	case FORWARD:
-		//To move forward both motor powers should be positive
-		vRightOffset = 1;
-		vLeftOffset  = 1;
-		break;
-	case BACKWARD:
-		//To move backward both motor powers should be negative
-		vRightOffset = -1;
-		vLeftOffset  = -1;
-		break;
-	case LEFT:
-		//To spin left, the left motor must run backward and the right motor forward
-		vRightOffset = 1;
-		vLeftOffset  = -1;
-		break;
-	case RIGHT:
-		//To spin right, the right motor must run backward and the left motor forward
-		vRightOffset = -1;
-		vLeftOffset  = 1;
-		break;
-	}
+    //Set our motor offsets based on the supplied command
+    switch (iCmd)
+    {
+    case FORWARD:
+        //To move forward both motor powers should be positive
+        vRightOffset = 1;
+        vLeftOffset  = 1;
+        break;
+    case BACKWARD:
+        //To move backward both motor powers should be negative
+        vRightOffset = -1;
+        vLeftOffset  = -1;
+        break;
+    case LEFT:
+        //To spin left, the left motor must run backward and the right motor forward
+        vRightOffset = 1;
+        vLeftOffset  = -1;
+        break;
+    case RIGHT:
+        //To spin right, the right motor must run backward and the left motor forward
+        vRightOffset = -1;
+        vLeftOffset  = 1;
+        break;
+    }
 
-	//Reset our encoders prior to movement
-	nMotorEncoder[DriveLeft]  = 0;
-	nMotorEncoder[DriveRight] = 0;
+    //Reset our encoders prior to movement
+    nMotorEncoder[DriveLeft]  = 0;
+    nMotorEncoder[DriveRight] = 0;
 
-	//Start up the motors
-	motor[DriveLeft]  = vLeftPower * vLeftOffset;
-	motor[DriveRight] = vRightPower * vRightOffset;
+    //Start up the motors
+    motor[DriveLeft]  = vLeftPower * vLeftOffset;
+    motor[DriveRight] = vRightPower * vRightOffset;
 
-	//Loop until both motors have traveled the required distance
-	while(abs(nMotorEncoder[DriveLeft]) < vEncoderTic || abs(nMotorEncoder[DriveRight]) < vEncoderTic)
-	{
-		//Determine the current value of the encoders
-		vCurrLeftPos  = abs(nMotorEncoder[DriveLeft]);
-		vCurrRightPos = abs(nMotorEncoder[DriveRight]);
+    //Loop until both motors have traveled the required distance
+    while(abs(nMotorEncoder[DriveLeft]) < vEncoderTic || abs(nMotorEncoder[DriveRight]) < vEncoderTic)
+    {
+        //Determine the current value of the encoders
+        vCurrLeftPos  = abs(nMotorEncoder[DriveLeft]);
+        vCurrRightPos = abs(nMotorEncoder[DriveRight]);
 
-		//We only perform error correction at specific intervals
-		if (nPgmTime >= vNxtSyncTime)
-		{
-			//See if we are far enough 'out of sync' to warrant speed corrections
-			//To do this, we average the encoder values and then compare each individual motor to that average
-			int vAvg = (vCurrLeftPos + vCurrRightPos) / 2;
+        //We only perform error correction at specific intervals
+        if (nPgmTime >= vNxtSyncTime)
+        {
+            //See if we are far enough 'out of sync' to warrant speed corrections
+            //To do this, we average the encoder values and then compare each individual motor to that average
+            int vAvg = (vCurrLeftPos + vCurrRightPos) / 2;
 
-			if (abs(vCurrLeftPos - vAvg) > gcSyncTickError || abs(vCurrRightPos - vAvg) > gcSyncTickError)
-			{
-				//We are out of sync. Determine which side is falling behind the other and adjust the speed
-				//We default to slowing down the motors. The only time we speed up a motor is if it was
-				//previously slowed
-				if (vCurrLeftPos < vCurrRightPos)
-				{
-					if (vLeftPower < vSpeed)
-					{
-						vLeftPower       = vLeftPower + 1;
-						motor[DriveLeft] = vLeftPower * vLeftOffset;
-					}
-					else
-					{
-						vRightPower       = vRightPower - 1;
-						motor[DriveRight] = vRightPower * vRightOffset;
-					}
-				}
-				else
-				{
-					if (vRightPower < vSpeed)
-					{
-						vRightPower       = vRightPower + 1;
-						motor[DriveRight] = vRightPower * vRightOffset;
-					}
-					else
-					{
-						vLeftPower       = vLeftPower - 1;
-						motor[DriveLeft] = vLeftPower * vLeftOffset;
-					}
-				}
-			}
+            if (abs(vCurrLeftPos - vAvg) > gcSyncTickError || abs(vCurrRightPos - vAvg) > gcSyncTickError)
+            {
+                //We are out of sync. Determine which side is falling behind the other and adjust the speed
+                //We default to slowing down the motors. The only time we speed up a motor is if it was
+                //previously slowed
+                if (vCurrLeftPos < vCurrRightPos)
+                {
+                    if (vLeftPower < vSpeed)
+                    {
+                        vLeftPower       = vLeftPower + 1;
+                        motor[DriveLeft] = vLeftPower * vLeftOffset;
+                    }
+                    else
+                    {
+                        vRightPower       = vRightPower - 1;
+                        motor[DriveRight] = vRightPower * vRightOffset;
+                    }
+                }
+                else
+                {
+                    if (vRightPower < vSpeed)
+                    {
+                        vRightPower       = vRightPower + 1;
+                        motor[DriveRight] = vRightPower * vRightOffset;
+                    }
+                    else
+                    {
+                        vLeftPower       = vLeftPower - 1;
+                        motor[DriveLeft] = vLeftPower * vLeftOffset;
+                    }
+                }
+            }
 
-			//Now we check to ensure we have not run into an object preventing us from moving.
-			if ((vCurrLeftPos <= (vPrevLeftPos + gcThreshHold)) || (vCurrRightPos <= (vPrevRightPos + gcThreshHold)))
-			{
-				//At least one motor is stuck. Turn off motors and wait for a period of time to avoid motor burn out.
-				motor[DriveLeft]  = 0;
-				motor[DriveRight] = 0;
+            //Now we check to ensure we have not run into an object preventing us from moving.
+            if ((vCurrLeftPos <= (vPrevLeftPos + gcThreshHold)) || (vCurrRightPos <= (vPrevRightPos + gcThreshHold)))
+            {
+                //At least one motor is stuck. Turn off motors and wait for a period of time to avoid motor burn out.
+                motor[DriveLeft]  = 0;
+                motor[DriveRight] = 0;
 
-				wait1Msec(1000);
+                wait1Msec(1000);
 
-				vSpeed = 50;
-				vLeftPower  = vSpeed;
-				vRightPower = vSpeed;
+                vSpeed = 50;
+                vLeftPower  = vSpeed;
+                vRightPower = vSpeed;
 
-				motor[DriveLeft]  = vLeftPower * vLeftOffset;
-				motor[DriveRight] = vRightPower * vRightOffset;
-			}
-			else if (vSpeed < iSpeed)
-			{
-				//We have cleared whatever was obstructing the robot so go ahead and speed back up
-				vSpeed = iSpeed;
-				vLeftPower  = vSpeed;
-				vRightPower = vSpeed;
+                motor[DriveLeft]  = vLeftPower * vLeftOffset;
+                motor[DriveRight] = vRightPower * vRightOffset;
+            }
+            else if (vSpeed < iSpeed)
+            {
+                //We have cleared whatever was obstructing the robot so go ahead and speed back up
+                vSpeed = iSpeed;
+                vLeftPower  = vSpeed;
+                vRightPower = vSpeed;
 
-				motor[DriveLeft]  = vLeftPower * vLeftOffset;
-				motor[DriveRight] = vRightPower * vRightOffset;
-			}
+                motor[DriveLeft]  = vLeftPower * vLeftOffset;
+                motor[DriveRight] = vRightPower * vRightOffset;
+            }
 
-			//Use the interval to calculate the next sync time
-			vNxtSyncTime = nPgmTime + gcSyncInterval;
+            //Use the interval to calculate the next sync time
+            vNxtSyncTime = nPgmTime + gcSyncInterval;
 
-			//Store the current positions in the previous position values for the next time through the loop
-			vPrevLeftPos  = vCurrLeftPos;
-			vPrevRightPos = vCurrRightPos;
-		}
-	}
+            //Store the current positions in the previous position values for the next time through the loop
+            vPrevLeftPos  = vCurrLeftPos;
+            vPrevRightPos = vCurrRightPos;
+        }
+    }
 
-	//We finished our movement so turn off the motors
-	motor[DriveLeft]  = 0;
-	motor[DriveRight] = 0;
+    //We finished our movement so turn off the motors
+    motor[DriveLeft]  = 0;
+    motor[DriveRight] = 0;
 
-	//The following line is used to pause the robot in between movements
-	wait1Msec(100);
+    //The following line is used to pause the robot in between movements
+    wait1Msec(100);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -487,54 +487,54 @@ void move(int iSpeed, int iDistance, driveState iCmd)
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 void GyroTurn(int iSpeed, int iDegrees, driveState iCmd)
 {
-	float vcurrposition = 0;
-	int   vprevtime     = nPgmTime;
-	int   vcurrtime;
-	float vcurrRate;
-	int   voffset;
-	float deltaSecs;
-	float degChange;
+    float vcurrposition = 0;
+    int   vprevtime     = nPgmTime;
+    int   vcurrtime;
+    float vcurrRate;
+    int   voffset;
+    float deltaSecs;
+    float degChange;
 
-	if (iCmd == LEFT)
-	{
-		motor[DriveLeft]  = -1 * iSpeed;
-		motor[DriveRight] = iSpeed;
-		voffset = -1;
-	}
-	else
-	{
-		motor[DriveLeft]  = iSpeed;
-		motor[DriveRight] = -1 * iSpeed;
-		voffset = 1;
-	}
+    if (iCmd == LEFT)
+    {
+        motor[DriveLeft]  = -1 * iSpeed;
+        motor[DriveRight] = iSpeed;
+        voffset = -1;
+    }
+    else
+    {
+        motor[DriveLeft]  = iSpeed;
+        motor[DriveRight] = -1 * iSpeed;
+        voffset = 1;
+    }
 
-	while (vcurrposition < iDegrees)
-	{
-		// This tells us the current rate of rotation in degrees per
-		// second.
-		vcurrRate = HTGYROreadRot(gyro) * voffset;
+    while (vcurrposition < iDegrees)
+    {
+        // This tells us the current rate of rotation in degrees per
+        // second.
+        vcurrRate = HTGYROreadRot(gyro) * voffset;
 
-		// How much time has elapsed since we last checked, which we use
-		// to determine how far we've turned
-		vcurrtime = nPgmTime;
+        // How much time has elapsed since we last checked, which we use
+        // to determine how far we've turned
+        vcurrtime = nPgmTime;
 
-		deltaSecs = (vcurrtime - vprevtime) / 1000.0;
-		if (deltaSecs < 0)
-		{
-			deltaSecs = ((float)((vcurrtime + 1024) - (vprevtime + 1024))) / 1000.0;
-		}
+        deltaSecs = (vcurrtime - vprevtime) / 1000.0;
+        if (deltaSecs < 0)
+        {
+            deltaSecs = ((float)((vcurrtime + 1024) - (vprevtime + 1024))) / 1000.0;
+        }
 
-		// Calculate how many degrees the heading changed.
-		degChange = vcurrRate * deltaSecs;
-		vcurrposition = vcurrposition + degChange;
-		vprevtime = vcurrtime;
-	}
+        // Calculate how many degrees the heading changed.
+        degChange = vcurrRate * deltaSecs;
+        vcurrposition = vcurrposition + degChange;
+        vprevtime = vcurrtime;
+    }
 
-	motor[DriveLeft]  = 0;
-	motor[DriveRight] = 0;
+    motor[DriveLeft]  = 0;
+    motor[DriveRight] = 0;
 
-	//The following line is used to pause the robot in between movements
-	wait1Msec(100);
+    //The following line is used to pause the robot in between movements
+    wait1Msec(100);
 }
 
 
@@ -547,49 +547,49 @@ void GyroTurn(int iSpeed, int iDegrees, driveState iCmd)
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 int findBeacon(int iPos, string iSide)
 {
-	int BeaconPos;
+    int BeaconPos;
 
-	//First we must turn the robot until the beacon is in front of us
-	if (strcmp(iSide, "left")== 0)
-	{
-		nxtDisplayCenteredTextLine(5, "Left");
+    //First we must turn the robot until the beacon is in front of us
+    if (strcmp(iSide, "left")== 0)
+    {
+        nxtDisplayCenteredTextLine(5, "Left");
 
-		while (SensorValue[irSeeker] < 7 && ServoValue[IR] < 255)
-		{
-			servo[IR] = ServoValue[IR] + 1;
-		}
-	}
-	else
-	{
-		nxtDisplayCenteredTextLine(5, "Right");
+        while (SensorValue[irSeeker] < 7 && ServoValue[IR] < 255)
+        {
+            servo[IR] = ServoValue[IR] + 1;
+        }
+    }
+    else
+    {
+        nxtDisplayCenteredTextLine(5, "Right");
 
-		while (SensorValue[irSeeker] > 3 && ServoValue[IR] > 0)
-		{
-			servo[IR] = ServoValue[IR] - 1;
-		}
-	}
+        while (SensorValue[irSeeker] > 3 && ServoValue[IR] > 0)
+        {
+            servo[IR] = ServoValue[IR] - 1;
+        }
+    }
 
-	BeaconPos = ServoValue[IR];
+    BeaconPos = ServoValue[IR];
 
-	if (debugMode)
-	{
-		eraseDisplay();
-		nxtDisplayCenteredTextLine(1, "Beacon Found");
-		nxtDisplayTextLine(3, "%i",BeaconPos);
-		wait10Msec (10000);
-	}
+    if (debugMode)
+    {
+        eraseDisplay();
+        nxtDisplayCenteredTextLine(1, "Beacon Found");
+        nxtDisplayTextLine(3, "%i",BeaconPos);
+        wait10Msec (10000);
+    }
 
-	bool left = strcmp(iSide, "left")==0;
-	int s = (left?0:1);
-	for(int i = 0; i < 4; i++) {
-		if(BeaconPos < margin[3*s+iPos][i]) {
-			if(left)
-				return i+1;
-			else
-				return 4-i;
-		}
-	}
-	return -1;
+    bool left = strcmp(iSide, "left")==0;
+    int s = (left?0:1);
+    for(int i = 0; i < 4; i++) {
+        if(BeaconPos < margin[3*s+iPos][i]) {
+            if(left)
+                return i+1;
+            else
+                return 4-i;
+        }
+    }
+    return -1;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -600,22 +600,22 @@ int findBeacon(int iPos, string iSide)
 /////////////////////////////////////////////////////////////////////////////////////////////////
 void placeblock (string sSide, int iPos, int iBeacon)
 {
-	int s = strcmp(sSide, "left")==0?0:1;
-	int p = s*nPositions+iPos*4+iBeacon;
-	for(int i = 0; i < nMoves; i++) {
-		int m = autoMoves[p][i];
-		int t = autoTurns[p][i];
-		if(t < 0)
-			GyroTurn(turnSpeed,abs(t),LEFT);
-		if(t > 0)
-			GyroTurn(turnSpeed,t,RIGHT);
-		wait1Msec(waitTime);
-		if(m < 0)
-			move(moveSpeed,abs(m),BACKWARD);
-		if(m > 0)
-			move(moveSpeed,abs(m),FORWARD);
-		wait1Msec(waitTime);
-	}
+    int s = strcmp(sSide, "left")==0?0:1;
+    int p = s*nPositions+iPos*4+iBeacon;
+    for(int i = 0; i < nMoves; i++) {
+        int m = autoMoves[p][i];
+        int t = autoTurns[p][i];
+        if(t < 0)
+            GyroTurn(turnSpeed,abs(t),LEFT);
+        if(t > 0)
+            GyroTurn(turnSpeed,t,RIGHT);
+        wait1Msec(waitTime);
+        if(m < 0)
+            move(moveSpeed,abs(m),BACKWARD);
+        if(m > 0)
+            move(moveSpeed,abs(m),FORWARD);
+        wait1Msec(waitTime);
+    }
 }
 
 
@@ -662,29 +662,29 @@ void cdefense (string iSide, int iPos)
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 task main()
 {
-	initializeRobot();
+    initializeRobot();
 
-	waitForStart(); // Wait for the beginning of autonomous phase.
+    waitForStart(); // Wait for the beginning of autonomous phase.
 
-	//////////////////////////////////////////
-	// Run the selected autonomous routine
-	//////////////////////////////////////////
-	if (strcmp(gRun[gRunIdx], gcPlaceBlock) == 0)
-	{
-		placeblock(gSide[gSideIdx], gPos, gPath);
-	}
-	else if (strcmp(gRun[gRunIdx], gcDefense) == 0)
-	{
-		int beaconP = findBeacon(gPos, gSide[gSideIdx]);
-		defense(gSide[gSideIdx], gPos, beaconP);
-	}
-	else if (strcmp(gRun[gRunIdx], gcCDefense) == 0)
-	{
-		cdefense(gSide[gSideIdx], gPos);
-	}
-	else
-	{
-		int beaconP = findBeacon(gPos, gSide[gSideIdx]);
-		placeblock(gSide[gSideIdx], gPos, beaconP);
-	}
+    //////////////////////////////////////////
+    // Run the selected autonomous routine
+    //////////////////////////////////////////
+    if (strcmp(gRun[gRunIdx], gcPlaceBlock) == 0)
+    {
+        placeblock(gSide[gSideIdx], gPos, gPath);
+    }
+    else if (strcmp(gRun[gRunIdx], gcDefense) == 0)
+    {
+        int beaconP = findBeacon(gPos, gSide[gSideIdx]);
+        defense(gSide[gSideIdx], gPos, beaconP);
+    }
+    else if (strcmp(gRun[gRunIdx], gcCDefense) == 0)
+    {
+        cdefense(gSide[gSideIdx], gPos);
+    }
+    else
+    {
+        int beaconP = findBeacon(gPos, gSide[gSideIdx]);
+        placeblock(gSide[gSideIdx], gPos, beaconP);
+    }
 }
