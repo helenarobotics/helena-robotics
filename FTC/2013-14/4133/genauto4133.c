@@ -37,7 +37,6 @@ const int waitTime = 200; //The amount of time to wait in-between commands
 const int nPositions = 3;            // Defines the number of places the robot can start at on a side
 const int margin [2*nPositions][4] = {{0,0,0,0},{0,0,0,0}, // Margin to detect an irBeacon based on [side, starting position, irBeacon
                                       {0,0,0,0},{0,0,0,0},
-                                      {0,0,0,0},{0,0,0,0},
                                       {0,0,0,0},{0,0,0,0}};
 const int sInit [2][nPositions] = {{0,0,0},{0,0,0}}; // Where to initialize a servo based on [side, starting position]
 
