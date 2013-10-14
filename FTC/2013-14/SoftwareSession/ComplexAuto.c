@@ -42,15 +42,15 @@ void driveForDistance(int targetLeftPower, int targetRightPower, int targetTicks
     // Keep track of the motor directions separately
     // (which makes the code easier to follow).
     int leftMotorDirection = 1;
-    if (targetLeftMotor < 0)
+    if (targetLeftPower < 0)
         leftMotorDirection = -1;
     targetLeftPower = abs(targetLeftPower);
 
     int rightMotorDirection = 1;
-    if (targetRighttMotor < 0)
+    if (targetRightPower < 0)
         rightMotorDirection = -1;
     targetRightPower = abs(targetRightPower);
-    
+
     // Limit the target powers to give us some leeway to get the motors
     // synchronized.
     if (targetLeftPower > MAX_TARGET_POWER)
@@ -65,9 +65,9 @@ void driveForDistance(int targetLeftPower, int targetRightPower, int targetTicks
     // Keep track of the each motor's current and previous encoder
     // values.
     int currLeftTicks, prevLeftTicks;
-    checkedLeftTicks = prevLeftTicks = 0;
+    currLeftTicks = prevLeftTicks = 0;
     int currRightTicks, prevRightTicks;
-    checkedRightTicks = prevRightTicks = 0;
+    currRightTicks = prevRightTicks = 0;
 
     // Reset the encoders and turn on the motors
     nMotorEncoder[motorA] = 0;
@@ -83,31 +83,31 @@ void driveForDistance(int targetLeftPower, int targetRightPower, int targetTicks
     ClearTimer(T4);
 
     // Keep moving until both motors have moved the correct distance
-    while (leftTicks < targetTicks || rightTicks < targetTicks)
+    while (currLeftTicks < targetTicks || currRightTicks < targetTicks)
     {
         // If either one of the motors travelled enought distance turn
         // it off.
-        leftTicks = abs(nMotorEncoder[motorA]);
-        if (leftTicks >= targetTicks)
+        currLeftTicks = abs(nMotorEncoder[motorA]);
+        if (currLeftTicks >= targetTicks)
         {
             currLeftPower = 0;
             motor[motorA] = 0;
         }
-        
-        rightTicks = abs(nMotorEncoder[motorB]);
-        if (rightTicks >= targetTicks)
+
+        currRightTicks = abs(nMotorEncoder[motorB]);
+        if (currRightTicks >= targetTicks)
         {
             currRightPower = 0;
             motor[motorB] = 0;
         }
-        
+
         // Check for stalled/out-of-sync motors?
-        if (time[T4] >= DRIVE_CHECK_MS)
+        if (time1[T4] >= DRIVE_CHECK_MS)
         {
             // Check if either of the motors is stalled.  If so,
             // shutdown both motors to be safe.
-            if (abs(checkLeftTicks - leftTicks) < STALLED_TICKS ||
-                abs(checkRightTicks - rightTicks) < STALLED_TICKS)
+            if (abs(currLeftTicks - prevLeftTicks) < STALLED_TICKS ||
+                abs(currRightTicks - prevRightTicks) < STALLED_TICKS)
             {
                 // Turn off both motors and wait one second to see if
                 // the stall clears.
@@ -121,7 +121,7 @@ void driveForDistance(int targetLeftPower, int targetRightPower, int targetTicks
                 motor[motorB] = currRightPower * rightMotorDirection;
             }
             else if (currLeftPower != 0 && currRightPower != 0 &&
-                     abs(leftTicks - rightTicks) > ENCODER_SYNC_ERROR_TICKS)
+                     abs(currLeftTicks - currRightTicks) > ENCODER_SYNC_ERROR_TICKS)
             {
                 // Both motors are running and the encoders are out of
                 // sync.  To fix this, we need to either speed-up the
@@ -144,14 +144,14 @@ void driveForDistance(int targetLeftPower, int targetRightPower, int targetTicks
                 //   sped it up the maximum amount
                 // * If all else fails, slow down the faster motor only
                 //   we haven't slowed it down the maximum amount
-                if (leftTicks < rightTicks)
+                if (currLeftTicks < currRightTicks)
                 {
                     // Speed up left or slowdown right
                     if (currRightPower > targetRightPower)
                         currRightPower--;
-                    else (currLeftPower < targetLeftPower + MAX_SYNC_POWER_CHANGE)
+                    else if (currLeftPower < targetLeftPower + MAX_SYNC_POWER_CHANGE)
                         currLeftPower++;
-                    else if (curreRightPower > targetRightPower - MAX_SYNC_POWER_CHANGE)
+                    else if (currRightPower > targetRightPower - MAX_SYNC_POWER_CHANGE)
                         currRightPower--;
                 }
                 else
@@ -159,9 +159,9 @@ void driveForDistance(int targetLeftPower, int targetRightPower, int targetTicks
                     // Speed up right or slowdown left
                     if (currLeftPower > targetLeftPower)
                         currLeftPower--;
-                    else (currRightPower < targetRightPower + MAX_SYNC_POWER_INCREASE)
+                    else if (currRightPower < targetRightPower + MAX_SYNC_POWER_CHANGE)
                         currLeftPower++;
-                    else if (curreLeftPower > targetLeftPower - MAX_SYNC_POWER_CHANGE)
+                    else if (currLeftPower > targetLeftPower - MAX_SYNC_POWER_CHANGE)
                         currLeftPower--;
                 }
 
@@ -172,8 +172,8 @@ void driveForDistance(int targetLeftPower, int targetRightPower, int targetTicks
 
             // Remember the current ticks so we can determine if
             // the motors are stalled next time.
-            checkedLeftTicks = leftTicks;
-            checkedRightTicks = rightTicks;
+            prevLeftTicks = currLeftTicks;
+            prevRightTicks = currRightTicks;
 
             // Reset the timer
             ClearTimer(T4);
@@ -203,7 +203,7 @@ void turnClockwise(int degrees)
     int leftPower = TURN_MOTOR_POWER;
     if (degrees < 0)
         leftPower = -leftPower;
-    
+
     driveForDistance(leftPower, -leftPower, TICKS_PER_DEGREE * abs(degrees));
 }
 
