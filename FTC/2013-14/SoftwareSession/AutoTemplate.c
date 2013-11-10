@@ -4,8 +4,10 @@ void turnRight(int degrees);
 void turnLeft(int degrees);
 
 // These are robot specific
-const int ONE_CM_TICKS = 30;
+const int TICKS_PER_CM = 30;
+const int TICKS_STRAIGHT_OVERRUN = 200;
 const int TICKS_PER_DEGREE = 8 * 1440 / 360;
+const int TICKS_TURN_OVERRUN = 35;
 
 // If these are modified, the above may need to be altered slightly
 const int STRAIGHT_MOTOR_POWER = 50;
@@ -30,7 +32,7 @@ void moveStraight(int distanceInCm)
     nMotorEncoder[motorB] = 0;
     motor[motorA] = power;
     motor[motorB] = power;
-    int ticks = ONE_CM_TICKS * abs(distanceInCm);
+    int ticks = TICKS_PER_CM * abs(distanceInCm) - TICKS_STRAIGHT_OVERRUN;
     while (abs(nMotorEncoder[motorA]) < ticks ||
            abs(nMotorEncoder[motorB]) < ticks)
     {
@@ -58,7 +60,7 @@ void turnLeft(int degrees)
     nMotorEncoder[motorB] = 0;
     motor[motorA] = -TURN_MOTOR_POWER;
     motor[motorB] = TURN_MOTOR_POWER;
-    int ticks = TICKS_PER_DEGREE * degrees;
+    int ticks = TICKS_PER_DEGREE * degrees - TICKS_TURN_OVERRUN;
     while (abs(nMotorEncoder[motorA]) < ticks ||
            abs(nMotorEncoder[motorB]) < ticks)
     {
