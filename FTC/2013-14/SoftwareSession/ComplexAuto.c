@@ -2,7 +2,7 @@
 const int TICKS_PER_CM = 30;
 const int TICKS_STRAIGHT_OVERRUN = 200;
 const int TICKS_PER_DEGREE = 8 * 1080 / 360;
-const int TICKS_TURN = 35;
+const int TICKS_TURN_OVERRUN = 35;
 
 // If these are modified, the above may need to be altered slightly
 const int STRAIGHT_MOTOR_POWER = 50;
