@@ -1,7 +1,7 @@
 // These are robot specific
 const int TICKS_PER_CM = 30;
 const int TICKS_STRAIGHT_OVERRUN = 200;
-const int TICKS_PER_DEGREE = 8 * 1080 / 360;
+const int TICKS_PER_DEGREE = 8 * 1440 / 360;
 const int TICKS_TURN_OVERRUN = 35;
 
 // If these are modified, the above may need to be altered slightly
