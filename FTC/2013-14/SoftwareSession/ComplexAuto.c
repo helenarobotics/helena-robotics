@@ -1,6 +1,8 @@
 // These are robot specific
 const int TICKS_PER_CM = 30;
+const int TICKS_STRAIGHT_OVERRUN = 200;
 const int TICKS_PER_DEGREE = 8 * 1080 / 360;
+const int TICKS_TURN = 35;
 
 // If these are modified, the above may need to be altered slightly
 const int STRAIGHT_MOTOR_POWER = 50;
@@ -195,7 +197,7 @@ void driveStraight(int distanceInCm)
     if (distanceInCm < 0)
         power = -power;
 
-    driveForDistance(power, power, TICKS_PER_CM * abs(distanceInCm));
+    driveForDistance(power, power, TICKS_PER_CM * abs(distanceInCm) - TICKS_STRAIGHT_OVERRUN);
 }
 
 void turnClockwise(int degrees)
@@ -204,7 +206,7 @@ void turnClockwise(int degrees)
     if (degrees < 0)
         leftPower = -leftPower;
 
-    driveForDistance(leftPower, -leftPower, TICKS_PER_DEGREE * abs(degrees));
+    driveForDistance(leftPower, -leftPower, TICKS_PER_DEGREE * abs(degrees) - TICKS_TURN_OVERRUN);
 }
 
 void initializeRobot()
