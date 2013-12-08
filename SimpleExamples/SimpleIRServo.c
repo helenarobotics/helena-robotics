@@ -4,8 +4,6 @@ typedef enum { SWEEP_LEFT, SWEEP_RIGHT } SweepDirection;
 // HiTechnic IR sensor constants
 const int IR_NOMATCH_SECTION = 0;
 const int IR_RIGHT_SECTION = 4;
-const int IR_CENTER_SECTION = 5;
-const int IR_LEFT_SECTION = 6;
 
 TServoIndex irServo;
 tSensors irSensor;
@@ -47,9 +45,8 @@ int findBeaconPosition() {
     bool found = false;
     int prevIrSection = SensorValue[irSensor];
     do {
-        // Did we find the sensor?
-        int currIrSection = SensorValue[irss.irSensor];
         // Determine if we found a center transition spot
+        int currIrSection = SensorValue[irss.irSensor];
         if (currIrSection == IR_CENTER_SECTION &&
             abs(currIrSection - prevIrSection) == 1) {
             found = true;
