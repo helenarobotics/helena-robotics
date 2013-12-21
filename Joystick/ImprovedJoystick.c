@@ -15,7 +15,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if (defined(NXT) || defined(TETRIX)) && (_TARGET == "Robot") && !defined(NaturalLanguage)
+#if (defined(NXT) || defined(TETRIX)) && defined(_Target_Robot_) && !defined(NaturalLanguage)
 // Automatically start this task when the main user program starts.
 #pragma autoStartTasks
 #elif (defined(VEX2) || defined(NXT) || defined(TETRIX)) && (_TARGET == "VirtWorld")
@@ -42,7 +42,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if (_TARGET == "Robot")
+#if defined(_Target_Robot_)
 typedef struct
 {
     bool UserMode;          // Autonomous or Telep-Operated mode
@@ -79,7 +79,7 @@ intrinsic void getJoystickSettings(TJoystick &joystick)
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if (_TARGET == "Robot")
+#if defined(_Target_Robot_)
 
 #define getJoystickSettings(joystick)     memcpy(&joystick, &joystickCopy, sizeof(joystick))
 
@@ -104,7 +104,7 @@ short joy1Btn(int btn)
 #endif
 
 // Code Below Does Not Apply to Virtual/Emulator Robots
-#if (defined(NXT) || defined(TETRIX)) && (_TARGET == "Robot")
+#if (defined(NXT) || defined(TETRIX)) && defined(_Target_Robot_)
 const TMailboxIDs kJoystickQueueID = mailbox1;
 TJoystick joystickCopy;  // Internal buffer to hold the last received message from the PC. Do not use
 
@@ -123,7 +123,7 @@ long ntotalMessageCount = 0;
 // "joystickCopy" buffer.
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if (_TARGET == "Robot")
+#if defined(_Target_Robot_)
 bool bDisconnected = false;
 bool bOverrideJoystickDisabling = false;
 long nNoMessageCounterLimit = 750;
@@ -260,7 +260,7 @@ bool bDisplayDiagnostics = false;  // Set to false in user program to disable di
 
 void getUserControlProgram(string &sFileName);
 
-#if defined(TETRIX) && (_TARGET == "Robot")
+#if defined(TETRIX) && defined(_Target_Robot_)
 
 void disableDiagnosticsDisplay()
 {
