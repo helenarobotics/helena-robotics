@@ -27,7 +27,6 @@ void disableMotors();
 // Forward declarations
 //
 void moveArm();
-void showDisplay();
 int expoJoystick(int eJoy);
 
 void disableMotors() {
@@ -51,9 +50,6 @@ task main() {
         // Get current joystick buttons and analog movements
         getJoystickSettings(joystick);
 
-        // Display all the information on the screen
-        showDisplay();
-
         // move the arm
         moveArm();
 
@@ -61,13 +57,9 @@ task main() {
     }
 }
 
-void showDisplay() {
-}
-
-// Keep track of arm state so we can keep the arm from
-// drooping when we stop it.
+// Keep track of arm state so we can keep the arm from drooping when we
+// stop it.
 int oldArmPower = 0;
-int stopArmPos = 0;
 int stopArmPower = 0;
 long stopArmPowerChangeTime = 0;
 const int ARM_STOP_POWER_CHANGE_INCREMENT_TIME = 20;
@@ -75,7 +67,8 @@ const int ARM_STOP_POWER_CHANGE_INCREMENT_TIME = 20;
 bool feedBtnWasPressed = false;
 bool feedbackActive = false;
 void moveArm() {
-    // Enable/disable the arm-holding feedback cod
+    // Enable/disable the arm-holding feedback code so we can compare
+    // behavior of the robot with/without the code.
     bool feedBtn = joy1Btn(3);
     if (feedBtn && !feedBtnWasPressed)
         feedbackActive = !feedbackActive;
@@ -83,74 +76,79 @@ void moveArm() {
 
     // Use the Y joystick to move the arm, but only give it at most
     // half-power.
-    int armPower = expoJoystick(joystick.joy1_y1);
-    armPower /= 2;
+    int userArmPower = expoJoystick(joystick.joy1_y1);
+    userArmPower /= 2;
 
     // Move *much* slower when going down
-    if (armPower < 0)
-        armPower /= 3;
+    if (userArmPower < 0)
+        userArmPower /= 3;
 
-    // Are we actively moving the arm?
-    if (armPower != 0) {
-        // Remember what the user-supplied power was.
-        oldArmPower = armPower;
-
-        // Reset the stopArmPower
-        stopArmPower = 0;
+    // Determine the actual Arm power to use.
+    int actualArmPower = 0;
+    if (userArmPower != 0) {
+        // The user is actively moving the arm (supplying joystick
+        // power), so use that power for controlling the arm motor.
+        actualArmPower = userArmPower;
     } else if (feedbackActive) {
         // No user-supplied arm power.  Attempt to hold the arm at the
         // stopped position using the encoder for feedback.
         long now = nPgmTime;
 
         // Check to see if we just stopped (the arm was just moving and
-        // is now stopped).
+        // is now being stopped).
         if (oldArmPower != 0) {
-            // Reset the encoder to indicate this is the 'stop' position
-            // and give us a bit of time let the arm settle down before
-            // we check to see if it's moved.
-            nMotorEncoder[armMotor] = 0;
-            stopArmPos = 0;
+            // Maybe we don't need any power, so let's hope the arm
+            // doesn't droop.
             stopArmPower = 0;
+
+            // Reset the encoder to indicate this is the 'stop' position
+            // and give us a bit of time than normal to let the arm
+            // settle down before we check to see if it's moved.
+            nMotorEncoder[armMotor] = 0;
             stopArmPowerChangeTime = now + 2 * ARM_STOP_POWER_CHANGE_INCREMENT_TIME;
         } else if (now > stopArmPowerChangeTime) {
-            // Check to see if the arm is still moving?  If so, add some
-            // power in the opposite direction to try and stop it.
+            // Check to see if the arm has moved.  If so, add some
+            // power in the opposite direction to try and counteract it.
             int armPos = nMotorEncoder[armMotor];
-            if (abs(armPos - stopArmPos) != 0) {
-                if (armPos < stopArmPos)
+            if (abs(armPos) > 0) {
+                // It's moving, so add some power in the opposite direction
+                if (armPos < 0)
                     stopArmPower++;
                 else
                     stopArmPower--;
-                // We've made an adjustment, reset the state so we can
-                // recheck this again to see if it's moving.  This time
-                // we'll check a bit more quickly.
-                stopArmPos = armPos;
+
+                // We've made an adjustment, reset the position and
+                // setup to recheck again shortly to see if it's still
+                // moving.
+                nMotorEncoder[armMotor] = 0;
                 stopArmPowerChangeTime = now + ARM_STOP_POWER_CHANGE_INCREMENT_TIME;
             } else if (stopArmPower != 0 &&
                        now > stopArmPowerChangeTime + 20 * ARM_STOP_POWER_CHANGE_INCREMENT_TIME) {
-                // If the arm is stopped with power on for some time,
-                // turn off the motor completely to avoid burning up
-                // motors and save the battery.  Note, if the arm moves
-                // again, the code should notice and and stop the
-                // movement, and cause this code to 'pulse' the motor to
-                // hold it in place.
+                // The arm has not moved in some time, but we are
+                // actively using the motor to keep it from moving.  To
+                // avoid burning up motors and save the battery turn off
+                // the motor completely.  Note, if the arm starts to
+                // move again, the code should notice immediately (since
+                // we don't reset stopArmPowerChangeTime) and work to
+                // stop the movement.  This behavior will end up causing
+                // the motor to 'pulse' at whatever frequency necessary
+                // to hold it in place.
                 stopArmPower = 0;
             }
-            nxtDisplayString(5, "RAS=%d", armPos);
         }
-        oldArmPower = armPower;
-        armPower = stopArmPower;
-
-        // Feedback to user
-        nxtDisplayString(2, "UAP=%d", oldArmPower);
-        nxtDisplayString(3, "SAP=%d", stopArmPower);
-        nxtDisplayString(4, "Pos=%d", stopArmPos);
+        actualArmPower = stopArmPower;
     }
+    // Feedback to user
     nxtDisplayString(0, "FB=%d", feedbackActive);
-    nxtDisplayString(1, "Pow=%d", armPower);
+    nxtDisplayString(1, "Pow=%d", userArmPower);
+    nxtDisplayString(2, "SAP=%d", stopArmPower);
 
     // Set the motor power
-    motor[armMotor] = armPower;
+    motor[armMotor] = actualArmPower;
+
+    // Remember the user-supplied armPower so we can step in when power
+    // is first disabled.
+    oldArmPower = userArmPower;
 }
 
 // http://www.chiefdelphi.com/forums/showthread.php?p=921992
