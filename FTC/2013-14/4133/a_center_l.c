@@ -1,12 +1,12 @@
 #pragma config(Hubs,  S1, HTMotor,  HTMotor,  HTServo,  HTMotor)
 #pragma config(Sensor, S2,     gyro,           sensorI2CHiTechnicGyro)
 #pragma config(Sensor, S3,     ir,             sensorHiTechnicIRSeeker1200)
-#pragma config(Motor,  mtr_S1_C1_1,     mLeft,         tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S1_C1_2,     mRight,        tmotorTetrix, openLoop, reversed)
-#pragma config(Motor,  mtr_S1_C2_1,     mRightArm,     tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C1_1,     mRight,         tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C1_2,     mRightArm,        tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C2_1,     mLeft,     tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C2_2,     mLeftArm,      tmotorTetrix, openLoop, reversed)
 #pragma config(Motor,  mtr_S1_C4_1,     mLift,         tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S1_C4_2,     motorI,        tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C4_2,     mFlag,        tmotorTetrix, openLoop)
 #pragma config(Servo,  srvo_S1_C3_1,    sIr,                  tServoNone)
 #pragma config(Servo,  srvo_S1_C3_2,    sWrist,               tServoNone)
 #pragma config(Servo,  srvo_S1_C3_3,    servo3,               tServoNone)
@@ -148,13 +148,13 @@ void turn(int iSpeed, int iDegrees, int code)
 
 	if (code == L_CODE)
 	{
-		motor[mLeft]  = iSpeed;
-		motor[mRight] = -iSpeed;
+		motor[mLeft]  = -iSpeed;
+		motor[mRight] = iSpeed;
 	}
 	else if(code == R_CODE)
 	{
-		motor[mLeft]  = -iSpeed;
-		motor[mRight] = iSpeed;
+		motor[mLeft]  = iSpeed;
+		motor[mRight] = -iSpeed;
 	}
 
 	while (abs(vcurrposition) < iDegrees)
@@ -185,9 +185,9 @@ void turn(int iSpeed, int iDegrees, int code)
 	wait1Msec(100);
 }
 
-int b1 = 26;
-int b2 = 60;
-int b3 = 95;
+int b1 = 35;
+int b2 = 73;
+int b3 = 109;
 //34
 //48
 //90
@@ -203,7 +203,6 @@ int scan() {
 		wait1Msec(10);
 	}
 	int sPos = servo[sIr];
-	nxtDisplayString(1,"%i",sPos);
 	if(sPos < b1)
 		return 1;
 	if(sPos < b2)
@@ -216,17 +215,17 @@ int scan() {
 
 void followpath(int loc) {
 	if(loc == 1) {
-		turn(75,25,L_CODE);
-		movein(50,17);
+		turn(55,25,L_CODE);
+		movein(55,17);
 	} else if(loc == 2) {
-		turn(75,13,L_CODE);
-		movein(50,15.5);
+		turn(55,8,L_CODE);
+		movein(55,15.5);
 	} else if(loc == 3) {
-		turn(75,8,R_CODE);
-		movein(50,17);
+		turn(55,8,R_CODE);
+		movein(55,16);
 	} else {
-		turn(75,19,R_CODE);
-		movein(60,21);
+		turn(55,19,R_CODE);
+		movein(55,21);
 	}
 }
 
@@ -251,33 +250,33 @@ void dump() {
 
 void goOnRamp(int loc) {
 	if(loc == 1) {
-		turn(75,45,L_CODE);
-		movein(60,23);
-		turn(75,55,R_CODE);
-		movein(75,35);
-		turn(75,100,R_CODE);
-		movein(75,35);
+		turn(55,45,L_CODE);
+		movein(55,23);
+		turn(55,55,R_CODE);
+		movein(55,35);
+		turn(55,100,R_CODE);
+		movein(70,35);
 	} else if(loc == 2) {
-		turn(75,58,L_CODE);
-		movein(60,22);
-		turn(75,55,R_CODE);
-		movein(75,36);
-		turn(75,100,R_CODE);
-		movein(75,36);
+		turn(55,62,L_CODE);
+		movein(55,24);
+		turn(55,55,R_CODE);
+		movein(55,36);
+		turn(55,100,R_CODE);
+		movein(70,36);
 	} else if(loc == 3) {
-		turn(75,58,R_CODE);
-		movein(60,25);
-		turn(75,55,L_CODE);
-		movein(75,36);
-		turn(75,100,L_CODE);
-		movein(75,36);
+		turn(55,58,R_CODE);
+		movein(55,27);
+		turn(55,57,L_CODE);
+		movein(55,38);
+		turn(55,100,L_CODE);
+		movein(70,38);
 	} else {
-		turn(75,45,R_CODE);
-		movein(60,21);
-		turn(75,55,L_CODE);
-		movein(75,35);
-		turn(80,100,L_CODE);
-		movein(75,35);
+		turn(55,45,R_CODE);
+		movein(55,21);
+		turn(55,55,L_CODE);
+		movein(55,35);
+		turn(55,100,L_CODE);
+		movein(70,35);
 	}
 }
 
@@ -293,19 +292,19 @@ task main()
 	motor[mLeftArm] = motor[mRightArm] = 0;
 
 	servo[sIr] = 255;
-  movein(50, 16);
+  movein(55, 17);
   wait1Msec(1000);
-  turn(75, 38, L_CODE);//Initial move;
+  turn(55, 40, L_CODE);//Initial move;
 
   int loc = scan();
-  nxtDisplayString(0,"%i",loc);
+  nxtDisplayString(3,"%i",loc);
   followpath(loc);
   dump();
   goOnRamp(loc);
 
+  PlaySoundFile("zeld_ow_001.rso");
   //go indefinitely
   while (true) {
-
 	servo[sIr] = 128;
       continue;
   }

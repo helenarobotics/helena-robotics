@@ -1,12 +1,12 @@
 #pragma config(Hubs,  S1, HTMotor,  HTMotor,  HTServo,  HTMotor)
 #pragma config(Sensor, S2,     gyro,           sensorI2CHiTechnicGyro)
 #pragma config(Sensor, S3,     ir,             sensorHiTechnicIRSeeker1200)
-#pragma config(Motor,  mtr_S1_C1_1,     mLeft,         tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S1_C1_2,     mRight,        tmotorTetrix, openLoop, reversed)
-#pragma config(Motor,  mtr_S1_C2_1,     mRightArm,     tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C1_1,     mRight,         tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C1_2,     mRightArm,        tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C2_1,     mLeft,     tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C2_2,     mLeftArm,      tmotorTetrix, openLoop, reversed)
 #pragma config(Motor,  mtr_S1_C4_1,     mLift,         tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S1_C4_2,     motorI,        tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C4_2,     mFlag,        tmotorTetrix, openLoop)
 #pragma config(Servo,  srvo_S1_C3_1,    sIr,                  tServoNone)
 #pragma config(Servo,  srvo_S1_C3_2,    sWrist,               tServoNone)
 #pragma config(Servo,  srvo_S1_C3_3,    servo3,               tServoNone)
@@ -29,25 +29,24 @@ void dump();
 void turn(int iSpeed, int iDegrees, int code);
 int wait = 0;
 
-const float D = 56;
+const float D = 58;
 
 const long   gcSyncInterval  = 100; //Defines the time interval between each check for collision and PID correction
 const long   gcSyncTickError = 20;  //Defines how far the motors can be "off" before needing correction 50 ticks = ~12 degrees
 const long   gcMotorStop = 10;
 const long syncTime = 100;
-const long tickError = 20;
+const long tickError = 10;
 
 bool atPosition = false;
 
 const int R_CODE = 3;
 const int L_CODE = 4;
-const int LEFT_IR_BORDER = 5;
 const int RIGHT_IR_BORDER = 6;
 
 int lastPos = 0;
 task SearchTask() {
 	while(!atPosition) {
-		//nxtDisplayString(0,"%i",SensorValue[ir]);
+		nxtDisplayString(2,"%i",SensorValue[ir]);
 		//PlayTone(SensorValue[ir]*100,100);
 		if(SensorValue[ir] == RIGHT_IR_BORDER) {
 			atPosition = true;
@@ -73,7 +72,7 @@ task main()
 	servo[sIr] = 220;
 	wait1Msec(1000);
 	StartTask(SearchTask);
-	wait1Msec(1000);
+	wait1Msec(500);
 
 	float distance = findIR(50);
 
@@ -95,9 +94,9 @@ void initializeRobot() {
 }
 
 void placeBlock(){
-	turn(75,82,R_CODE);
+	turn(55,74,R_CODE);
 	dump();
-	turn(80,78,L_CODE);
+	turn(55,68,L_CODE);
 }
 
 void dump() {
@@ -125,10 +124,11 @@ void goOnRamp() {
 	wait1Msec(200);
 	motor[mLeftArm] = motor[mRightArm] = 0;
 
-	turn(75,70,R_CODE);
-	move(50,45);
-	turn(75,110,R_CODE);
+	turn(55,60,R_CODE);
+	move(60,42);
+	turn(55,100,R_CODE);
 	move(60,40);
+	//PlaySoundFile("zeld_ow_001.rso");
 }
 
 
@@ -144,13 +144,13 @@ void turn(int iSpeed, int iDegrees, int code)
 
 	if (code == L_CODE)
 	{
-		motor[mLeft]  = iSpeed;
-		motor[mRight] = -iSpeed;
+		motor[mLeft]  = -iSpeed;
+		motor[mRight] = iSpeed;
 	}
 	else if(code == R_CODE)
 	{
-		motor[mLeft]  = -iSpeed;
-		motor[mRight] = iSpeed;
+		motor[mLeft]  = iSpeed;
+		motor[mRight] = -iSpeed;
 	}
 
 	while (abs(vcurrposition) < iDegrees)
@@ -234,16 +234,16 @@ void movet(int iSpeed, int nTicks)
 				if (vCurrLeftPos < vCurrRightPos)
 				{
 					if (vLeftPower < vSpeed)
-						motor[mRight] = (vRightPower+=2);
+						motor[mLeft] = (vLeftPower+=2);
 					else
-						motor[mLeft] = (vLeftPower-=2);
+						motor[mRight] = (vRightPower-=2);
 				}
 				else
 				{
 					if (vRightPower < vSpeed)
-						motor[mLeft] = (vLeftPower+=2);
+						motor[mRight] = (vRightPower+=2);
 					else
-						motor[mRight] = (vRightPower-=2);
+						motor[mLeft] = (vLeftPower-=2);
 				}
 			}
 
@@ -282,6 +282,8 @@ void movet(int iSpeed, int nTicks)
 	wait1Msec(100);
 }
 
+const float switchPoint = 22;
+
 float findIR(int iSpeed) {
 	nMotorEncoder[mLeft] = nMotorEncoder[mRight] = 0;
 	int vCurrLeftPos   = 0;
@@ -308,6 +310,11 @@ float findIR(int iSpeed) {
 		vCurrLeftPos  = abs(nMotorEncoder[mLeft]);
 		vCurrRightPos = abs(nMotorEncoder[mRight]);
 
+		nxtDisplayString(0,"%i",abs(vCurrLeftPos-vCurrRightPos));
+
+		if(ticksToIn((vCurrLeftPos+vCurrRightPos)/2) >= switchPoint)
+			servo[sIr] = 210;
+
 		//We only perform error correction at specific intervals
 		if (nPgmTime >= vNxtSyncTime)
 		{
@@ -320,16 +327,16 @@ float findIR(int iSpeed) {
 				if (vCurrLeftPos < vCurrRightPos)
 				{
 					if (vLeftPower < vSpeed)
-						motor[mRight] = (vRightPower+=2);
+						motor[mLeft] = (vLeftPower+=2);
 					else
-						motor[mLeft] = (vLeftPower-=2);
+						motor[mRight] = (vRightPower-=2);
 				}
 				else
 				{
 					if (vRightPower < vSpeed)
-						motor[mLeft] = (vLeftPower+=2);
+						motor[mRight] = (vRightPower+=2);
 					else
-						motor[mRight] = (vRightPower-=2);
+						motor[mLeft] = (vLeftPower-=2);
 				}
 			}
 
@@ -359,5 +366,5 @@ float inToTicks(float dist) {
 }
 
 float ticksToIn(float ticks) {
-	return 13.0*ticks/1000.0+1.75;
+	return 13.0*ticks/1000.0;
 }
