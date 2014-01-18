@@ -18,7 +18,8 @@ public class Config {
     public static final int BACK_RIGHT_VICTOR =  4;
    
     //Solenoid(s) Channel
-    public static final int KICKER_SOLENOID = 1;
+    public static final int LIFT_SOLENOID = 1;
+    public static final int JAW_SOLENOID = 2;
     
     //DRIVE TYPES
     public static final int ARCADE =   1;
@@ -29,7 +30,11 @@ public class Config {
     
     //Joystick Channels
     public static final int DRIVE_JOYSTICK = 1;
+    public static final int AUXILIARY_JOYSTICK = 2;
     
-    //Joystick Buttons
-    public static final int KICKER_BUTTON = 1;
+    //Drive Joystick Buttons
+
+    //Auxilary Joystick Buttons
+    public static final int LIFT_BUTTON = 1;
+    public static final int JAW_BUTTON = 2;
 }

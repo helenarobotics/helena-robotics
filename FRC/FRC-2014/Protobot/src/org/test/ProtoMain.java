@@ -28,7 +28,9 @@ public class ProtoMain extends SimpleRobot {
     Victor backRightDrive;
     RobotDrive drive;
     Joystick driveJoystick;
-    Solenoid kicker;
+    Joystick auxJoystick;
+    Solenoid mainLift;
+    Solenoid jaw;
     
     public  ProtoMain() {
         System.out.println("Hello, y'all.");
@@ -40,7 +42,9 @@ public class ProtoMain extends SimpleRobot {
         drive = new RobotDrive(frontLeftDrive, frontRightDrive,
                                backLeftDrive,  backRightDrive);
         driveJoystick = new Joystick(Config.DRIVE_JOYSTICK);
-        kicker = new Solenoid(Config.KICKER_SOLENOID);
+        auxJoystick = new Joystick(Config.AUXILIARY_JOYSTICK);
+        //mainLift = new Solenoid(Config.LIFT_SOLENOID);
+        jaw = new Solenoid(Config.JAW_SOLENOID);
     }
     
     /**
@@ -61,7 +65,7 @@ public class ProtoMain extends SimpleRobot {
      * This function is called once each time the robot enters operator control.
      */
     
-    private boolean lastKickerInput = false;
+    private boolean lastLiftInput = false;
     public void operatorControl() {
         drive.setSafetyEnabled(false);
         
@@ -79,12 +83,20 @@ public class ProtoMain extends SimpleRobot {
                     break;
             }
             
-            if(driveJoystick.getRawButton(Config.KICKER_BUTTON) && !lastKickerInput) {
-                kicker.set(!kicker.get());
-                System.out.println("Kicker toggled to" + kicker.get());
+            //Control Lift Solenoid
+            /*if(auxJoystick.getRawButton(Config.LIFT_BUTTON) && !lastLiftInput) {
+                mainLift.set(!mainLift.get());
+                System.out.println("Kicker toggled to " + mainLift.get());
             }
             
-            lastKickerInput = driveJoystick.getRawButton(Config.KICKER_BUTTON);
+            lastLiftInput = auxJoystick.getRawButton(Config.LIFT_BUTTON);
+            */
+            //Control Jaw Solenoid
+            if(auxJoystick.getAxis(Joystick.AxisType.kY) > 0.5) {
+                jaw.set(true);
+            } else {
+                jaw.set(false);
+            }
         }
     }
     
