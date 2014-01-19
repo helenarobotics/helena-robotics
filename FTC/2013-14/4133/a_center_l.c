@@ -225,7 +225,7 @@ void followpath(int loc) {
 		movein(55,16);
 	} else {
 		turn(55,19,R_CODE);
-		movein(55,21);
+		movein(55,19);
 	}
 }
 

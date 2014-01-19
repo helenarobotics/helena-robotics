@@ -94,9 +94,9 @@ void initializeRobot() {
 }
 
 void placeBlock(){
-	turn(55,74,R_CODE);
+	turn(55,77,R_CODE);
 	dump();
-	turn(55,68,L_CODE);
+	turn(55,71,L_CODE);
 }
 
 void dump() {
