@@ -18,9 +18,9 @@
 #include "hitechnic-gyro.h"
 #include "JoystickDriver.c"
 
-const long   gcSyncInterval  = 100; //Defines the time interval between each check for collision and PID correction
-const long   gcSyncTickError = 20;  //Defines how far the motors can be "off" before needing correction 50 ticks = ~12 degrees
-const long   gcMotorStop = 10;
+const long gcSyncInterval = 100; // Defines the time interval between each check for collision and PID correction
+const long gcSyncTickError = 20;  // Defines how far the motors can be "off" before needing correction 50 ticks = ~12 degrees
+const long gcMotorStop = 10;
 void initializeRobot()
 {
     bDisplayDiagnostics = false;
@@ -35,7 +35,7 @@ const int L_CODE = 3;
 const int R_CODE = 4;
 
 void movein(int iSpeed, float dist) {
-    move(iSpeed, abs((dist-1.75)*1000.0/13.0));
+    move(iSpeed, abs((dist - 1.75) * 1000.0 / 13.0));
 }
 
 void move(int iSpeed, int nTicks)
@@ -44,39 +44,39 @@ void move(int iSpeed, int nTicks)
     //For the encoder tic we multiply the incoming distance by the calculated number of tics when
     //traveling one inch. To get the calculated value you must figure out the circumference of the
     //wheel, tread, etc. There are 1440 tics in a single revolution of the motor
-    int  vEncoderTic   = nTicks;
-    int  vPrevLeftPos  = 0;
-    int  vPrevRightPos = 0;
-    int  vLeftPower    = iSpeed;
-    int  vRightPower   = iSpeed;
-    int  vSpeed        = iSpeed;
+    int vEncoderTic = nTicks;
+    int vPrevLeftPos = 0;
+    int vPrevRightPos = 0;
+    int vLeftPower = iSpeed;
+    int vRightPower = iSpeed;
+    int vSpeed = iSpeed;
     bool end = false;
 
     //Reset our encoders prior to movement
-    nMotorEncoder[mLeft]  = 0;
+    nMotorEncoder[mLeft] = 0;
     nMotorEncoder[mRight] = 0;
 
     //Start up the motors
-    motor[mLeft]  = vLeftPower;
+    motor[mLeft] = vLeftPower;
     motor[mRight] = vRightPower;
 
-    unsigned long vNxtSyncTime  = nPgmTime + gcSyncInterval+200;
+    unsigned long vNxtSyncTime = nPgmTime + gcSyncInterval + 200;
 
     //Loop until both motors have traveled the required distance
-    while((abs(nMotorEncoder[mLeft]) < vEncoderTic || abs(nMotorEncoder[mRight]) < vEncoderTic) && !end)
+    while ((abs(nMotorEncoder[mLeft]) < vEncoderTic || abs(nMotorEncoder[mRight]) < vEncoderTic) && !end)
     {
         //Determine the current value of the encoders
-        int vCurrLeftPos  = abs(nMotorEncoder[mLeft]);
+        int vCurrLeftPos = abs(nMotorEncoder[mLeft]);
         int vCurrRightPos = abs(nMotorEncoder[mRight]);
 
         //We only perform error correction at specific intervals
         if (nPgmTime >= vNxtSyncTime)
         {
-            nxtDisplayString(0,"%i:%i",abs(vCurrLeftPos - vPrevLeftPos),abs(vCurrRightPos - vPrevRightPos));
-            if(abs(vCurrLeftPos - vPrevLeftPos) < gcMotorStop && motor[mLeft] != 0)
+            nxtDisplayString(0,"%i:%i", abs(vCurrLeftPos - vPrevLeftPos), abs(vCurrRightPos - vPrevRightPos));
+            if (abs(vCurrLeftPos - vPrevLeftPos) < gcMotorStop && motor[mLeft] != 0)
                 end = true;
 
-            if(abs(vCurrRightPos - vPrevRightPos) < gcMotorStop && motor[mRight] != 0)
+            if (abs(vCurrRightPos - vPrevRightPos) < gcMotorStop && motor[mRight] != 0)
                 end = true;
 
             //See if we are far enough 'out of sync' to warrant speed corrections
@@ -88,16 +88,16 @@ void move(int iSpeed, int nTicks)
                 if (vCurrLeftPos < vCurrRightPos)
                 {
                     if (vLeftPower < vSpeed)
-                        motor[mRight] = (vLeftPower+=2);
+                        motor[mRight] = (vLeftPower += 2);
                     else
-                        motor[mLeft] = (vRightPower-=2);
+                        motor[mLeft] = (vRightPower -= 2);
                 }
                 else
                 {
                     if (vRightPower < vSpeed)
-                        motor[mLeft] = (vRightPower+=2);
+                        motor[mLeft] = (vRightPower += 2);
                     else
-                        motor[mRight] = (vLeftPower-=2);
+                        motor[mRight] = (vLeftPower -= 2);
                 }
             }
 
@@ -106,27 +106,27 @@ void move(int iSpeed, int nTicks)
             vNxtSyncTime = nPgmTime + gcSyncInterval;
 
             //Store the current positions in the previous position values for the next time through the loop
-            vPrevLeftPos  = vCurrLeftPos;
+            vPrevLeftPos = vCurrLeftPos;
             vPrevRightPos = vCurrRightPos;
         }
 
-        if(abs(nMotorEncoder[mLeft]) >= vEncoderTic)
+        if (abs(nMotorEncoder[mLeft]) >= vEncoderTic)
             motor[mLeft] = 0;
 
-        if(abs(nMotorEncoder[mRight]) >= vEncoderTic)
+        if (abs(nMotorEncoder[mRight]) >= vEncoderTic)
             motor[mRight] = 0;
     }
 
     //We finished our movement so turn off the motors
-    motor[mLeft]  = 0;
+    motor[mLeft] = 0;
     motor[mRight] = 0;
 
-    if(end) {
+    if (end) {
         PlaySound(soundBeepBeep);
         PlaySound(soundDownwardTones);
     }
 
-    while(end) {
+    while (end) {
         //    continue;
 
         servo[sIr] = 128;
@@ -139,21 +139,21 @@ void move(int iSpeed, int nTicks)
 void turn(int iSpeed, int iDegrees, int code)
 {
     float vcurrposition = 0;
-    int   vprevtime     = nPgmTime;
-    int   vcurrtime;
+    int vprevtime = nPgmTime;
+    int vcurrtime;
     float vcurrRate;
-    int   voffset;
+    int voffset;
     float deltaSecs;
     float degChange;
 
     if (code == L_CODE)
     {
-        motor[mLeft]  = -iSpeed;
+        motor[mLeft] = -iSpeed;
         motor[mRight] = iSpeed;
     }
-    else if(code == R_CODE)
+    else if (code == R_CODE)
     {
-        motor[mLeft]  = iSpeed;
+        motor[mLeft] = iSpeed;
         motor[mRight] = -iSpeed;
     }
 
@@ -179,7 +179,7 @@ void turn(int iSpeed, int iDegrees, int code)
         vprevtime = vcurrtime;
     }
 
-    motor[mLeft]  = 0;
+    motor[mLeft] = 0;
     motor[mRight] = 0;
 
     wait1Msec(100);
@@ -197,35 +197,35 @@ int target = 6;
 int scan() {
     int prevReg = SensorValue[ir];
 
-    while(prevReg < target && servo[sIr] != 0) {
+    while (prevReg < target && servo[sIr] != 0) {
         prevReg = SensorValue[ir];
-        servo[sIr] = servo[sIr]-1;
+        servo[sIr] = servo[sIr] - 1;
         wait1Msec(10);
     }
     int sPos = servo[sIr];
-    if(sPos < b1)
+    if (sPos < b1)
         return 1;
-    if(sPos < b2)
+    if (sPos < b2)
         return 2;
-    if(sPos < b3)
+    if (sPos < b3)
         return 3;
     return 4;
 }
 
 
 void followpath(int loc) {
-    if(loc == 1) {
-        turn(55,25,L_CODE);
-        movein(55,17);
-    } else if(loc == 2) {
-        turn(55,8,L_CODE);
-        movein(55,15.5);
-    } else if(loc == 3) {
-        turn(55,8,R_CODE);
-        movein(55,16);
+    if (loc == 1) {
+        turn(55, 25, L_CODE);
+        movein(55, 17);
+    } else if (loc == 2) {
+        turn(55, 8, L_CODE);
+        movein(55, 15.5);
+    } else if (loc == 3) {
+        turn(55, 8, R_CODE);
+        movein(55, 16);
     } else {
-        turn(55,19,R_CODE);
-        movein(55,19);
+        turn(55, 19, R_CODE);
+        movein(55, 19);
     }
 }
 
@@ -249,34 +249,34 @@ void dump() {
 }
 
 void goOnRamp(int loc) {
-    if(loc == 1) {
-        turn(55,45,L_CODE);
-        movein(55,23);
-        turn(55,55,R_CODE);
-        movein(55,35);
-        turn(55,100,R_CODE);
-        movein(70,35);
-    } else if(loc == 2) {
-        turn(55,62,L_CODE);
-        movein(55,24);
-        turn(55,55,R_CODE);
-        movein(55,36);
-        turn(55,100,R_CODE);
-        movein(70,36);
-    } else if(loc == 3) {
-        turn(55,58,R_CODE);
-        movein(55,27);
-        turn(55,57,L_CODE);
-        movein(55,38);
-        turn(55,100,L_CODE);
-        movein(70,38);
+    if (loc == 1) {
+        turn(55, 45, L_CODE);
+        movein(55, 23);
+        turn(55, 55, R_CODE);
+        movein(55, 35);
+        turn(55, 100, R_CODE);
+        movein(70, 35);
+    } else if (loc == 2) {
+        turn(55, 62, L_CODE);
+        movein(55, 24);
+        turn(55, 55, R_CODE);
+        movein(55, 36);
+        turn(55, 100, R_CODE);
+        movein(70, 36);
+    } else if (loc == 3) {
+        turn(55, 58, R_CODE);
+        movein(55, 27);
+        turn(55, 57, L_CODE);
+        movein(55, 38);
+        turn(55, 100, L_CODE);
+        movein(70, 38);
     } else {
-        turn(55,45,R_CODE);
-        movein(55,21);
-        turn(55,55,L_CODE);
-        movein(55,35);
-        turn(55,100,L_CODE);
-        movein(70,35);
+        turn(55, 45, R_CODE);
+        movein(55, 21);
+        turn(55, 55, L_CODE);
+        movein(55, 35);
+        turn(55, 100, L_CODE);
+        movein(70, 35);
     }
 }
 
@@ -294,10 +294,10 @@ task main()
     servo[sIr] = 255;
   movein(55, 17);
   wait1Msec(1000);
-  turn(55, 40, L_CODE);//Initial move;
+  turn(55, 40, L_CODE); // Initial move;
 
   int loc = scan();
-  nxtDisplayString(3,"%i",loc);
+  nxtDisplayString(3,"%i", loc);
   followpath(loc);
   dump();
   goOnRamp(loc);

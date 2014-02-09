@@ -60,7 +60,7 @@ task main()
 {
     initializeRobot();
     waitForStart();
-    while(true) {
+    while (true) {
         getJoystickSettings(joystick);
 
         //tankDrive();
@@ -84,82 +84,82 @@ task main()
 //    Control by Joystick 1
 //     Left analog to left motor and right analog to right mo
 void tankDrive() {
-    float lPower = joystick.joy1_y1/1.28*factor/3.00;
-    float rPower = joystick.joy1_y2/1.28*factor/3.00;
+    float lPower = joystick.joy1_y1 / 1.28 * factor / 3.00;
+    float rPower = joystick.joy1_y2 / 1.28 * factor / 3.00;
     motor[mLeft] = lPower;
     motor[mRight] = rPower;
 }
 
 void arcadeDrive() {
-    float turning = joystick.joy1_x2/1.28*factor/3.00;
-    float forward = joystick.joy1_y1/1.28*factor/3.00;
-    motor[mLeft] = forward+turning;
-    motor[mRight] = forward-turning;
+    float turning = joystick.joy1_x2 / 1.28 * factor / 3.00;
+    float forward = joystick.joy1_y1 / 1.28 * factor / 3.00;
+    motor[mLeft] = forward + turning;
+    motor[mRight] = forward - turning;
 }
 
 void changeSpeeds() {
-    if(isPressed1(1))
+    if (isPressed1(1))
         factor = 1.5;
-    else if(isPressed1(2))
+    else if (isPressed1(2))
         factor = 2;
-    else if(isPressed1(3))
+    else if (isPressed1(3))
         factor = 3;
 }
 
 
 static const int THRESHOLD = 15;
 void moveArm() {
-    float power = joystick.joy2_y1/1.28;
-    if(abs(power) < THRESHOLD)
+    float power = joystick.joy2_y1 / 1.28;
+    if (abs(power) < THRESHOLD)
         power = 0;
-    if(!joy2Btn(5)) {
+    if (!joy2Btn(5)) {
         // If moving down, reduce the power to slow down the arm (gravity)
-        if(joystick.joy2_y1 < 0)
-            power*=0.1;
+        if (joystick.joy2_y1 < 0)
+            power *= 0.1;
     }
-    motor[mLeftArm] =  motor[mRightArm] = power;
+    motor[mLeftArm] = motor[mRightArm] = power;
 }
 
 int topPos = 50;
 int btmPos = 130;
 
 void moveWrist() {
-    if(moveTime < nPgmTime) {
-        if(joy2Btn(3)) {
-            servo[sWrist] = servo[sWrist]-1;
-        } else if(joy2Btn(2)) {
-            servo[sWrist] = servo[sWrist]+1;
-        } else if(joy2Btn(1)) {
+    if (moveTime < nPgmTime) {
+        if (joy2Btn(3)) {
+            servo[sWrist] = servo[sWrist] - 1;
+        } else if (joy2Btn(2)) {
+            servo[sWrist] = servo[sWrist] + 1;
+        } else if (joy2Btn(1)) {
             servo[sWrist] = btmPos;
-        } else if(joy2Btn(4)) {
+        } else if (joy2Btn(4)) {
             servo[sWrist] = topPos;
         }
-        moveTime = nPgmTime+mPsP;
+        moveTime = nPgmTime + mPsP;
     }
 }
 
 
 //Saves the state for use in the next loop
 void savePrevState() {
-    for(int i = 0; i < 12; i++) {
-        prev1[i] = (bool)joy1Btn(i+1);
-        prev2[i] = (bool)joy2Btn(i+1);
+    for (int i = 0; i < 12; i++) {
+        prev1[i] = (bool)joy1Btn(i + 1);
+        prev2[i] = (bool)joy2Btn(i + 1);
     }
 }
 
 void lift() {
-    motor[mLift] = (joy2Btn(6)? 100 : (joy2Btn(8)? -100 : 0));
+    motor[mLift] = (joy2Btn(6)? 100 : (joy2Btn(8)? - 100 : 0));
 }
 
 void turnFlag() {
-    motor[mFlag] = (joy1Btn(6)? 100 : (joy1Btn(8)? -100 : 0));
+    motor[mFlag] = (joy1Btn(6)? 100 : (joy1Btn(8)? - 100 : 0));
 }
 
 //Returns true if the button was "just" pressed
 bool isPressed1(int button) {
-    return prev1[button-1] && joy1Btn(button);
+    return prev1[button - 1] && joy1Btn(button);
 }
 
 bool isPressed2(int button) {
-    return prev2[button-1] && joy2Btn(button);
+    return prev2[button - 1] && joy2Btn(button);
 }
