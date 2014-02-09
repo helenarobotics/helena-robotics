@@ -23,10 +23,10 @@ const long   gcSyncTickError = 20;  //Defines how far the motors can be "off" be
 const long   gcMotorStop = 10;
 void initializeRobot()
 {
-	bDisplayDiagnostics = false;
-	motor[mLeft] = motor[mRight] = motor[mRightArm] = motor[mLeftArm] = motor[mLift] = 0;
-	servo[sWrist] = 0;
-	servo[sIr] = 128;
+    bDisplayDiagnostics = false;
+    motor[mLeft] = motor[mRight] = motor[mRightArm] = motor[mLeftArm] = motor[mLift] = 0;
+    servo[sWrist] = 0;
+    servo[sIr] = 128;
 }
 
 void move(int iSpeed, int nTicks);
@@ -35,154 +35,154 @@ const int L_CODE = 3;
 const int R_CODE = 4;
 
 void movein(int iSpeed, float dist) {
-	move(iSpeed, abs((dist-1.75)*1000.0/13.0));
+    move(iSpeed, abs((dist-1.75)*1000.0/13.0));
 }
 
 void move(int iSpeed, int nTicks)
 {
-	//Set up variables
-	//For the encoder tic we multiply the incoming distance by the calculated number of tics when
-	//traveling one inch. To get the calculated value you must figure out the circumference of the
-	//wheel, tread, etc. There are 1440 tics in a single revolution of the motor
-	int  vEncoderTic   = nTicks;
-	int  vPrevLeftPos  = 0;
-	int  vPrevRightPos = 0;
-	int  vLeftPower    = iSpeed;
-	int  vRightPower   = iSpeed;
-	int  vSpeed        = iSpeed;
-	bool end = false;
+    //Set up variables
+    //For the encoder tic we multiply the incoming distance by the calculated number of tics when
+    //traveling one inch. To get the calculated value you must figure out the circumference of the
+    //wheel, tread, etc. There are 1440 tics in a single revolution of the motor
+    int  vEncoderTic   = nTicks;
+    int  vPrevLeftPos  = 0;
+    int  vPrevRightPos = 0;
+    int  vLeftPower    = iSpeed;
+    int  vRightPower   = iSpeed;
+    int  vSpeed        = iSpeed;
+    bool end = false;
 
-	//Reset our encoders prior to movement
-	nMotorEncoder[mLeft]  = 0;
-	nMotorEncoder[mRight] = 0;
+    //Reset our encoders prior to movement
+    nMotorEncoder[mLeft]  = 0;
+    nMotorEncoder[mRight] = 0;
 
-	//Start up the motors
-	motor[mLeft]  = vLeftPower;
-	motor[mRight] = vRightPower;
+    //Start up the motors
+    motor[mLeft]  = vLeftPower;
+    motor[mRight] = vRightPower;
 
-	unsigned long vNxtSyncTime  = nPgmTime + gcSyncInterval+200;
+    unsigned long vNxtSyncTime  = nPgmTime + gcSyncInterval+200;
 
-	//Loop until both motors have traveled the required distance
-	while((abs(nMotorEncoder[mLeft]) < vEncoderTic || abs(nMotorEncoder[mRight]) < vEncoderTic) && !end)
-	{
-		//Determine the current value of the encoders
-		int vCurrLeftPos  = abs(nMotorEncoder[mLeft]);
-		int vCurrRightPos = abs(nMotorEncoder[mRight]);
+    //Loop until both motors have traveled the required distance
+    while((abs(nMotorEncoder[mLeft]) < vEncoderTic || abs(nMotorEncoder[mRight]) < vEncoderTic) && !end)
+    {
+        //Determine the current value of the encoders
+        int vCurrLeftPos  = abs(nMotorEncoder[mLeft]);
+        int vCurrRightPos = abs(nMotorEncoder[mRight]);
 
-		//We only perform error correction at specific intervals
-		if (nPgmTime >= vNxtSyncTime)
-		{
-			nxtDisplayString(0,"%i:%i",abs(vCurrLeftPos - vPrevLeftPos),abs(vCurrRightPos - vPrevRightPos));
-			if(abs(vCurrLeftPos - vPrevLeftPos) < gcMotorStop && motor[mLeft] != 0)
-				end = true;
+        //We only perform error correction at specific intervals
+        if (nPgmTime >= vNxtSyncTime)
+        {
+            nxtDisplayString(0,"%i:%i",abs(vCurrLeftPos - vPrevLeftPos),abs(vCurrRightPos - vPrevRightPos));
+            if(abs(vCurrLeftPos - vPrevLeftPos) < gcMotorStop && motor[mLeft] != 0)
+                end = true;
 
-			if(abs(vCurrRightPos - vPrevRightPos) < gcMotorStop && motor[mRight] != 0)
-				end = true;
+            if(abs(vCurrRightPos - vPrevRightPos) < gcMotorStop && motor[mRight] != 0)
+                end = true;
 
-			//See if we are far enough 'out of sync' to warrant speed corrections
-			if (!end && abs(vCurrLeftPos - vCurrRightPos) > gcSyncTickError)
-			{
-				//We are out of sync. Determine which side is falling behind the other and adjust the speed
-				//We default to slowing down th?e motors. The only time we speed up a motor is if it was
-				//previously slowed
-				if (vCurrLeftPos < vCurrRightPos)
-				{
-					if (vLeftPower < vSpeed)
-						motor[mRight] = (vLeftPower+=2);
-					else
-						motor[mLeft] = (vRightPower-=2);
-				}
-				else
-				{
-					if (vRightPower < vSpeed)
-						motor[mLeft] = (vRightPower+=2);
-					else
-						motor[mRight] = (vLeftPower-=2);
-				}
-			}
+            //See if we are far enough 'out of sync' to warrant speed corrections
+            if (!end && abs(vCurrLeftPos - vCurrRightPos) > gcSyncTickError)
+            {
+                //We are out of sync. Determine which side is falling behind the other and adjust the speed
+                //We default to slowing down th?e motors. The only time we speed up a motor is if it was
+                //previously slowed
+                if (vCurrLeftPos < vCurrRightPos)
+                {
+                    if (vLeftPower < vSpeed)
+                        motor[mRight] = (vLeftPower+=2);
+                    else
+                        motor[mLeft] = (vRightPower-=2);
+                }
+                else
+                {
+                    if (vRightPower < vSpeed)
+                        motor[mLeft] = (vRightPower+=2);
+                    else
+                        motor[mRight] = (vLeftPower-=2);
+                }
+            }
 
 
-			//Use the interval to calculate the next sync time
-			vNxtSyncTime = nPgmTime + gcSyncInterval;
+            //Use the interval to calculate the next sync time
+            vNxtSyncTime = nPgmTime + gcSyncInterval;
 
-			//Store the current positions in the previous position values for the next time through the loop
-			vPrevLeftPos  = vCurrLeftPos;
-			vPrevRightPos = vCurrRightPos;
-		}
+            //Store the current positions in the previous position values for the next time through the loop
+            vPrevLeftPos  = vCurrLeftPos;
+            vPrevRightPos = vCurrRightPos;
+        }
 
-		if(abs(nMotorEncoder[mLeft]) >= vEncoderTic)
-			motor[mLeft] = 0;
+        if(abs(nMotorEncoder[mLeft]) >= vEncoderTic)
+            motor[mLeft] = 0;
 
-		if(abs(nMotorEncoder[mRight]) >= vEncoderTic)
-			motor[mRight] = 0;
-	}
+        if(abs(nMotorEncoder[mRight]) >= vEncoderTic)
+            motor[mRight] = 0;
+    }
 
-	//We finished our movement so turn off the motors
-	motor[mLeft]  = 0;
-	motor[mRight] = 0;
+    //We finished our movement so turn off the motors
+    motor[mLeft]  = 0;
+    motor[mRight] = 0;
 
-	if(end) {
-		PlaySound(soundBeepBeep);
-		PlaySound(soundDownwardTones);
-	}
+    if(end) {
+        PlaySound(soundBeepBeep);
+        PlaySound(soundDownwardTones);
+    }
 
-	while(end) {
-		//	continue;
+    while(end) {
+        //    continue;
 
-		servo[sIr] = 128;
-	}
+        servo[sIr] = 128;
+    }
 
-	//The following line is used to pause the robot in between movements
-	wait1Msec(100);
+    //The following line is used to pause the robot in between movements
+    wait1Msec(100);
 }
 
 void turn(int iSpeed, int iDegrees, int code)
 {
-	float vcurrposition = 0;
-	int   vprevtime     = nPgmTime;
-	int   vcurrtime;
-	float vcurrRate;
-	int   voffset;
-	float deltaSecs;
-	float degChange;
+    float vcurrposition = 0;
+    int   vprevtime     = nPgmTime;
+    int   vcurrtime;
+    float vcurrRate;
+    int   voffset;
+    float deltaSecs;
+    float degChange;
 
-	if (code == L_CODE)
-	{
-		motor[mLeft]  = -iSpeed;
-		motor[mRight] = iSpeed;
-	}
-	else if(code == R_CODE)
-	{
-		motor[mLeft]  = iSpeed;
-		motor[mRight] = -iSpeed;
-	}
+    if (code == L_CODE)
+    {
+        motor[mLeft]  = -iSpeed;
+        motor[mRight] = iSpeed;
+    }
+    else if(code == R_CODE)
+    {
+        motor[mLeft]  = iSpeed;
+        motor[mRight] = -iSpeed;
+    }
 
-	while (abs(vcurrposition) < iDegrees)
-	{
-		// This tells us the current rate of rotation in degrees per
-		// second.
-		vcurrRate = HTGYROreadRot(gyro);
+    while (abs(vcurrposition) < iDegrees)
+    {
+        // This tells us the current rate of rotation in degrees per
+        // second.
+        vcurrRate = HTGYROreadRot(gyro);
 
-		// How much time has elapsed since we last checked, which we use
-		// to determine how far we've turned
-		vcurrtime = nPgmTime;
+        // How much time has elapsed since we last checked, which we use
+        // to determine how far we've turned
+        vcurrtime = nPgmTime;
 
-		deltaSecs = (vcurrtime - vprevtime) / 1000.0;
-		if (deltaSecs < 0)
-		{
-			deltaSecs = ((float)((vcurrtime + 1024) - (vprevtime + 1024))) / 1000.0;
-		}
+        deltaSecs = (vcurrtime - vprevtime) / 1000.0;
+        if (deltaSecs < 0)
+        {
+            deltaSecs = ((float)((vcurrtime + 1024) - (vprevtime + 1024))) / 1000.0;
+        }
 
-		// Calculate how many degrees the heading changed.
-		degChange = vcurrRate * deltaSecs;
-		vcurrposition = vcurrposition + degChange;
-		vprevtime = vcurrtime;
-	}
+        // Calculate how many degrees the heading changed.
+        degChange = vcurrRate * deltaSecs;
+        vcurrposition = vcurrposition + degChange;
+        vprevtime = vcurrtime;
+    }
 
-	motor[mLeft]  = 0;
-	motor[mRight] = 0;
+    motor[mLeft]  = 0;
+    motor[mRight] = 0;
 
-	wait1Msec(100);
+    wait1Msec(100);
 }
 
 int b1 = 35;
@@ -195,89 +195,89 @@ int b3 = 109;
 int target = 6;
 
 int scan() {
-	int prevReg = SensorValue[ir];
+    int prevReg = SensorValue[ir];
 
-	while(prevReg < target && servo[sIr] != 0) {
-		prevReg = SensorValue[ir];
-		servo[sIr] = servo[sIr]-1;
-		wait1Msec(10);
-	}
-	int sPos = servo[sIr];
-	if(sPos < b1)
-		return 1;
-	if(sPos < b2)
-		return 2;
-	if(sPos < b3)
-		return 3;
-	return 4;
+    while(prevReg < target && servo[sIr] != 0) {
+        prevReg = SensorValue[ir];
+        servo[sIr] = servo[sIr]-1;
+        wait1Msec(10);
+    }
+    int sPos = servo[sIr];
+    if(sPos < b1)
+        return 1;
+    if(sPos < b2)
+        return 2;
+    if(sPos < b3)
+        return 3;
+    return 4;
 }
 
 
 void followpath(int loc) {
-	if(loc == 1) {
-		turn(55,25,L_CODE);
-		movein(55,17);
-	} else if(loc == 2) {
-		turn(55,8,L_CODE);
-		movein(55,15.5);
-	} else if(loc == 3) {
-		turn(55,8,R_CODE);
-		movein(55,16);
-	} else {
-		turn(55,19,R_CODE);
-		movein(55,19);
-	}
+    if(loc == 1) {
+        turn(55,25,L_CODE);
+        movein(55,17);
+    } else if(loc == 2) {
+        turn(55,8,L_CODE);
+        movein(55,15.5);
+    } else if(loc == 3) {
+        turn(55,8,R_CODE);
+        movein(55,16);
+    } else {
+        turn(55,19,R_CODE);
+        movein(55,19);
+    }
 }
 
 void dump() {
-	servo[sWrist] = 100;
-	wait1Msec(500);
-	servo[sWrist] = 255;
-	wait1Msec(150);
+    servo[sWrist] = 100;
+    wait1Msec(500);
+    servo[sWrist] = 255;
+    wait1Msec(150);
 
-	motor[mLeftArm] = motor[mRightArm] = -35;
-	wait1Msec(150);
-	motor[mLeftArm] = motor[mRightArm] = 0;
-	wait1Msec(500);
+    motor[mLeftArm] = motor[mRightArm] = -35;
+    wait1Msec(150);
+    motor[mLeftArm] = motor[mRightArm] = 0;
+    wait1Msec(500);
 
-	motor[mLeftArm] = motor[mRightArm] = 50;
-	wait1Msec(300);
-	motor[mLeftArm] = motor[mRightArm] = 0;
-	wait1Msec(300);
-	servo[sWrist] = 0;
-	wait1Msec(500);
+    motor[mLeftArm] = motor[mRightArm] = 50;
+    wait1Msec(300);
+    motor[mLeftArm] = motor[mRightArm] = 0;
+    wait1Msec(300);
+    servo[sWrist] = 0;
+    wait1Msec(500);
 }
 
 void goOnRamp(int loc) {
-	if(loc == 1) {
-		turn(55,45,L_CODE);
-		movein(55,23);
-		turn(55,55,R_CODE);
-		movein(55,35);
-		turn(55,100,R_CODE);
-		movein(70,35);
-	} else if(loc == 2) {
-		turn(55,62,L_CODE);
-		movein(55,24);
-		turn(55,55,R_CODE);
-		movein(55,36);
-		turn(55,100,R_CODE);
-		movein(70,36);
-	} else if(loc == 3) {
-		turn(55,58,R_CODE);
-		movein(55,27);
-		turn(55,57,L_CODE);
-		movein(55,38);
-		turn(55,100,L_CODE);
-		movein(70,38);
-	} else {
-		turn(55,45,R_CODE);
-		movein(55,21);
-		turn(55,55,L_CODE);
-		movein(55,35);
-		turn(55,100,L_CODE);
-		movein(70,35);
-	}
+    if(loc == 1) {
+        turn(55,45,L_CODE);
+        movein(55,23);
+        turn(55,55,R_CODE);
+        movein(55,35);
+        turn(55,100,R_CODE);
+        movein(70,35);
+    } else if(loc == 2) {
+        turn(55,62,L_CODE);
+        movein(55,24);
+        turn(55,55,R_CODE);
+        movein(55,36);
+        turn(55,100,R_CODE);
+        movein(70,36);
+    } else if(loc == 3) {
+        turn(55,58,R_CODE);
+        movein(55,27);
+        turn(55,57,L_CODE);
+        movein(55,38);
+        turn(55,100,L_CODE);
+        movein(70,38);
+    } else {
+        turn(55,45,R_CODE);
+        movein(55,21);
+        turn(55,55,L_CODE);
+        movein(55,35);
+        turn(55,100,L_CODE);
+        movein(70,35);
+    }
 }
 
 task main()
@@ -287,11 +287,11 @@ task main()
   waitForStart();
 
     servo[sWrist] = 125;
-	motor[mLeftArm] = motor[mRightArm] = 50;
-	wait1Msec(1000);
-	motor[mLeftArm] = motor[mRightArm] = 0;
+    motor[mLeftArm] = motor[mRightArm] = 50;
+    wait1Msec(1000);
+    motor[mLeftArm] = motor[mRightArm] = 0;
 
-	servo[sIr] = 255;
+    servo[sIr] = 255;
   movein(55, 17);
   wait1Msec(1000);
   turn(55, 40, L_CODE);//Initial move;
@@ -305,7 +305,7 @@ task main()
   PlaySoundFile("zeld_ow_001.rso");
   //go indefinitely
   while (true) {
-	servo[sIr] = 128;
+    servo[sIr] = 128;
       continue;
   }
 }
