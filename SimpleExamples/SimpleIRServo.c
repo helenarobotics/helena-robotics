@@ -2,8 +2,7 @@
 typedef enum { SWEEP_LEFT, SWEEP_RIGHT } SweepDirection;
 
 // HiTechnic IR sensor constants
-const int IR_NOMATCH_SECTION = 0;
-const int IR_RIGHT_SECTION = 4;
+const int IR_CENTER_SECTION = 5;
 
 TServoIndex irServo;
 tSensors irSensor;
